@@ -34,6 +34,8 @@ pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, view_point: &Point
 }
 
 pub fn render_triangle(triangle: &Triangle2, pixel_array: &mut Vec<Vec<u8>>) {
+    // TODO check if triangle is a valid triangle, ie that its area is greater than 0. 
+
     // dbg!(triangle, pixel_array.len(), pixel_array[0].len());
     let [p1, p2, p3] = triangle.points();
     let fill_char = triangle.fill_char;

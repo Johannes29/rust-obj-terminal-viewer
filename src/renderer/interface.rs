@@ -48,6 +48,7 @@ impl Renderer {
 
     fn prepare_for_rendering(&self) {
         stdout().execute(cursor::Hide).unwrap();
+        terminal::enable_raw_mode().unwrap();
         Renderer::clear_terminal();
         stdout().execute(cursor::MoveTo(0, self.height)).unwrap();
     }
@@ -84,6 +85,7 @@ impl Renderer {
 
     fn after_rendering_stopped() {
         stdout().execute(cursor::Show).unwrap();
+        terminal::disable_raw_mode().unwrap();
     }
 
     fn clear_terminal() {
