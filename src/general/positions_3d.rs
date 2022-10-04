@@ -2,9 +2,6 @@ use crate::general::positions_2d::Point as Point2;
 use crate::general::positions_2d::Triangle as Triangle2;
 
 #[derive(Debug, PartialEq, Clone)]
-/**
- * z is forwards, y is up, x is to the right.
- */
 pub struct Point {
     pub x: f32,
     pub y: f32,
@@ -26,8 +23,6 @@ pub struct Triangle {
 
 #[derive(Debug)]
 pub struct Degrees(pub f32);
-
-// TODO check if nämnare is 0, both get_horizontal_angle and vertical
 
 impl Point {
     pub fn from(array: [f32; 3]) -> Self {
@@ -100,13 +95,6 @@ impl Triangle {
             fill_char: self.fill_char
         }
     }
-
-    // TODO
-    // pub fn rotate(&mut self, angle_deg: f32, origin: &Point) {
-    //     self.p1.rotate(angle_deg, origin);
-    //     self.p2.rotate(angle_deg, origin);
-    //     self.p3.rotate(angle_deg, origin);
-    // }
 }
 
 pub fn distance(p1: &Point, p2: &Point) -> f32 {

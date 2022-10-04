@@ -11,6 +11,7 @@ use std::vec;
 use crossterm::event::Event;
 use crossterm::terminal;
 
+// x is to the right, y is down, z is forwards
 fn main() {
     let terminal_size = terminal::size().unwrap();
     let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 70.0);
