@@ -1,0 +1,101 @@
+use std::ops::Mul;
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
+}
+
+pub struct LinearFunction {
+    pub k: f32,
+    pub m: f32,
+}
+
+#[derive(Debug)]
+pub struct Triangle {
+    pub p1: Point,
+    pub p2: Point,
+    pub p3: Point,
+    pub fill_char: u8,
+}
+
+impl Point {
+    pub fn add(&mut self, another_point: &Point) {
+        self.x += another_point.x;
+        self.y += another_point.y;
+    }
+
+    pub fn rotate(&mut self, angle_degrees: f32, origin: &Point) {
+        let prev_angle = get_angle_between_points(self, origin);
+        let new_angle = prev_angle + angle_degrees;
+        let dx = self.x - origin.x;
+        let dy = self.y - origin.y;
+        let radius = (dx.powf(2.0) + dy.powf(2.0)).sqrt();
+        let new_x = (new_angle.to_radians()).cos() * radius + origin.x;
+        let new_y = (new_angle.to_radians()).sin() * radius + origin.y;
+
+        self.x = new_x;
+        self.y = new_y;
+    }
+}
+
+impl Mul for Point {
+    type Output = Self;
+
+    fn mul(self, rhs: Point) -> Self {
+        Point {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl LinearFunction {
+    pub fn calc(&self, x: f32) -> f32 {
+        self.k * x + self.m
+    }
+}
+
+impl Triangle {
+    pub fn points(&self) -> (&Point, &Point, &Point) {
+        (&self.p1, &self.p2, &self.p3)
+    }
+    
+    pub fn array(&self) -> [&Point; 3] {
+        [&self.p1, &self.p2, &self.p3]
+    }
+    
+    pub fn multiply_xy(&mut self, x: f32, y: f32) {
+        self.p1 = Point {x: self.p1.x * x, y: self.p1.y * y};
+        self.p2 = Point {x: self.p2.x * x, y: self.p2.y * y};
+        self.p3 = Point {x: self.p3.x * x, y: self.p3.y * y};
+    }
+
+    pub fn add_xy(&mut self, x: f32, y: f32) {
+        self.p1 = Point {x: self.p1.x + x, y: self.p1.y + y};
+        self.p2 = Point {x: self.p2.x + x, y: self.p2.y + y};
+        self.p3 = Point {x: self.p3.x + x, y: self.p3.y + y};
+    }
+}
+
+pub fn get_angle_between_points(point: &Point, rel_to_p: &Point) -> f32 {
+    let dx = point.x - rel_to_p.x;
+    let dy = point.y - rel_to_p.y;
+    let angle = (dy / dx).atan().to_degrees();
+
+    if dx >= 0.0 {
+        angle
+    } else {
+        angle + 180.0
+    }.rem_euclid(360.0)
+}
+
+pub fn get_k(p1: &Point, p2: &Point) -> f32 {
+    (p2.y - p1.y) / (p2.x - p1.x)
+}
+
+pub fn get_linear_function(p1: &Point, p2: &Point) -> LinearFunction {
+    let k = (p2.y - p1.y) / (p2.x - p1.x);
+    let m = p1.y - k * p1.x;
+    LinearFunction { k, m } // shorthand for { k: k, m: m}
+}

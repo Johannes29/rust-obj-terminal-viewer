@@ -1,0 +1,177 @@
+use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function};
+use crate::general::positions_3d::{Point as Point3, Mesh};
+use crate::renderer::transformation::*;
+use crossterm::{cursor, QueueableCommand};
+use std::cmp::{Ordering, min, max};
+use std::io::{Write, stdout};
+
+pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f32, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32) {
+    let pixel_vec_width = pixel_vec[0].len() as f32;
+    let pixel_vec_height = pixel_vec.len() as f32;
+    for triangle3 in &mesh.triangles {
+        let triangle2 = triangle3d_to_screen_space_triangle(triangle3, view_point, horizontal_fov, vertical_fov * char_asp_ratio);
+
+        match triangle2 {
+            None => {
+                continue;
+            },
+            Some(mut triangle2) => {
+                triangle2.add_xy(1.0, 1.0);
+                triangle2.multiply_xy(0.5, 0.5);
+
+                triangle2.multiply_xy(
+                    pixel_vec_width,
+                    pixel_vec_height
+                );
+
+                render_triangle(&triangle2, pixel_vec);
+            },
+        }
+        
+    }
+}
+
+pub fn render_triangle(triangle: &Triangle2, pixel_array: &mut Vec<Vec<u8>>) {
+    let (p1, p2, p3) = triangle.points();
+    let fill_char = triangle.fill_char;
+    #[allow(non_snake_case)]
+    let mut pInAscX: [&Point2; 3] = [p1, p2, p3];
+    // TODO handle possible None type, dont unwrap
+    pInAscX.sort_by(|point_a, point_b| (point_a.x).partial_cmp(&point_b.x).unwrap());
+
+    let (top_edge, bottom_edge) = get_top_and_bottom_edge(p1, p2, p3);
+
+    let start_x = pInAscX[0].x.ceil() as usize;
+
+    let max_x_i = pixel_array[0].len() - 1;
+    let max_y_i = pixel_array.len() - 1;
+
+    let start_y_vals = get_y_values_from_edge(bottom_edge, max_x_i, max_y_i);
+    let end_y_vals = get_y_values_from_edge(top_edge, max_x_i, max_y_i);
+
+    if start_y_vals.len() != end_y_vals.len() {
+        panic!("Impossible!");
+    };
+
+    // fill in the correct pixels
+    for i in 0..(start_y_vals.len()) {
+        let start_y = start_y_vals[i];
+        let end_y = end_y_vals[i];
+        for y in start_y..end_y {
+            let x = start_x + i as usize;
+            let y = y as usize;
+
+            // check if x and y are within bounds of pixel_array
+            // this should not be necessary anymore, but might as well check
+            match pixel_array.get_mut(y) {
+                Option::None => continue,
+                _ => (),
+            }
+            match pixel_array[y].get_mut(x) {
+                Option::None => break,
+                _ => (),
+            }
+
+            pixel_array[y][x] = fill_char;
+        }
+    }
+}
+
+pub fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point2) -> (Vec<&'a Point2>, Vec<&'a Point2>) {
+    #[allow(non_snake_case)]
+    let mut pInAscX: [&Point2; 3] = [p1, p2, p3];
+    pInAscX.sort_by(|point_a, point_b| (point_a.x).partial_cmp(&point_b.x).unwrap());
+    #[allow(non_snake_case)]
+    let mut pInAscY: [&Point2; 3] = [p1, p2, p3];
+    pInAscY.sort_by(|point_a, point_b| (point_a.y).partial_cmp(&point_b.y).unwrap());
+
+    let two_vert_edge = vec![pInAscX[0], pInAscX[2]];
+    let three_vert_edge = vec![pInAscX[0], pInAscX[1], pInAscX[2]];
+    let two_v_k = get_k(pInAscX[0], pInAscX[2]);
+    let three_v_k = get_k(pInAscX[0], pInAscX[1]);
+
+    let (mut top_edge, mut bottom_edge) = match two_v_k.partial_cmp(&three_v_k).unwrap() {
+        Ordering::Less => (three_vert_edge, two_vert_edge),
+        Ordering::Greater => (two_vert_edge, three_vert_edge),
+        Ordering::Equal => panic!("Triangle has no area"),
+    };
+
+    if pInAscX[0] == pInAscX[2] {
+        panic!("Invalid triangle");
+    } else if pInAscX[0] == pInAscX[1] {
+        let higher_point = if pInAscX[0].y > pInAscX[1].y {pInAscX[0]} else {pInAscX[1]};
+        let lower_point =  if pInAscX[0].y > pInAscX[1].y {pInAscX[1]} else {pInAscX[0]};
+        let other_point = pInAscX[2];
+
+        top_edge = vec![higher_point, other_point];
+        bottom_edge = vec![lower_point, other_point];
+    } else if pInAscX[1] == pInAscX[2] {
+        let higher_point = if pInAscX[1].y > pInAscX[2].y {pInAscX[1]} else {pInAscX[2]};
+        let lower_point =  if pInAscX[1].y > pInAscX[2].y {pInAscX[2]} else {pInAscX[1]};
+        let other_point = pInAscX[0];
+
+        top_edge = vec![higher_point, other_point];
+        bottom_edge = vec![lower_point, other_point];
+
+    }
+
+    top_edge.sort_by(|point_a, point_b| (point_a.x).partial_cmp(&point_b.x).unwrap());
+    bottom_edge.sort_by(|point_a, point_b| (point_a.x).partial_cmp(&point_b.x).unwrap());
+
+    (top_edge, bottom_edge)
+}
+
+pub fn draw_pixel_array(pixel_vec: &Vec<Vec<u8>>, prev_pixel_vec: &Vec<Vec<u8>>) {
+    let mut stdout = stdout();
+
+    if pixel_vec.is_empty() || prev_pixel_vec.is_empty() || pixel_vec[0].is_empty() || prev_pixel_vec[0].is_empty()
+        || pixel_vec.len() != prev_pixel_vec.len() || pixel_vec[0].len() != prev_pixel_vec[0].len() {
+        panic!("pixel vectors have different sizes");
+    }
+    let mut chars_to_change: Vec<(u8, usize, usize)> = Vec::new();
+    for (row_i, row) in pixel_vec.iter().enumerate() {
+        for (char_i, char) in row.iter().enumerate() {
+            let prev_char = prev_pixel_vec[row_i][char_i];
+
+            if char != &prev_char {
+                chars_to_change.push((*char, row_i, char_i))
+            }
+        }
+    }
+
+    stdout.queue(cursor::SavePosition).unwrap();
+
+    for (new_char, row_i, char_i) in chars_to_change {
+        // let char_number = new_char.to_digit(10).unwrap() as u8;
+
+        stdout.queue(cursor::MoveTo(char_i as u16 + 1, row_i as u16)).unwrap();
+        stdout.write(&[0x08, new_char]).unwrap();
+    }
+
+    stdout.queue(cursor::RestorePosition).unwrap();
+    stdout.flush().unwrap();
+}
+
+pub fn get_y_values_from_edge(edge: Vec<&Point2>, max_x_i: usize, max_y_i: usize) -> Vec<usize> {
+    let mut y_vals: Vec<usize> = Vec::new();
+    
+    for i_1 in 0..(edge.len() - 1) {
+        let i_2 = i_1 + 1;
+
+        let point_1 = edge[i_1];
+        let point_2 = edge[i_2];
+
+        let linear_function = get_linear_function(point_1, point_2);
+
+        let start_x = max(point_1.x.ceil() as i32, 0);
+        let end_x = min(point_2.x.ceil() as i32, max_x_i as i32 + 1);
+
+        for x in start_x..end_x {
+            let end_y = (linear_function.calc(x as f32) as usize)
+                .clamp(0, max_y_i + 1);
+            y_vals.push(end_y);
+        }
+    }
+
+    y_vals
+}
