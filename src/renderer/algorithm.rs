@@ -1,30 +1,32 @@
 use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function};
-use crate::general::positions_3d::{Point as Point3, Mesh};
-use crate::renderer::transformation::*;
+use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh};
+use crate::renderer::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat};
 use crossterm::{cursor, QueueableCommand};
 use std::cmp::{Ordering, min, max};
 use std::io::{Write, stdout};
 
-pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f32, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32) {
+pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f32, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
+    let aspect_ratio = horizontal_fov / vertical_fov;
+    let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let pixel_vec_width = pixel_vec[0].len() as f32;
     let pixel_vec_height = pixel_vec.len() as f32;
     for triangle3 in &mesh.triangles {
-        let triangle2 = triangle3d_to_screen_space_triangle(triangle3, view_point, horizontal_fov, vertical_fov * char_asp_ratio);
+        let triangle2 = triangle3d_to_screen_space_triangle(triangle3, persp_proj_mat, view_point);
 
         match triangle2 {
             None => {
                 continue;
             },
             Some(mut triangle2) => {
-                triangle2.add_xy(1.0, 1.0);
-                triangle2.multiply_xy(0.5, 0.5);
-
-                triangle2.multiply_xy(
+                triangle2.add_xyz(1.0, 1.0, 0.0);
+                triangle2.multiply_xyz(0.5, 0.5, 1.0);
+                triangle2.multiply_xyz(
                     pixel_vec_width,
-                    pixel_vec_height
+                    pixel_vec_height,
+                    1.0
                 );
 
-                render_triangle(&triangle2, pixel_vec);
+                render_triangle(&triangle2.to_2d(), pixel_vec);
             },
         }
         
@@ -32,6 +34,7 @@ pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f3
 }
 
 pub fn render_triangle(triangle: &Triangle2, pixel_array: &mut Vec<Vec<u8>>) {
+    dbg!(triangle, pixel_array.len(), pixel_array[0].len());
     let (p1, p2, p3) = triangle.points();
     let fill_char = triangle.fill_char;
     #[allow(non_snake_case)]

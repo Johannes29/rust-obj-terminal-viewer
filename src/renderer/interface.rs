@@ -17,6 +17,8 @@ pub struct Renderer {
     pub frame_time: Duration,
     pub pixel_vec: Vec<Vec<u8>>,
     pub prev_pixel_vec: Vec<Vec<u8>>,
+    pub near: f32,
+    pub far: f32,
 }
 
 #[allow(dead_code)]
@@ -35,10 +37,12 @@ impl Renderer {
         let horizontal_fov = fov * angle_rad.cos();
         let vertical_fov = fov * angle_rad.sin();
         let view_point = Point3 { x: 0.0, y: 0.0, z: 0.0 };
+        let near = 0.1;
+        let far = 100.;
 
         Renderer {
             width, height, horizontal_fov, vertical_fov, char_asp_ratio,
-            view_point, pixel_vec, prev_pixel_vec, mesh, frame_time,
+            view_point, pixel_vec, prev_pixel_vec, mesh, frame_time, near, far
         }
     }
 
@@ -50,7 +54,7 @@ impl Renderer {
 
     fn render_frame(&mut self) {
         self.clear_pixel_vec();
-        render_mesh(&self.mesh, &mut self.pixel_vec, self.char_asp_ratio, &self.view_point, self.horizontal_fov, self.vertical_fov);
+        render_mesh(&self.mesh, &mut self.pixel_vec, self.char_asp_ratio, &self.view_point, self.horizontal_fov, self.vertical_fov, self.near, self.far);
         draw_pixel_array(&self.pixel_vec, &self.prev_pixel_vec);
 
         self.prev_pixel_vec = self.pixel_vec.clone();
