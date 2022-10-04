@@ -1,5 +1,4 @@
 use crate::general::positions_3d::Triangle as Triangle3;
-use crate::general::positions_2d::{Triangle as Triangle2, Point};
 use crate::general::positions_3d::Point as Point3;
 
 use std::f32::consts::PI;

@@ -1,5 +1,5 @@
 use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function};
-use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh};
+use crate::general::positions_3d::{Point as Point3, Mesh};
 use crate::renderer::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat};
 use crossterm::{cursor, QueueableCommand};
 use std::cmp::{Ordering, min, max};
@@ -36,7 +36,7 @@ pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f3
 
 pub fn render_triangle(triangle: &Triangle2, pixel_array: &mut Vec<Vec<u8>>) {
     // dbg!(triangle, pixel_array.len(), pixel_array[0].len());
-    let (p1, p2, p3) = triangle.points();
+    let [p1, p2, p3] = triangle.points();
     let fill_char = triangle.fill_char;
     #[allow(non_snake_case)]
     let mut pInAscX: [&Point2; 3] = [p1, p2, p3];
