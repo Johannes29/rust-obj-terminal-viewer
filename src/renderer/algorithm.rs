@@ -18,6 +18,7 @@ pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f3
                 continue;
             },
             Some(mut triangle2) => {
+                triangle2.multiply_xyz(1., 1./char_asp_ratio, 1.);
                 triangle2.add_xyz(1.0, 1.0, 0.0);
                 triangle2.multiply_xyz(0.5, 0.5, 1.0);
                 triangle2.multiply_xyz(
@@ -34,7 +35,7 @@ pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f3
 }
 
 pub fn render_triangle(triangle: &Triangle2, pixel_array: &mut Vec<Vec<u8>>) {
-    dbg!(triangle, pixel_array.len(), pixel_array[0].len());
+    // dbg!(triangle, pixel_array.len(), pixel_array[0].len());
     let (p1, p2, p3) = triangle.points();
     let fill_char = triangle.fill_char;
     #[allow(non_snake_case)]

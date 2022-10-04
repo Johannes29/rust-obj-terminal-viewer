@@ -68,7 +68,7 @@ pub fn persp_proj_mat(
     // dbg!(v, a, n, f);
     [
         [1./(a*(v/2.).tan()), 0., 0., 0.],
-        [0., 1./((v/ 0.2).tan()), 0., 0.],
+        [0., 1./((v/ 2.).tan()), 0., 0.],
         [0., 0., f/(f-n), -f*n/(f-n)],
         [0., 0., 1., 0.]
     ]
@@ -96,7 +96,7 @@ pub fn triangle3d_to_screen_space_triangle(
         // let new_point = pp_matrix
         //    .multiply(pos.to_matrix4x1())
         //     .to_vec3();
-        // dbg!(pos, pos_matrix, new_pos_matrix, new_point);
+        // dbg!(pp_matrix, pos, pos_matrix, new_pos_matrix, new_point);
         if new_point[0].abs() > 1. || new_point[1].abs() > 1. {
             points_outside_viewspace += 1;
         }
