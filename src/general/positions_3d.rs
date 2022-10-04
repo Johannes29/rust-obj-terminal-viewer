@@ -38,6 +38,14 @@ impl Point {
         }
     }
 
+    pub fn relative_to(&self, point: &Point) -> Point {
+        Point {
+            x: self.x - point.x,
+            y: self.y - point.y,
+            z: self.z - point.z,
+        }
+    }
+
     pub fn to_2d(&self) -> Point2 {
         Point2 {
             x: self.x,

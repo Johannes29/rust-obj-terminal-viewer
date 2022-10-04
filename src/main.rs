@@ -17,7 +17,7 @@ fn main() {
     let mesh = Mesh {
     triangles: vec![
         Triangle {
-            p1: Point3 { x: -2.0, y: -1.0, z: 4.0 },
+            p1: Point3 { x: -2.0, y: -1.0, z: 8.0 },
             p3: Point3 { x: 0.0, y: 0.0, z: 4.0 },
             p2: Point3 { x: 1.0, y: -1.0, z: 4.0 },
             fill_char: b'*',
@@ -40,10 +40,16 @@ fn main() {
                 if let KeyCode::Char(char) = key_event.code {
                     match char {
                         'a' => {
-                            viewpoint.x += 1.0;
+                            viewpoint.x -= 1.0;
                         },
                         'd' => {
-                            viewpoint.x += -1.0;
+                            viewpoint.x += 1.0;
+                        },
+                        's' => {
+                            viewpoint.z -= 1.0;
+                        },
+                        'w' => {
+                            viewpoint.z += 1.0;
                         },
                         _ => (),
                     }
