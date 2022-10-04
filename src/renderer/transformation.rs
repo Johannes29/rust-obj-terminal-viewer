@@ -87,9 +87,12 @@ pub fn triangle3d_to_screen_space_triangle(
     let mut points_outside_viewspace = 0;
     let mut new_points: Vec<Point3> = Vec::new();
     for world_pos in triangle3.points() {
-        let matrix_camera_pos = world_pos.relative_to(view_point).to_matrix4x1();
+        let pos_matrix = world_pos.relative_to(view_point).to_matrix4x1();
+        if pos_matrix[2][0] < 0.00001 {
+            return None
+        }
         let new_point = pp_matrix
-           .multiply(matrix_camera_pos)
+           .multiply(pos_matrix)
             .to_vec3();
         // dbg!(pp_matrix, pos, pos_matrix, new_pos_matrix, new_point);
         if new_point[0].abs() > 1. || new_point[1].abs() > 1. {

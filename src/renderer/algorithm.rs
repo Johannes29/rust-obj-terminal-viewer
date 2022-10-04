@@ -5,7 +5,7 @@ use crossterm::{cursor, QueueableCommand};
 use std::cmp::{Ordering, min, max};
 use std::io::{Write, stdout};
 
-pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f32, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
+pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let pixel_vec_width = pixel_vec[0].len() as f32;
@@ -18,7 +18,6 @@ pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, char_asp_ratio: f3
                 continue;
             },
             Some(mut triangle2) => {
-                triangle2.multiply_xyz(1., 1./char_asp_ratio, 1.);
                 triangle2.add_xyz(1.0, 1.0, 0.0);
                 triangle2.multiply_xyz(0.5, 0.5, 1.0);
                 triangle2.multiply_xyz(

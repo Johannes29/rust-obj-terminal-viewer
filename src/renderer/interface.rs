@@ -13,7 +13,6 @@ pub struct Renderer {
     vertical_fov: f32,
     pub view_point: Point3,
     pub mesh: Mesh,
-    char_asp_ratio: f32,
     pub frame_time: Duration,
     pub pixel_vec: Vec<Vec<u8>>,
     pub prev_pixel_vec: Vec<Vec<u8>>,
@@ -35,14 +34,15 @@ impl Renderer {
         let frame_time = Duration::from_secs_f32(1.0 / fps);
         let angle_rad = (height as f32 / width as f32).atan();
         let horizontal_fov = fov * angle_rad.cos();
-        let vertical_fov = fov * angle_rad.sin();
+        let vertical_fov = fov * angle_rad.sin() * char_asp_ratio;
         let view_point = Point3 { x: 0.0, y: 0.0, z: 0.0 };
         let near = 0.1;
         let far = 100.;
 
+        // TODO why not just write the values below here, and not declare variables?
         Renderer {
-            width, height, horizontal_fov, vertical_fov, char_asp_ratio,
-            view_point, pixel_vec, prev_pixel_vec, mesh, frame_time, near, far
+            width, height, horizontal_fov, vertical_fov, view_point,
+            pixel_vec, prev_pixel_vec, mesh, frame_time, near, far
         }
     }
 
@@ -54,7 +54,7 @@ impl Renderer {
 
     fn render_frame(&mut self) {
         self.clear_pixel_vec();
-        render_mesh(&self.mesh, &mut self.pixel_vec, self.char_asp_ratio, &self.view_point, self.horizontal_fov, self.vertical_fov, self.near, self.far);
+        render_mesh(&self.mesh, &mut self.pixel_vec, &self.view_point, self.horizontal_fov, self.vertical_fov, self.near, self.far);
         draw_pixel_array(&self.pixel_vec, &self.prev_pixel_vec);
 
         self.prev_pixel_vec = self.pixel_vec.clone();

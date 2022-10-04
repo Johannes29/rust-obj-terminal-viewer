@@ -47,18 +47,6 @@ impl Triangle {
     pub fn points(&self) -> [&Point; 3] {
         [&self.p1, &self.p2, &self.p3]
     }
-    
-    pub fn multiply_xy(&mut self, x: f32, y: f32) {
-        self.p1 = Point {x: self.p1.x * x, y: self.p1.y * y};
-        self.p2 = Point {x: self.p2.x * x, y: self.p2.y * y};
-        self.p3 = Point {x: self.p3.x * x, y: self.p3.y * y};
-    }
-
-    pub fn add_xy(&mut self, x: f32, y: f32) {
-        self.p1 = Point {x: self.p1.x + x, y: self.p1.y + y};
-        self.p2 = Point {x: self.p2.x + x, y: self.p2.y + y};
-        self.p3 = Point {x: self.p3.x + x, y: self.p3.y + y};
-    }
 }
 
 pub fn get_k(p1: &Point, p2: &Point) -> f32 {
