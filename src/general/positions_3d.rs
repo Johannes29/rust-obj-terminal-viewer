@@ -8,7 +8,7 @@ pub struct Point {
     pub z: f32,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Mesh {
     pub triangles: Vec<Triangle>,
 }
@@ -26,12 +26,23 @@ pub struct Triangle {
 pub struct Degrees(pub f32);
 
 impl Point {
-    pub fn from(array: [f32; 3]) -> Self {
+    pub fn from_arr(array: [f32; 3]) -> Self {
         Point {
             x: array[0],
             y: array[1],
             z: array[2],
         }
+    }
+
+    pub fn from_vec(array: Vec<f32>) -> Option<Self> {
+        if array.len() < 3 {
+            return None
+        }
+        Some(Point {
+            x: array[0],
+            y: array[1],
+            z: array[2],
+        })
     }
 
     pub fn relative_to(&self, point: &Point) -> Point {

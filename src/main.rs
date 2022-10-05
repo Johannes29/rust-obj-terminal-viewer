@@ -6,6 +6,7 @@ use general::positions_3d::Point as Point3;
 use general::positions_3d::Mesh;
 use general::positions_3d::Triangle;
 use renderer::interface::{Renderer, ShouldExit};
+use renderer::obj_parser::parse_obj;
 
 use std::vec;
 use crossterm::event::Event;
@@ -16,21 +17,7 @@ use crossterm::terminal;
 fn main() {
     let terminal_size = terminal::size().unwrap();
     let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 70.0, vec![b' ', b'.', b'*', b'#']);
-    let mesh = Mesh {
-    triangles: vec![
-        Triangle {
-            p1: Point3 { x: -1.0, y: 0.0, z: 3.0 },
-            p3: Point3 { x: -1.0, y: 1.0, z: 4.0 },
-            p2: Point3 { x: -1.0, y: 0.0, z: 5.0 },
-            fill_char: b'*',
-        },
-        Triangle {
-            p1: Point3 { x: 1.0, y: 0.0, z: 3.0 },
-            p3: Point3 { x: 1.0, y: -1.0, z: 4.0 },
-            p2: Point3 { x: 1.0, y: 0.0, z: 5.0 },
-            fill_char: b'*',
-        }
-    ]};
+    let mesh = parse_obj("hourglass.obj");
     renderer.mesh = mesh;
 
     let frame_loop = |renderer_todo: &mut Renderer, _events: Vec<Event>| -> ShouldExit {

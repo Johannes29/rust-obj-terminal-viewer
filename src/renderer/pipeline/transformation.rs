@@ -99,7 +99,7 @@ pub fn triangle3d_to_screen_space_triangle(
             points_outside_viewspace += 1;
         }
 
-        new_points.push(Point3::from(new_point));
+        new_points.push(Point3::from_arr(new_point));
     }
 
     if points_outside_viewspace >= 3 {
