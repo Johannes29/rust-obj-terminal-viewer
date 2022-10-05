@@ -41,12 +41,11 @@ pub fn parse_obj(file_path: &str) -> Mesh {
                         if point_indices.len() == argument_strings.len() {
                             // TODO support negative indices
                             // TODO cloning is not optimal for performance
-                            let triangle = Triangle3 {
-                                p1: points[point_indices[0] - 1].clone(),
-                                p2: points[point_indices[1] - 1].clone(),
-                                p3: points[point_indices[2] - 1].clone(),
-                                fill_char: b'*'
-                            };
+                            let triangle = Triangle3::from_arr([
+                                points[point_indices[0] - 1].clone(),
+                                points[point_indices[1] - 1].clone(),
+                                points[point_indices[2] - 1].clone(),
+                            ]);
                             mesh.triangles.push(triangle);
                         }
                     },

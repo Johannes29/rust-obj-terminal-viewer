@@ -13,13 +13,12 @@ pub struct Mesh {
     pub triangles: Vec<Triangle>,
 }
 
-// TODO remove unused fill_char
 #[derive(Clone, Debug)]
 pub struct Triangle {
     pub p1: Point,
     pub p2: Point,
     pub p3: Point,
-    pub fill_char: u8,
+    pub normal: Point,
 }
 
 #[derive(Debug)]
@@ -66,16 +65,26 @@ impl Triangle {
         [&self.p1, &self.p2, &self.p3]
     }
 
-    pub fn from_arr(array: [Point; 3], fill_char: u8) -> Self {
+    // the last element in the array should be the normal
+    pub fn from_arr_n(array: [Point; 4]) -> Self {
         Triangle {
             p1: array[0].clone(),
             p2: array[1].clone(),
             p3: array[2].clone(),
-            fill_char
+            normal: array[3].clone()
         }
     }
 
-    pub fn from_vec(array: Vec<Point>, fill_char: u8) -> Option<Self> {
+    pub fn from_arr(array: [Point; 3]) -> Self {
+        Triangle {
+            p1: array[0].clone(),
+            p2: array[1].clone(),
+            p3: array[2].clone(),
+            normal: Triangle::get_normal(array)
+        }
+    }
+
+    pub fn from_vec(array: Vec<Point>) -> Option<Self> {
         if array.len() < 3 {
             return None
         }
@@ -83,7 +92,7 @@ impl Triangle {
             p1: array[0].clone(),
             p2: array[1].clone(),
             p3: array[2].clone(),
-            fill_char
+            normal: Triangle::get_normal([array[0].clone(), array[1].clone(), array[2].clone()])
         })
     }
 
@@ -104,8 +113,21 @@ impl Triangle {
             p1: self.p1.to_2d(),
             p2: self.p2.to_2d(),
             p3: self.p3.to_2d(),
-            fill_char: self.fill_char
         }
+    }
+    
+    fn get_normal(points: [Point; 3]) -> Point {
+        let a = points[1].relative_to(&points[0]);
+        let b = points[2].relative_to(&points[0]);
+        cross_product(a, b)
+    }
+}
+
+fn cross_product(a: Point, b: Point) -> Point {
+    Point {
+        x: (a.y * b.z - b.y * a.z),
+        y: (a.x * b.z - b.x * a.z),
+        z: (a.x * b.y - b.x * a.y)
     }
 }
 
