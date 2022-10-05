@@ -41,10 +41,9 @@ pub fn image_buffer_to_char_buffer(image_buffer: &Vec<Vec<f32>>, char_buffer: &m
     for i in 0..(image_buffer.len()) {
         for j in 0..(image_buffer[0].len()) {
             let value = image_buffer[i][j];
-            let char_index = (value * (chars.len() as f32) - 1.0).ceil() as usize;
-            if char_index > char_buffer.len() - 1 {
-                panic!("char index is too big");
-            }
+            let char_index = ((value * (chars.len() as f32) - 1.0)
+                .ceil() as usize)
+                .clamp(0, char_buffer.len() - 1);
 
             char_buffer[i][j] = chars[char_index];
         }
