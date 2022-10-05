@@ -123,7 +123,11 @@ impl Triangle {
     }
 }
 
-fn cross_product(a: Point, b: Point) -> Point {
+pub fn dot_product(a: &Point, b: &Point) -> f32 {
+    a.x * b.x + a.y * b.y + a.z * b.z
+}
+
+pub fn cross_product(a: Point, b: Point) -> Point {
     Point {
         x: (a.y * b.z - b.y * a.z),
         y: (a.x * b.z - b.x * a.z),
@@ -137,4 +141,8 @@ pub fn distance(p1: &Point, p2: &Point) -> f32 {
     let dz = p1.z - p2.z;
 
     (dx.powi(2) + dy.powi(2) + dz.powi(2)).sqrt()
+}
+
+pub fn distance_from_origo(point: &Point) -> f32 {
+    (point.x.powi(2) + point.y.powi(2) + point.z.powi(2)).sqrt()
 }

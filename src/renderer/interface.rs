@@ -20,6 +20,7 @@ pub struct Renderer {
     pub prev_char_buffer: Vec<Vec<u8>>,
     image_buffer: Vec<Vec<f32>>,
     depth_buffer: Vec<Vec<f32>>,
+    pub light_direction: Point3,
     pub near: f32,
     pub far: f32,
 }
@@ -42,15 +43,20 @@ impl Renderer {
         let angle_rad = (height as f32 / width as f32).atan();
         let horizontal_fov = fov * angle_rad.cos();
         let vertical_fov = fov * angle_rad.sin() * char_asp_ratio;
-        let view_point = Point3 { x: 0.0, y: 0.0, z: 0.0 };
+        let view_point = Point3 { x: 0.0, y: 0.0, z: -10.0 };
         let chars = brightness_chars;
+        let light_direction = Point3 {
+            x: -0.5,
+            y: 0.5,
+            z: 0.5
+        };
         let near = 0.1;
         let far = 100.;
 
         // TODO why not just write the values below here, and not declare variables?
         Renderer {
             width, height, horizontal_fov, vertical_fov, view_point, chars, char_buffer,
-            prev_char_buffer, image_buffer, depth_buffer, mesh, frame_time, near, far
+            prev_char_buffer, image_buffer, depth_buffer, mesh, frame_time, light_direction, near, far
         }
     }
 
@@ -64,7 +70,7 @@ impl Renderer {
     fn render_frame(&mut self) {
         self.clear_image_buffer();
         self.clear_depth_buffer();
-        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, self.horizontal_fov, self.vertical_fov, self.near, self.far);
+        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, &self.light_direction, self.horizontal_fov, self.vertical_fov, self.near, self.far);
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
         draw_char_buffer(&self.char_buffer, &self.prev_char_buffer);
 

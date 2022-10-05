@@ -6,7 +6,7 @@ pub fn parse_obj(file_path: &str) -> Mesh {
     let mut points = Vec::new();
     let mut mesh = Mesh { triangles: Vec::new() };
 
-    if let Ok(lines) = read_lines("./hourglass.obj") {
+    if let Ok(lines) = read_lines(file_path) {
         for line in lines {
             if let Ok(line) = line {
                 let space_separated_strings: Vec<&str> = line.split(' ').collect();

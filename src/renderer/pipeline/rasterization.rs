@@ -1,10 +1,10 @@
 use crate::general::positions_2d::{Point as Point2, get_k, get_linear_function};
-use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh};
+use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh, dot_product, distance_from_origo};
 use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat};
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
-pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
+pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, view_point: &Point3, light_direction: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let char_buffer_width = image_buffer[0].len() as f32;
@@ -25,14 +25,17 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
                     1.0
                 );
 
-                render_triangle(&triangle, image_buffer, depth_buffer);
+                let light_intensity = dot_product(&triangle.normal, light_direction)
+                    / (distance_from_origo(&triangle.normal) * distance_from_origo(light_direction));
+
+                render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
             },
         }
         
     }
 }
 
-pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>) {
+pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, light_intensity: Option<f32>) {
     let triangle2 = triangle.to_2d();
     // dbg!(&triangle2);
     if !triangle2.has_area() {
@@ -60,6 +63,8 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, de
         panic!("Impossible!");
     };
 
+    let mut skipped_frags = 0;
+
     // fill in the correct pixels
     for i in 0..(start_y_vals.len()) {
         let start_y = start_y_vals[i];
@@ -82,10 +87,18 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, de
             if frag_depth < depth_buffer[y][x] {
                 depth_buffer[y][x] = frag_depth;
                 // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
-                pixel_array[y][x] = fragment_shader(triangle);
+                if let Some(light_intensity) = light_intensity {
+                    pixel_array[y][x] = light_intensity;
+                } else {
+                    pixel_array[y][x] = fragment_shader(triangle);
+                }
+            } else {
+                skipped_frags += 1;
             }
         }
     }
+
+    print!("{},", skipped_frags)
 }
 
 pub fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point2) -> (Vec<&'a Point2>, Vec<&'a Point2>) {
