@@ -1,0 +1,7 @@
+ - Switch 'fill_char' triangle field to 'normal', which could just be a Point (vector)
+ - Calculate normals for each triange
+ - Add lighting direction field to renderer struct, and parameter to new function
+ - Use lighting direction and triange normal to calculate light intensity per triange, not per fragment
+ - Import .obj data, only vertex positions at first
+ - Add spinning effect
+ - Add mouse controls

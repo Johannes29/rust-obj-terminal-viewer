@@ -81,6 +81,7 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, de
             let frag_depth: f32 = triangle.points().map(|p| p.z).iter().sum::<f32>() / 3.0;
             if frag_depth < depth_buffer[y][x] {
                 depth_buffer[y][x] = frag_depth;
+                // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
                 pixel_array[y][x] = fragment_shader(triangle);
             }
         }
