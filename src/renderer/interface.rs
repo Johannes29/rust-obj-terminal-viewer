@@ -19,6 +19,7 @@ pub struct Renderer {
     pub char_buffer: Vec<Vec<u8>>,
     pub prev_char_buffer: Vec<Vec<u8>>,
     image_buffer: Vec<Vec<f32>>,
+    depth_buffer: Vec<Vec<f32>>,
     pub near: f32,
     pub far: f32,
 }
@@ -36,6 +37,7 @@ impl Renderer {
         let char_buffer = Renderer::get_empty_char_buffer(width, height);
         let prev_char_buffer = char_buffer.clone();
         let image_buffer = Renderer::get_empty_image_buffer(width, height);
+        let depth_buffer = Renderer::get_empty_depth_buffer(width, height);
         let frame_time = Duration::from_secs_f32(1.0 / fps);
         let angle_rad = (height as f32 / width as f32).atan();
         let horizontal_fov = fov * angle_rad.cos();
@@ -47,8 +49,8 @@ impl Renderer {
 
         // TODO why not just write the values below here, and not declare variables?
         Renderer {
-            width, height, horizontal_fov, vertical_fov, view_point, chars,
-            char_buffer, prev_char_buffer, image_buffer, mesh, frame_time, near, far
+            width, height, horizontal_fov, vertical_fov, view_point, chars, char_buffer,
+            prev_char_buffer, image_buffer, depth_buffer, mesh, frame_time, near, far
         }
     }
 
@@ -61,7 +63,8 @@ impl Renderer {
 
     fn render_frame(&mut self) {
         self.clear_image_buffer();
-        render_mesh(&self.mesh, &mut self.image_buffer, &self.view_point, self.horizontal_fov, self.vertical_fov, self.near, self.far);
+        self.clear_depth_buffer();
+        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, self.horizontal_fov, self.vertical_fov, self.near, self.far);
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
         draw_char_buffer(&self.char_buffer, &self.prev_char_buffer);
 
@@ -108,11 +111,19 @@ impl Renderer {
         vec![vec![b' '; width as usize]; height as usize]
     }
 
+    fn get_empty_image_buffer(width: u16, height: u16) -> Vec<Vec<f32>> {
+        vec![vec![0.0; width as usize]; height as usize]
+    }
+    
+    fn get_empty_depth_buffer(width: u16, height: u16) -> Vec<Vec<f32>> {
+        vec![vec![f32::MAX; width as usize]; height as usize]
+    }
+
     fn clear_image_buffer(&mut self) {
         self.image_buffer = Renderer::get_empty_image_buffer(self.width, self.height);
     }
 
-    fn get_empty_image_buffer(width: u16, height: u16) -> Vec<Vec<f32>> {
-        vec![vec![0.0; width as usize]; height as usize]
+    fn clear_depth_buffer(&mut self) {
+        self.depth_buffer = Renderer::get_empty_depth_buffer(self.width, self.height);
     }
 }

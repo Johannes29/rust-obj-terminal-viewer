@@ -4,7 +4,7 @@ use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat}
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
-pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
+pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let char_buffer_width = image_buffer[0].len() as f32;
@@ -25,14 +25,14 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, view_point: &P
                     1.0
                 );
 
-                render_triangle(&triangle, image_buffer);
+                render_triangle(&triangle, image_buffer, depth_buffer);
             },
         }
         
     }
 }
 
-pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>) {
+pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>) {
     let triangle2 = triangle.to_2d();
     // dbg!(&triangle2);
     if !triangle2.has_area() {
@@ -78,8 +78,11 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>) {
                 Option::None => break,
                 _ => (),
             }
-
-            pixel_array[y][x] = fragment_shader(triangle);
+            let frag_depth: f32 = triangle.points().map(|p| p.z).iter().sum::<f32>() / 3.0;
+            if frag_depth < depth_buffer[y][x] {
+                depth_buffer[y][x] = frag_depth;
+                pixel_array[y][x] = fragment_shader(triangle);
+            }
         }
     }
 }
