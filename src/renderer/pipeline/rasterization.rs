@@ -28,10 +28,12 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
                 let light_intensity = dot_product(&triangle.normal, light_direction)
                     / (distance_from_origo(&triangle.normal) * distance_from_origo(light_direction));
 
-                render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
+                // TODO will not work if camera can rotate
+                if triangle.normal.z <= 0.0 {
+                    render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
+                }
             },
         }
-        
     }
 }
 
@@ -98,7 +100,7 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, de
         }
     }
 
-    print!("{},", skipped_frags)
+    // print!("{},", skipped_frags)
 }
 
 pub fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point2) -> (Vec<&'a Point2>, Vec<&'a Point2>) {

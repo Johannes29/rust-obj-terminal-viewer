@@ -10,7 +10,6 @@ pub fn parse_obj(file_path: &str) -> Mesh {
         for line in lines {
             if let Ok(line) = line {
                 let space_separated_strings: Vec<&str> = line.split(' ').collect();
-                println!("{}", line);
                 let command_string = space_separated_strings[0];
                 let argument_strings = &space_separated_strings[1..];
                 match command_string {
