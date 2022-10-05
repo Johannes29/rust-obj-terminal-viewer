@@ -13,6 +13,7 @@ pub struct Mesh {
     pub triangles: Vec<Triangle>,
 }
 
+// TODO remove unused fill_char
 #[derive(Clone, Debug)]
 pub struct Triangle {
     pub p1: Point,

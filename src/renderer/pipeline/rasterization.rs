@@ -1,44 +1,46 @@
-use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function};
-use crate::general::positions_3d::{Point as Point3, Mesh};
-use crate::renderer::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat};
-use crossterm::{cursor, QueueableCommand};
+use crate::general::positions_2d::{Point as Point2, get_k, get_linear_function};
+use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh};
+use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat};
+use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
-use std::io::{Write, stdout};
 
-pub fn render_mesh(mesh: &Mesh, pixel_vec: &mut Vec<Vec<u8>>, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
+pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
-    let pixel_vec_width = pixel_vec[0].len() as f32;
-    let pixel_vec_height = pixel_vec.len() as f32;
-    for triangle3 in &mesh.triangles {
-        let triangle2 = triangle3d_to_screen_space_triangle(triangle3, persp_proj_mat, view_point);
+    let char_buffer_width = image_buffer[0].len() as f32;
+    let char_buffer_height = image_buffer.len() as f32;
+    for world_triangle in &mesh.triangles {
+        let triangle = triangle3d_to_screen_space_triangle(world_triangle, persp_proj_mat, view_point);
 
-        match triangle2 {
+        match triangle {
             None => {
                 continue;
             },
-            Some(mut triangle2) => {
-                triangle2.add_xyz(1.0, 1.0, 0.0);
-                triangle2.multiply_xyz(0.5, 0.5, 1.0);
-                triangle2.multiply_xyz(
-                    pixel_vec_width,
-                    pixel_vec_height,
+            Some(mut triangle) => {
+                triangle.add_xyz(1.0, 1.0, 0.0);
+                triangle.multiply_xyz(0.5, 0.5, 1.0);
+                triangle.multiply_xyz(
+                    char_buffer_width,
+                    char_buffer_height,
                     1.0
                 );
 
-                render_triangle(&triangle2.to_2d(), pixel_vec);
+                render_triangle(&triangle, image_buffer);
             },
         }
         
     }
 }
 
-pub fn render_triangle(triangle: &Triangle2, pixel_array: &mut Vec<Vec<u8>>) {
-    // TODO check if triangle is a valid triangle, ie that its area is greater than 0. 
+pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>) {
+    let triangle2 = triangle.to_2d();
+    // dbg!(&triangle2);
+    if !triangle2.has_area() {
+        return
+    }
 
     // dbg!(triangle, pixel_array.len(), pixel_array[0].len());
-    let [p1, p2, p3] = triangle.points();
-    let fill_char = triangle.fill_char;
+    let [p1, p2, p3] = triangle2.points();
     #[allow(non_snake_case)]
     let mut pInAscX: [&Point2; 3] = [p1, p2, p3];
     // TODO handle possible None type, dont unwrap
@@ -77,7 +79,7 @@ pub fn render_triangle(triangle: &Triangle2, pixel_array: &mut Vec<Vec<u8>>) {
                 _ => (),
             }
 
-            pixel_array[y][x] = fill_char;
+            pixel_array[y][x] = fragment_shader(triangle);
         }
     }
 }
@@ -124,37 +126,6 @@ pub fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point
     bottom_edge.sort_by(|point_a, point_b| (point_a.x).partial_cmp(&point_b.x).unwrap());
 
     (top_edge, bottom_edge)
-}
-
-pub fn draw_pixel_array(pixel_vec: &Vec<Vec<u8>>, prev_pixel_vec: &Vec<Vec<u8>>) {
-    let mut stdout = stdout();
-
-    if pixel_vec.is_empty() || prev_pixel_vec.is_empty() || pixel_vec[0].is_empty() || prev_pixel_vec[0].is_empty()
-        || pixel_vec.len() != prev_pixel_vec.len() || pixel_vec[0].len() != prev_pixel_vec[0].len() {
-        panic!("pixel vectors have different sizes");
-    }
-    let mut chars_to_change: Vec<(u8, usize, usize)> = Vec::new();
-    for (row_i, row) in pixel_vec.iter().enumerate() {
-        for (char_i, char) in row.iter().enumerate() {
-            let prev_char = prev_pixel_vec[row_i][char_i];
-
-            if char != &prev_char {
-                chars_to_change.push((*char, row_i, char_i))
-            }
-        }
-    }
-
-    stdout.queue(cursor::SavePosition).unwrap();
-
-    for (new_char, row_i, char_i) in chars_to_change {
-        // let char_number = new_char.to_digit(10).unwrap() as u8;
-
-        stdout.queue(cursor::MoveTo(char_i as u16 + 1, row_i as u16)).unwrap();
-        stdout.write(&[0x08, new_char]).unwrap();
-    }
-
-    stdout.queue(cursor::RestorePosition).unwrap();
-    stdout.flush().unwrap();
 }
 
 pub fn get_y_values_from_edge(edge: Vec<&Point2>, max_x_i: usize, max_y_i: usize) -> Vec<usize> {

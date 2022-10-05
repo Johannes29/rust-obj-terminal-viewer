@@ -12,16 +12,22 @@ use crossterm::event::Event;
 use crossterm::terminal;
 
 // x is to the right, y is down, z is forwards
+// TODO positive y should be up
 fn main() {
     let terminal_size = terminal::size().unwrap();
-    let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 70.0);
+    let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 70.0, vec![b' ', b'.', b'*', b'#']);
     let mesh = Mesh {
-    // TODO positive y should be up
     triangles: vec![
         Triangle {
-            p1: Point3 { x: -2.0, y: -1.0, z: 3.0 },
-            p3: Point3 { x: 0.0, y: 0.0, z: 3.0 },
-            p2: Point3 { x: 1.0, y: -1.0, z: 3.0 },
+            p1: Point3 { x: -1.0, y: 0.0, z: 3.0 },
+            p3: Point3 { x: -1.0, y: 1.0, z: 4.0 },
+            p2: Point3 { x: -1.0, y: 0.0, z: 5.0 },
+            fill_char: b'*',
+        },
+        Triangle {
+            p1: Point3 { x: 1.0, y: 0.0, z: 3.0 },
+            p3: Point3 { x: 1.0, y: -1.0, z: 4.0 },
+            p2: Point3 { x: 1.0, y: 0.0, z: 5.0 },
             fill_char: b'*',
         }
     ]};
@@ -52,6 +58,12 @@ fn main() {
                         },
                         'w' => {
                             viewpoint.z += 1.0;
+                        },
+                        'r' => {
+                            viewpoint.y -= 1.0;
+                        },
+                        'f' => {
+                            viewpoint.y += 1.0;
                         },
                         _ => (),
                     }

@@ -47,6 +47,13 @@ impl Triangle {
     pub fn points(&self) -> [&Point; 3] {
         [&self.p1, &self.p2, &self.p3]
     }
+
+    pub fn has_area(&self) -> bool {
+        !(self.p1 == self.p2 || self.p2 == self.p3 || self.p3 == self.p1
+            || (self.p1.x == self.p2.x && self.p2.x == self.p3.x)
+            || (self.p1.y == self.p2.y && self.p2.y == self.p3.y))
+
+    }
 }
 
 pub fn get_k(p1: &Point, p2: &Point) -> f32 {
