@@ -4,3 +4,6 @@
  - Use lighting direction and triange normal to calculate light intensity per triange, not per fragment
  - Add spinning effect
  - Add mouse controls
+
+***bugs***
+ - seems to take the absolute value of z-values, so that z: -3 becomes 3

@@ -9,13 +9,12 @@ use std::vec;
 use crossterm::event::Event;
 use crossterm::terminal;
 
-// x is to the right, y is down, z is forwards
+// +x is to the right, +y is up, +z is forwards
 // TODO positive y should be up
 fn main() {
     let terminal_size = terminal::size().unwrap();
     let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 90.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
-    let mesh = parse_obj("./objects/cube.obj");
-    dbg!(&mesh);
+    let mesh = parse_obj("./objects/torus_and_cone.obj");
     renderer.mesh = mesh;
 
     let frame_loop = |renderer_todo: &mut Renderer, _events: Vec<Event>| -> ShouldExit {
@@ -38,10 +37,10 @@ fn main() {
                         'w' => {
                             viewpoint.z += 1.0;
                         },
-                        'r' => {
+                        'f' => {
                             viewpoint.y -= 1.0;
                         },
-                        'f' => {
+                        'r' => {
                             viewpoint.y += 1.0;
                         },
                         _ => (),
