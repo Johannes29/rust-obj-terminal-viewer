@@ -48,8 +48,8 @@ impl Renderer {
         let light_direction = Point3 {
             x: -0.5,
             y: 0.5,
-            z: -0.5
-        };
+            z: 0.5
+        }.normalized();
         let near = 0.1;
         let far = 100.;
 

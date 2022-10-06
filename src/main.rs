@@ -13,8 +13,8 @@ use crossterm::terminal;
 // TODO positive y should be up
 fn main() {
     let terminal_size = terminal::size().unwrap();
-    let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 70.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
-    let mesh = parse_obj("./objects/hourglass.obj");
+    let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 90.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
+    let mesh = parse_obj("./objects/cube.obj");
     dbg!(&mesh);
     renderer.mesh = mesh;
 

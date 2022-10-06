@@ -4,6 +4,7 @@ use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat}
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
+// TODO this is not really rasterization... maybe move to another file?
 pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, view_point: &Point3, light_direction: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
@@ -25,8 +26,8 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
                     1.0
                 );
 
-                let light_intensity = dot_product(&triangle.normal, light_direction)
-                    / (distance_from_origo(&triangle.normal) * distance_from_origo(light_direction));
+                // assumes that both normal and light direction are unit vectors
+                let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
                 // TODO will not work if camera can rotate
                 if triangle.normal.z <= 0.0 {

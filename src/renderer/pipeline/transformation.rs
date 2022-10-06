@@ -105,6 +105,6 @@ pub fn triangle3d_to_screen_space_triangle(
     if points_outside_viewspace >= 3 {
         None
     } else {
-        Some(Triangle3::from_vec(new_points).unwrap())
+        Some(Triangle3::from_vec_n(new_points, triangle3.normal.clone()).unwrap())
     }
 }
