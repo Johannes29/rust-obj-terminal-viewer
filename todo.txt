@@ -6,4 +6,4 @@
  - Add mouse controls
 
 ***bugs***
- - seems to take the absolute value of z-values, so that z: -3 becomes 3
+ - rect in torus_and_cone.obj starts to dissapear when viewpoint is only at z=-2

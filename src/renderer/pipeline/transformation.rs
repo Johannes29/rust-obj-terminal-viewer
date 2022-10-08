@@ -107,11 +107,10 @@ pub fn triangle_intersects_screen_space(triangle: &Triangle3) -> bool {
 pub fn triangle3d_to_screen_space_triangle(
     triangle3: &Triangle3,
     pp_matrix: Matrix4x4,
-    view_point: &Point3
 ) -> Triangle3 {
     let mut new_points: Vec<Point3> = Vec::new();
-    for world_pos in triangle3.points() {
-        let pos_matrix = world_pos.relative_to(view_point).to_matrix4x1();
+    for pos in triangle3.points() {
+        let pos_matrix = pos.to_matrix4x1();
         let new_point = pp_matrix
            .multiply(pos_matrix)
             .to_vec3();

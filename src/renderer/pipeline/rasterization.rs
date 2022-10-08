@@ -11,7 +11,19 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
     let char_buffer_width = image_buffer[0].len() as f32;
     let char_buffer_height = image_buffer.len() as f32;
     for world_triangle in &mesh.triangles {
-        let triangle = triangle3d_to_screen_space_triangle(world_triangle, persp_proj_mat, view_point);
+        let mut camera_positions = Vec::new();
+        for world_pos in world_triangle.points() {
+            camera_positions.push(world_pos.relative_to(view_point))
+        }
+
+        // TODO rotate camera here
+
+        let camera_triangle = Triangle3::from_vec_n(camera_positions, world_triangle.normal.clone()).unwrap();
+        // TODO should use or instead (||)?
+        if camera_triangle.p1.z <= 0.0 && camera_triangle.p2.z <= 0.0 && camera_triangle.p3.z <= 0.0 {
+            continue;
+        }
+        let triangle = triangle3d_to_screen_space_triangle(&camera_triangle, persp_proj_mat);
 
         match triangle_intersects_screen_space(&triangle) {
             false => {
@@ -32,7 +44,7 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
                 // TODO will not work if camera can rotate
-                if triangle.normal.z <= 0.0 && triangle.p1.z > 0.0 && triangle.p2.z > 0.0 && triangle.p3.z > 0.0 {
+                if triangle.normal.z <= 0.0 {
                     // dbg!(&triangle);
                     render_triangle(&new_triangle, image_buffer, depth_buffer, Some(light_intensity));
                 }
