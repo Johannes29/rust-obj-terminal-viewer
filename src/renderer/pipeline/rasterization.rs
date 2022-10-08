@@ -1,6 +1,6 @@
 use crate::general::positions_2d::{Point as Point2, get_k, get_linear_function};
 use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh, dot_product};
-use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat};
+use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat, triangle_intersects_screen_space};
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
@@ -13,14 +13,16 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
     for world_triangle in &mesh.triangles {
         let triangle = triangle3d_to_screen_space_triangle(world_triangle, persp_proj_mat, view_point);
 
-        match triangle {
-            None => {
+        match triangle_intersects_screen_space(&triangle) {
+            false => {
                 continue;
             },
-            Some(mut triangle) => {
-                triangle.add_xyz(1.0, 1.0, 0.0);
-                triangle.multiply_xyz(0.5, 0.5, 1.0);
-                triangle.multiply_xyz(
+            true => {
+                let mut new_triangle = triangle.clone();
+
+                new_triangle.add_xyz(1.0, 1.0, 0.0);
+                new_triangle.multiply_xyz(0.5, 0.5, 1.0);
+                new_triangle.multiply_xyz(
                     char_buffer_width,
                     char_buffer_height,
                     1.0
@@ -30,8 +32,9 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
                 // TODO will not work if camera can rotate
-                if triangle.normal.z <= 0.0 {
-                    render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
+                if triangle.normal.z <= 0.0 && triangle.p1.z > 0.0 && triangle.p2.z > 0.0 && triangle.p3.z > 0.0 {
+                    // dbg!(&triangle);
+                    render_triangle(&new_triangle, image_buffer, depth_buffer, Some(light_intensity));
                 }
             },
         }
@@ -40,12 +43,10 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
 
 pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, light_intensity: Option<f32>) {
     let triangle2 = triangle.to_2d();
-    // dbg!(&triangle2);
     if !triangle2.has_area() {
         return
     }
 
-    // dbg!(triangle, pixel_array.len(), pixel_array[0].len());
     let [p1, p2, p3] = triangle2.points();
     #[allow(non_snake_case)]
     let mut pInAscX: [&Point2; 3] = [p1, p2, p3];
