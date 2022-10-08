@@ -1,5 +1,5 @@
 use crate::general::positions_2d::{Point as Point2, get_k, get_linear_function};
-use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh, dot_product, distance_from_origo};
+use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh, dot_product};
 use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat};
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
@@ -66,8 +66,6 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, de
         panic!("Impossible!");
     };
 
-    let mut skipped_frags = 0;
-
     // fill in the correct pixels
     for i in 0..(start_y_vals.len()) {
         let start_y = start_y_vals[i];
@@ -95,13 +93,9 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, de
                 } else {
                     pixel_array[y][x] = fragment_shader(triangle);
                 }
-            } else {
-                skipped_frags += 1;
             }
         }
     }
-
-    // print!("{},", skipped_frags)
 }
 
 pub fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point2) -> (Vec<&'a Point2>, Vec<&'a Point2>) {

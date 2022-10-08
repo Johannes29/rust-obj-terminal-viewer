@@ -137,9 +137,9 @@ impl Triangle {
     }
 
     pub fn add_xyz(&mut self, x: f32, y: f32, z: f32) {
-        self.p1 = Point {x: self.p1.x + x, y: self.p1.y + y, z: self.p1.z * z};
-        self.p2 = Point {x: self.p2.x + x, y: self.p2.y + y, z: self.p2.z * z};
-        self.p3 = Point {x: self.p3.x + x, y: self.p3.y + y, z: self.p3.z * z};
+        self.p1 = Point {x: self.p1.x + x, y: self.p1.y + y, z: self.p1.z + z};
+        self.p2 = Point {x: self.p2.x + x, y: self.p2.y + y, z: self.p2.z + z};
+        self.p3 = Point {x: self.p3.x + x, y: self.p3.y + y, z: self.p3.z + z};
     }
     
     pub fn multiply_xyz(&mut self, x: f32, y: f32, z: f32) {
