@@ -88,6 +88,7 @@ impl Triangle {
     // TODO the following 4 methods are inconsistent
 
     // the last element in the array should be the normal
+    #[allow(unused)]
     pub fn from_arr_n(array: [Point; 4]) -> Self {
         Triangle {
             p1: array[0].clone(),
@@ -109,6 +110,7 @@ impl Triangle {
     /**
      * Calculates normal based on the triangle vert positions in the array argument
      */
+    #[allow(unused)]
     pub fn from_vec(array: Vec<Point>) -> Option<Self> {
         if array.len() < 3 {
             return None
@@ -176,6 +178,7 @@ pub fn cross_product(a: Point, b: Point) -> Point {
     }
 }
 
+#[allow(unused)]
 pub fn distance(p1: &Point, p2: &Point) -> f32 {
     let dx = p1.x - p2.x;
     let dy = p1.y - p2.y;

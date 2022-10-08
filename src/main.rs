@@ -5,7 +5,6 @@ use crossterm::event::KeyCode;
 use renderer::interface::{Renderer, ShouldExit};
 use renderer::obj_parser::parse_obj;
 
-use std::vec;
 use crossterm::event::Event;
 use crossterm::terminal;
 

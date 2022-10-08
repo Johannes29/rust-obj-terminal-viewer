@@ -1,7 +1,6 @@
 use crate::general::positions_3d::{Mesh, Triangle as Triangle3, Point as Point3};
 use std::fs::File;
 use std::io::{self, BufRead};
-use std::thread::panicking;
 
 pub fn parse_obj(file_path: &str) -> Mesh {
     let mut points = Vec::new();
