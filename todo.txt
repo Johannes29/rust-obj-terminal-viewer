@@ -1,4 +1,5 @@
  - Add ability to rotate camera
+ - Add compatibility for quads
  - Add minimum light level, so that mesh triangles never can be completely black
  - Add mouse controls
 
