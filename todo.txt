@@ -4,3 +4,7 @@
 
 ***bugs***
  - rect in torus_and_cone.obj starts to dissapear when viewpoint is only at z=-2
+
+
+*potential improvements*
+ - add functionality to print stuff like fps and triangles being rendered to the bottom-most line
