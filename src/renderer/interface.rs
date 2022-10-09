@@ -46,7 +46,7 @@ impl Renderer {
         let view_point = Point3 { x: 0.0, y: 0.0, z: -10.0 };
         let chars = brightness_string.as_bytes().to_vec();
         let light_direction = Point3 {
-            x: -0.5,
+            x: -0.3,
             y: 0.5,
             z: 0.5
         }.normalized();

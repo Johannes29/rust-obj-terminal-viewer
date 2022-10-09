@@ -9,11 +9,10 @@ use crossterm::event::Event;
 use crossterm::terminal;
 
 // +x is to the right, +y is up, +z is forwards
-// TODO positive y should be up
 fn main() {
     let terminal_size = terminal::size().unwrap();
     let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 90.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
-    let mesh = parse_obj("./objects/Office Chair.obj");
+    let mesh = parse_obj("./objects/cube.obj");
     renderer.mesh = mesh;
 
     let frame_loop = |renderer_todo: &mut Renderer, _events: Vec<Event>| -> ShouldExit {

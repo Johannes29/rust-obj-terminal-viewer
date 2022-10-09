@@ -91,13 +91,24 @@ pub fn triangle_intersects_screen_space(triangle: &Triangle3) -> bool {
 
             let k = p1.y - p2.y / (p1.x - p2.x);
             let m = p1.y - k * p1.x;
-            // TODO is this inefficient?
-            if (-1.0..=1.0).contains(&(k*-1.0 + m))
-            || (-1.0..=1.0).contains(&(k*1.0 + m))
-            || (-1.0..=1.0).contains(&((-1.0 - m) / k))
-            || (-1.0..=1.0).contains(&((1.0 - m) / k)) {
-                return true
+            match k.is_nan() { 
+                false => {
+                    // TODOO this does not work correctly, acts like the edges of the triangle are infinite.
+                    // TODO is this inefficient?
+                    if (-1.0..=1.0).contains(&(k*-1.0 + m))
+                    || (-1.0..=1.0).contains(&(k*1.0 + m))
+                    || (-1.0..=1.0).contains(&((-1.0 - m) / k))
+                    || (-1.0..=1.0).contains(&((1.0 - m) / k)) {
+                        return true
+                    }
+                },
+                true => {
+                    if (-1.0..=1.0).contains(&k) {
+                        return true
+                    }
+                }
             }
+            
         }
     }
 
