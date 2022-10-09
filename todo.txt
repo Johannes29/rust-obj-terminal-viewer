@@ -9,3 +9,31 @@
 
 *potential improvements*
  - add functionality to print stuff like fps and triangles being rendered to the bottom-most line
+
+
+
+wrong normal when rendering cube.obj:
+
+
+ Triangle {
+            p1: Point {
+                x: -1.0,
+                y: 1.0,
+                z: -1.0,
+            },
+            p2: Point {
+                x: -1.0,
+                y: 1.0,
+                z: 1.0,
+            },
+            p3: Point {
+                x: 1.0,
+                y: 1.0,
+                z: 1.0,
+            },
+            normal: Point {
+                x: 0.0,
+                y: -1.0,
+                z: 0.0,
+            },
+        },

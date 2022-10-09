@@ -37,7 +37,7 @@ impl Point {
     }
 
     pub fn from_vec(array: Vec<f32>) -> Option<Self> {
-        if array.len() < 3 {
+        if array.len() != 3 {
             return None
         }
         Some(Point {
@@ -165,6 +165,20 @@ impl Triangle {
         
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::Point as Point3;
+// #[test]
+// fn get_normal() {
+//     let points = [
+//         Point3 { x: -1., y: -1., z: 1. },
+//         Point3 { x: -1., y: 1., z: 1. },
+//         Point3 { x: 1., y: 1., z: 1. }
+//     ];
+//     assert_eq!(result, 4);
+// }
+// }
 
 pub fn dot_product(a: &Point, b: &Point) -> f32 {
     a.x * b.x + a.y * b.y + a.z * b.z

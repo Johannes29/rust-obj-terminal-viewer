@@ -3,6 +3,7 @@ use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh,
 use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat, triangle_intersects_screen_space};
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
+use image::{GrayImage, Luma};
 
 // TODO this is not really rasterization... maybe move to another file?
 pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, view_point: &Point3, light_direction: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
@@ -10,6 +11,7 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let char_buffer_width = image_buffer[0].len() as f32;
     let char_buffer_height = image_buffer.len() as f32;
+    let mut triangle_index = 0;
     for world_triangle in &mesh.triangles {
         let mut camera_positions = Vec::new();
         for world_pos in world_triangle.points() {
@@ -47,6 +49,16 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
                 if triangle.normal.z <= 0.0 {
                     // dbg!(&triangle);
                     render_triangle(&new_triangle, image_buffer, depth_buffer, Some(light_intensity));
+                    let height = image_buffer.len() as u32;
+                    let width = image_buffer[0].len() as u32;
+                    let mut img = GrayImage::new(width, height);
+                    for x in 0..width {
+                        for y in 0..height {
+                            img.put_pixel(x, y, Luma([(image_buffer[y as usize][x as usize] * 255.0) as u8]));
+                        }
+                    }
+                    img.save(format!("frame_{}.png", triangle_index)).unwrap();
+                    triangle_index += 1;
                 }
             },
         }
