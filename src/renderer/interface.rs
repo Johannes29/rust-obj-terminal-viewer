@@ -20,6 +20,7 @@ pub struct Renderer {
     pub prev_char_buffer: Vec<Vec<u8>>,
     image_buffer: Vec<Vec<f32>>,
     depth_buffer: Vec<Vec<f32>>,
+    camera_direction: Point3,
     pub light_direction: Point3,
     pub near: f32,
     pub far: f32,
@@ -50,13 +51,18 @@ impl Renderer {
             y: 0.5,
             z: 0.5
         }.normalized();
+        let camera_direction = Point3 {
+            x: 0.,
+            y: 0.,
+            z: 1.
+        };
         let near = 0.1;
         let far = 100.;
 
         // TODO why not just write the values below here, and not declare variables?
         Renderer {
-            width, height, horizontal_fov, vertical_fov, view_point, chars, char_buffer,
-            prev_char_buffer, image_buffer, depth_buffer, mesh, frame_time, light_direction, near, far
+            width, height, horizontal_fov, vertical_fov, view_point, chars, char_buffer, prev_char_buffer,
+            image_buffer, depth_buffer, mesh, frame_time, camera_direction, light_direction, near, far
         }
     }
 

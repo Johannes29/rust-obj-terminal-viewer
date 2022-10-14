@@ -21,7 +21,9 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
         // TODO rotate camera here
 
         let camera_triangle = Triangle3::from_vec_n(camera_positions, world_triangle.normal.clone()).unwrap();
+
         // TODO should use or instead (||)?
+        // Skips triangles behind the camera
         if camera_triangle.p1.z <= 0.0 && camera_triangle.p2.z <= 0.0 && camera_triangle.p3.z <= 0.0 {
             continue;
         }
