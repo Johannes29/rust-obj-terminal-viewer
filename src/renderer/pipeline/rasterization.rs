@@ -1,13 +1,19 @@
-use crate::general::positions_2d::{Point as Point2, get_k, get_linear_function};
-use crate::general::positions_3d::{Triangle as Triangle3};
+use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function};
+use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, distance_from_origo};
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
 // TODO this is not really rasterization... maybe move to another file?
 
 
-pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, light_intensity: Option<f32>) {
-    let triangle2 = triangle.to_2d();
+pub fn render_triangle(
+    ss_triangle: &Triangle3, // screen space triangle
+    cs_triangle: &Triangle3, // camera space triangle
+    pixel_array: &mut Vec<Vec<f32>>,
+    depth_buffer: &mut Vec<Vec<f32>>,
+    light_intensity: Option<f32>
+    ) {
+    let triangle2 = ss_triangle.to_2d();
     if !triangle2.has_area() {
         return
     }
@@ -50,17 +56,63 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, de
                 Option::None => break,
                 _ => (),
             }
-            let frag_depth: f32 = triangle.points().map(|p| p.z).iter().sum::<f32>() / 3.0;
+            let point = Point2 { x: x as f32, y: y as f32 };
+            let (w1, w2) = get_barycentric_coordinates(&ss_triangle.to_2d(), &point);
+            let cs_points = cs_triangle.points();
+            // position of the current frag (pixel) in 3d camera space
+            let cs_frag_pos = Point3 {
+                x: cs_points[0].x + w1 * (cs_points[1].x - cs_points[0].x) + w2 * (cs_points[2].x - cs_points[0].x),
+                y: cs_points[0].y + w1 * (cs_points[1].y - cs_points[0].x) + w2 * (cs_points[2].y - cs_points[0].y),
+                z: cs_points[0].z + w1 * (cs_points[1].z - cs_points[0].x) + w2 * (cs_points[2].z - cs_points[0].z)
+            };
+            let frag_depth: f32 = distance_from_origo(&cs_frag_pos);
             if frag_depth < depth_buffer[y][x] {
                 depth_buffer[y][x] = frag_depth;
                 // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
                 if let Some(light_intensity) = light_intensity {
                     pixel_array[y][x] = light_intensity;
                 } else {
-                    pixel_array[y][x] = fragment_shader(triangle);
+                    pixel_array[y][x] = fragment_shader(ss_triangle, cs_triangle);
                 }
             }
         }
+    }
+}
+
+// from https://youtu.be/HYAgJN3x4GA?t=221
+fn get_barycentric_coordinates(triangle: &Triangle2, point: &Point2) -> (f32, f32) {
+    let a = triangle.points()[0];
+    let b = triangle.points()[1];
+    let c = triangle.points()[2];
+    let p = point;
+    // dbg!(a, b, c, p);
+    let w1 = a.x * (c.y - a.y) + (p.y - a.y) * (c.x - a.x) - p.x * (c.y - a.y)
+        / ((b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - a.y));
+    let w2 = p.y - a.y - w1 * (b.y - a.y) / (c.y - a.y);
+
+    (w1, w2)
+}
+
+#[cfg(test)]
+mod test_bc {
+    use crate::general::positions_2d::Triangle as Triangle2;
+    use crate::general::positions_2d::Point as Point2;
+    use crate::renderer::pipeline::rasterization::get_barycentric_coordinates;
+
+    #[test]
+    fn test_get_barycentric_coordinates() {
+        let triangle = Triangle2 {
+            p1: Point2 { x: -2.0, y: -1.0 },
+            p3: Point2 { x: 1.0, y: -1.0 },
+            p2: Point2 { x: -2.0, y: 2.0 },
+        };
+        let point = Point2 {
+            x: -0.5,
+            y: 0.5
+        };
+        let result = get_barycentric_coordinates(&triangle, &point);
+        dbg!(result);
+        assert_eq!(result, (0.5, 0.5));
     }
 }
 
