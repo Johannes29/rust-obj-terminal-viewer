@@ -2,7 +2,7 @@ use std::{time::{Duration, Instant}, io::{stdout, Write}, thread};
 use crossterm::{cursor, ExecutableCommand, terminal, event::Event};
 use crate::general::positions_3d::Point as Point3;
 use super::events::*;
-use super::pipeline::rasterization::render_mesh;
+use super::render::render_mesh;
 use super::pipeline::terminal_output::{draw_char_buffer, image_buffer_to_char_buffer};
 use crate::general::positions_3d::Mesh;
 
