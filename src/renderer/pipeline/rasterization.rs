@@ -46,7 +46,7 @@ pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: 
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
                 // TODO will not work if camera can rotate
-                if triangle.normal.z <= 0.0 {
+                if triangle.normal.z < 0.00001 {
                     // dbg!(&triangle);
                     render_triangle(&new_triangle, image_buffer, depth_buffer, Some(light_intensity));
                     let height = image_buffer.len() as u32;
