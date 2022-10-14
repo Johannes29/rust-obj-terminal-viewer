@@ -1,45 +1,17 @@
 use crate::general::positions_2d::{Point as Point2, get_k, get_linear_function};
-use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh};
-use super::transformation::{triangle3d_to_screen_space_triangle, persp_proj_mat};
+use crate::general::positions_3d::{Triangle as Triangle3};
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
-pub fn render_mesh(mesh: &Mesh, image_buffer: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, view_point: &Point3, horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) {
-    let aspect_ratio = horizontal_fov / vertical_fov;
-    let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
-    let char_buffer_width = image_buffer[0].len() as f32;
-    let char_buffer_height = image_buffer.len() as f32;
-    for world_triangle in &mesh.triangles {
-        let triangle = triangle3d_to_screen_space_triangle(world_triangle, persp_proj_mat, view_point);
+// TODO this is not really rasterization... maybe move to another file?
 
-        match triangle {
-            None => {
-                continue;
-            },
-            Some(mut triangle) => {
-                triangle.add_xyz(1.0, 1.0, 0.0);
-                triangle.multiply_xyz(0.5, 0.5, 1.0);
-                triangle.multiply_xyz(
-                    char_buffer_width,
-                    char_buffer_height,
-                    1.0
-                );
 
-                render_triangle(&triangle, image_buffer, depth_buffer);
-            },
-        }
-        
-    }
-}
-
-pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>) {
+pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, depth_buffer: &mut Vec<Vec<f32>>, light_intensity: Option<f32>) {
     let triangle2 = triangle.to_2d();
-    // dbg!(&triangle2);
     if !triangle2.has_area() {
         return
     }
 
-    // dbg!(triangle, pixel_array.len(), pixel_array[0].len());
     let [p1, p2, p3] = triangle2.points();
     #[allow(non_snake_case)]
     let mut pInAscX: [&Point2; 3] = [p1, p2, p3];
@@ -82,13 +54,17 @@ pub fn render_triangle(triangle: &Triangle3, pixel_array: &mut Vec<Vec<f32>>, de
             if frag_depth < depth_buffer[y][x] {
                 depth_buffer[y][x] = frag_depth;
                 // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
-                pixel_array[y][x] = fragment_shader(triangle);
+                if let Some(light_intensity) = light_intensity {
+                    pixel_array[y][x] = light_intensity;
+                } else {
+                    pixel_array[y][x] = fragment_shader(triangle);
+                }
             }
         }
     }
 }
 
-pub fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point2) -> (Vec<&'a Point2>, Vec<&'a Point2>) {
+fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point2) -> (Vec<&'a Point2>, Vec<&'a Point2>) {
     #[allow(non_snake_case)]
     let mut pInAscX: [&Point2; 3] = [p1, p2, p3];
     pInAscX.sort_by(|point_a, point_b| (point_a.x).partial_cmp(&point_b.x).unwrap());
@@ -132,7 +108,7 @@ pub fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point
     (top_edge, bottom_edge)
 }
 
-pub fn get_y_values_from_edge(edge: Vec<&Point2>, max_x_i: usize, max_y_i: usize) -> Vec<usize> {
+fn get_y_values_from_edge(edge: Vec<&Point2>, max_x_i: usize, max_y_i: usize) -> Vec<usize> {
     let mut y_vals: Vec<usize> = Vec::new();
     
     for i_1 in 0..(edge.len() - 1) {

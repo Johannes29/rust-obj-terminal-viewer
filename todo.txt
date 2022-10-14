@@ -1,6 +1,14 @@
- - Switch 'fill_char' triangle field to 'normal', which could just be a Point (vector)
- - Calculate normals for each triange
- - Add lighting direction field to renderer struct, and parameter to new function
- - Use lighting direction and triange normal to calculate light intensity per triange, not per fragment
- - Add spinning effect
+ - Improve algorithm for deciding which triangles to not render.
+    Currently the top face is rendered when camera is between top and bottom face in height
+ - Add ability to rotate camera
+ - Add compatibility for quads
+ - Add minimum light level, so that mesh triangles never can be completely black
  - Add mouse controls
+
+***bugs***
+ - rect in torus_and_cone.obj starts to dissapear when viewpoint is only at z=-2
+
+
+*potential improvements*
+ - add functionality to print stuff like fps and triangles being rendered to the bottom-most line
+

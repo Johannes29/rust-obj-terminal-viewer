@@ -19,6 +19,7 @@ pub struct Triangle {
 }
 
 impl Point {
+    #[allow(unused)]
     pub fn add(&mut self, another_point: &Point) {
         self.x += another_point.x;
         self.y += another_point.y;

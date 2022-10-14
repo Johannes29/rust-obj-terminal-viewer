@@ -64,47 +64,69 @@ pub fn persp_proj_mat(
     let a = aspect_ratio;
     let n = near;
     let f = far;
-    // dbg!(v, a, n, f);
     [
         [1./(a*(v/2.).tan()), 0., 0., 0.],
-        [0., 1./((v/ 2.).tan()), 0., 0.],
+        [0., -1./((v/ 2.).tan()), 0., 0.],
         [0., 0., f/(f-n), -f*n/(f-n)],
         [0., 0., 1., 0.]
     ]
-    // [
-    //     [1./(a*(v/2.).tan()), 0., 0., 0.],
-    //     [0., 1./((v/ 0.2).tan()), 0., 0.],
-    //     [0., 0., f/(f-n), -f*n/(f-n)],
-    //     [0., 0., 1., 0.]
-    // ]
+}
+
+// TODO not fitting for this file (transformations)
+pub fn triangle_intersects_screen_space(triangle: &Triangle3) -> bool {
+    let mut points_inside_screen_space = 0;
+    for point in triangle.points() {
+        if point.x >= -1. && point.x <= 1. && point.y >= -1. && point.y <= 1. {
+            points_inside_screen_space += 1;
+        }
+    }
+
+    if points_inside_screen_space > 0 {
+        return true;
+    } else {
+        let points = triangle.points();
+        for i in 0..3 {
+            let p1 = points[i];
+            let p2 = points[(i + 1).rem_euclid(3)];
+
+            let k = p1.y - p2.y / (p1.x - p2.x);
+            let m = p1.y - k * p1.x;
+            match k.is_nan() { 
+                false => {
+                    // TODOO this does not work correctly, acts like the edges of the triangle are infinite.
+                    // TODO is this inefficient?
+                    if (-1.0..=1.0).contains(&(k*-1.0 + m))
+                    || (-1.0..=1.0).contains(&(k*1.0 + m))
+                    || (-1.0..=1.0).contains(&((-1.0 - m) / k))
+                    || (-1.0..=1.0).contains(&((1.0 - m) / k)) {
+                        return true
+                    }
+                },
+                true => {
+                    if (-1.0..=1.0).contains(&k) {
+                        return true
+                    }
+                }
+            }
+            
+        }
+    }
+
+    false
 }
 
 pub fn triangle3d_to_screen_space_triangle(
     triangle3: &Triangle3,
     pp_matrix: Matrix4x4,
-    view_point: &Point3
-) -> Option<Triangle3> {
-    let mut points_outside_viewspace = 0;
+) -> Triangle3 {
     let mut new_points: Vec<Point3> = Vec::new();
-    for world_pos in triangle3.points() {
-        let pos_matrix = world_pos.relative_to(view_point).to_matrix4x1();
-        if pos_matrix[2][0] < 0.00001 {
-            return None
-        }
+    for pos in triangle3.points() {
+        let pos_matrix = pos.to_matrix4x1();
         let new_point = pp_matrix
            .multiply(pos_matrix)
             .to_vec3();
-        // dbg!(pp_matrix, pos, pos_matrix, new_pos_matrix, new_point);
-        if new_point[0].abs() > 1. || new_point[1].abs() > 1. {
-            points_outside_viewspace += 1;
-        }
 
         new_points.push(Point3::from_arr(new_point));
     }
-
-    if points_outside_viewspace >= 3 {
-        None
-    } else {
-        Some(Triangle3::from_vec(new_points).unwrap())
-    }
+    Triangle3::from_vec_n(new_points, triangle3.normal.clone()).unwrap()
 }

@@ -1,32 +1,22 @@
 mod general;
 mod renderer;
 use crossterm::event::KeyCode;
-use general::positions_3d::Point as Point3;
 
-use general::positions_3d::Mesh;
-use general::positions_3d::Triangle;
 use renderer::interface::{Renderer, ShouldExit};
 use renderer::obj_parser::parse_obj;
 
-use std::vec;
 use crossterm::event::Event;
 use crossterm::terminal;
 
-// x is to the right, y is down, z is forwards
-// TODO positive y should be up
+// +x is to the right, +y is up, +z is forwards
 fn main() {
     let terminal_size = terminal::size().unwrap();
-    let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 70.0, vec![b' ', b'.', b'*', b'#']);
-    let mesh = parse_obj("hourglass.obj");
+    let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 90.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
+    let mesh = parse_obj("objects/cube.obj");
+    dbg!(&mesh);
     renderer.mesh = mesh;
 
     let frame_loop = |renderer_todo: &mut Renderer, _events: Vec<Event>| -> ShouldExit {
-        // let seconds = start_time.elapsed().as_secs() as f32 + start_time.elapsed().subsec_micros() as f32 / 10_f32.powf(6.0);
-        // let angle = seconds  * 360.0 * rps;
-
-        // let mut mesh = original_mesh.clone();
-        // mesh.triangles[0].rotate(angle as f32, &center);
-        // renderer_todo.mesh = mesh;
 
         let mut viewpoint = &mut renderer_todo.view_point;
 
@@ -46,10 +36,10 @@ fn main() {
                         'w' => {
                             viewpoint.z += 1.0;
                         },
-                        'r' => {
+                        'f' => {
                             viewpoint.y -= 1.0;
                         },
-                        'f' => {
+                        'r' => {
                             viewpoint.y += 1.0;
                         },
                         _ => (),

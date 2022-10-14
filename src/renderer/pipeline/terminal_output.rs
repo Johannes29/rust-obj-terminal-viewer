@@ -43,7 +43,7 @@ pub fn image_buffer_to_char_buffer(image_buffer: &Vec<Vec<f32>>, char_buffer: &m
             let value = image_buffer[i][j];
             let char_index = ((value * (chars.len() as f32) - 1.0)
                 .ceil() as usize)
-                .clamp(0, char_buffer.len() - 1);
+                .clamp(0, chars.len() - 1);
 
             char_buffer[i][j] = chars[char_index];
         }
