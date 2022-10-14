@@ -35,34 +35,26 @@ pub enum ShouldExit {
 // TODO #anti_aliasing: add parameter for antialiasing sampling (aa: u8), example values: 1 (normal), 2, 4, 8, ...
 impl Renderer {
     pub fn new(width: u16, height: u16, fps: f32, char_asp_ratio: f32, fov: f32, brightness_string: &str) -> Self {
-        let mesh = Mesh { triangles: Vec::new(), };
-        let char_buffer = Renderer::get_empty_char_buffer(width, height);
-        let prev_char_buffer = char_buffer.clone();
-        let image_buffer = Renderer::get_empty_image_buffer(width, height);
-        let depth_buffer = Renderer::get_empty_depth_buffer(width, height);
-        let frame_time = Duration::from_secs_f32(1.0 / fps);
         let angle_rad = (height as f32 / width as f32).atan();
-        let horizontal_fov = fov * angle_rad.cos();
-        let vertical_fov = fov * angle_rad.sin() * char_asp_ratio;
-        let view_point = Point3 { x: 0.0, y: 0.0, z: -10.0 };
-        let chars = brightness_string.as_bytes().to_vec();
-        let light_direction = Point3 {
-            x: -0.3,
-            y: 0.5,
-            z: 0.5
-        }.normalized();
-        let camera_direction = Point3 {
-            x: 0.,
-            y: 0.,
-            z: 1.
-        };
-        let near = 0.1;
-        let far = 100.;
+        let empty_char_buffer = Renderer::get_empty_char_buffer(width, height);
 
-        // TODO why not just write the values below here, and not declare variables?
         Renderer {
-            width, height, horizontal_fov, vertical_fov, view_point, chars, char_buffer, prev_char_buffer,
-            image_buffer, depth_buffer, mesh, frame_time, camera_direction, light_direction, near, far
+            width,
+            height,
+            horizontal_fov: fov * angle_rad.cos(),
+            vertical_fov: fov * angle_rad.sin() * char_asp_ratio,
+            view_point: Point3 { x: 0.0, y: 0.0, z: -10.0 },
+            chars: brightness_string.as_bytes().to_vec(),
+            mesh: Mesh { triangles: Vec::new(), },
+            frame_time: Duration::from_secs_f32(1.0 / fps),
+            char_buffer: empty_char_buffer.clone(),
+            prev_char_buffer: empty_char_buffer.clone(),
+            image_buffer: Renderer::get_empty_image_buffer(width, height),
+            depth_buffer: Renderer::get_empty_depth_buffer(width, height),
+            camera_direction: Point3 { x: 0., y: 0., z: 1.},
+            light_direction: Point3 {x: -0.3, y: 0.5, z: 0.5},
+            near: 0.1,
+            far: 100.0,
         }
     }
 
