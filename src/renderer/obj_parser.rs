@@ -77,16 +77,14 @@ pub fn parse_obj(file_path: &str) -> Mesh {
                             .map(|index| &normals[index - 1])
                             .collect();
 
-
                         // check if all normals for this face are identical
-                        let mut first_normal: Option<Point3> = None;
+                        let mut first_normal: Option<&Point3> = None;
                         let mut all_normals_are_identical = true;
-                        for normal_index in &normal_indices {
-                            let this_normal = normals[normal_index - 1].clone();
+                        for vertex_normal in &vertex_normals {
                             if let None = first_normal {
-                                first_normal = Some(this_normal);
+                                first_normal = Some(vertex_normal);
                             } else {
-                                if Some(this_normal) != first_normal {
+                                if Some(*vertex_normal) != first_normal {
                                     all_normals_are_identical = false
                                 }
                             }
