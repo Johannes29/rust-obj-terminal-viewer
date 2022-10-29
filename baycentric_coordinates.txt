@@ -1,0 +1,16 @@
+from https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
+
+
+definition:
+P is point in triangle
+A, B, C are triangle verts
+P = A  + u(B - A) + v(C - A)
+
+
+pseudocode:
+triangleArea = areaOfTriangle(A, B, C)
+u = areaOfTriangle(C, A, P) / triangleArea
+v = areaOfTriangle(B, A, P) / triangleArea
+
+fn areaOfTriangle(p1, p2, p3):
+    p2.relativeTo(p1).magnitude() * p3.relativeTo(p1).magnitude() * sin(angle) / 2
