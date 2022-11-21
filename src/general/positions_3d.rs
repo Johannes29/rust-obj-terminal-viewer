@@ -78,6 +78,10 @@ impl Point {
             z: -self.z
         }
     }
+
+    pub fn length(&self) -> f32 {
+        distance_from_origo(self)
+    }
 }
 
 impl Triangle {

@@ -1,5 +1,5 @@
 use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function};
-use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, distance_from_origo};
+use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, distance_from_origo, cross_product};
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
@@ -56,7 +56,8 @@ pub fn render_triangle(
                 Option::None => break,
                 _ => (),
             }
-            let point = Point2 { x: x as f32, y: y as f32 };
+            let point = Point2 { x: x as f32, y: y as f32};
+            // TODO should depth values be used here? Maybe set z-coords of ss_triangle to 0
             let (w1, w2) = get_barycentric_coordinates(&ss_triangle.to_2d(), &point);
             let cs_points = cs_triangle.points();
             // position of the current frag (pixel) in 3d camera space
@@ -79,36 +80,54 @@ pub fn render_triangle(
     }
 }
 
-// from https://youtu.be/HYAgJN3x4GA?t=221
+// from https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
+/**
+  P = p1 + u * (p2 - p1) + v * (p3 - p1)
+ */
 fn get_barycentric_coordinates(triangle: &Triangle2, point: &Point2) -> (f32, f32) {
-    let a = triangle.points()[0];
-    let b = triangle.points()[1];
-    let c = triangle.points()[2];
-    let p = point;
-    // dbg!(a, b, c, p);
-    let w1 = a.x * (c.y - a.y) + (p.y - a.y) * (c.x - a.x) - p.x * (c.y - a.y)
-        / ((b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - a.y));
-    let w2 = p.y - a.y - w1 * (b.y - a.y) / (c.y - a.y);
-
-    (w1, w2)
+    let divisor = cross_product(triangle.p2.relative_to(&triangle.p1), triangle.p3.relative_to(&triangle.p1)).length();
+    let u = cross_product(triangle.p1.relative_to(&point), triangle.p3.relative_to(&point)).length() / divisor;
+    let v = cross_product(triangle.p1.relative_to(&point), triangle.p2.relative_to(&point)).length() / divisor;
+    (u, v)
 }
 
 #[cfg(test)]
 mod test_bc {
-    use crate::general::positions_2d::Triangle as Triangle2;
-    use crate::general::positions_2d::Point as Point2;
+    use crate::general::positions_3d::Triangle as Triangle3;
+    use crate::general::positions_3d::Point as Point3;
     use crate::renderer::pipeline::rasterization::get_barycentric_coordinates;
 
     #[test]
-    fn test_get_barycentric_coordinates() {
-        let triangle = Triangle2 {
-            p1: Point2 { x: -2.0, y: -1.0 },
-            p3: Point2 { x: 1.0, y: -1.0 },
-            p2: Point2 { x: -2.0, y: 2.0 },
+    fn test_get_barycentric_coordinates_1() {
+        let triangle = Triangle3 {
+            p1: Point3 { x: -2.0, y: -1.0, z: 0.0},
+            p2: Point3 { x: -2.0, y: 2.0, z: 0.0},
+            p3: Point3 { x: 1.0, y: -1.0, z: 0.0},
+            normal: Point3 { x: 3., y: 0., z: 0. }
         };
-        let point = Point2 {
+        let point = Point3 {
             x: -0.5,
-            y: 0.5
+            y: 0.5,
+            z: 0.0
+        };
+        let result = get_barycentric_coordinates(&triangle, &point);
+        dbg!(result);
+        assert_eq!(result, (0.5, 0.5));
+    }
+
+    #[test]
+    // TODO
+    fn test_get_barycentric_coordinates_2() {
+        let triangle = Triangle3 {
+            p1: Point3 { x: 0.0, y: 0.0, z: 0.0},
+            p2: Point3 { x: 2.0, y: 2.0, z: 0.0},
+            p3: Point3 { x: 1.0, y: -1.0, z: 0.0},
+            normal: Point3 { x: 3., y: 0., z: 0. }
+        };
+        let point = Point3 {
+            x: -0.5,
+            y: 0.5,
+            z: 0.0
         };
         let result = get_barycentric_coordinates(&triangle, &point);
         dbg!(result);
