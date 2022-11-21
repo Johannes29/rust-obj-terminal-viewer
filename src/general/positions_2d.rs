@@ -24,6 +24,13 @@ impl Point {
         self.x += another_point.x;
         self.y += another_point.y;
     }
+
+    pub fn relative_to(&self, point: &Point) -> Self {
+        Point {
+            x: self.x - point.x,
+            y: self.y - point.y
+        }
+    }
 }
 
 impl Mul for Point {
@@ -58,6 +65,11 @@ impl Triangle {
 
 pub fn get_k(p1: &Point, p2: &Point) -> f32 {
     (p2.y - p1.y) / (p2.x - p1.x)
+}
+
+
+pub fn paralellogram_area(p1: &Point, p2: &Point) -> f32 {
+    (p1.x * p2.y - p1.y * p2.x).abs()
 }
 
 pub fn get_linear_function(p1: &Point, p2: &Point) -> LinearFunction {

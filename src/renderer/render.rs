@@ -7,15 +7,17 @@ use super::pipeline::transformation::{
 };
 use image::{GrayImage, Luma};
 
-pub fn render_mesh(mesh: &Mesh,
-        image_buffer: &mut Vec<Vec<f32>>,
-        depth_buffer: &mut Vec<Vec<f32>>,
-        view_point: &Point3,
-        light_direction: &Point3,
-        horizontal_fov: f32,
-        vertical_fov: f32,
-        near: f32,
-        far: f32) {
+pub fn render_mesh(
+    mesh: &Mesh,
+    image_buffer: &mut Vec<Vec<f32>>,
+    depth_buffer: &mut Vec<Vec<f32>>,
+    view_point: &Point3,
+    light_direction: &Point3,
+    horizontal_fov: f32,
+    vertical_fov: f32,
+    near: f32,
+    far: f32
+    ) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let char_buffer_width = image_buffer[0].len() as f32;
@@ -54,12 +56,12 @@ pub fn render_mesh(mesh: &Mesh,
                 );
 
                 // assumes that both normal and light direction are unit vectors
-                let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
+                let light_intensity = dot_product(&triangle.normal, &light_direction.inverted()).abs();
 
                 // TODO will not work if camera can rotate
-                if triangle.normal.z < 0.00001 {
+                /* if triangle.normal.z > 0.0 */ {
                     // dbg!(&triangle);
-                    render_triangle(&new_triangle, image_buffer, depth_buffer, Some(light_intensity));
+                    render_triangle(&new_triangle, &camera_triangle, image_buffer, depth_buffer, Some(light_intensity));
                     let height = image_buffer.len() as u32;
                     let width = image_buffer[0].len() as u32;
                     let mut img = GrayImage::new(width, height);
