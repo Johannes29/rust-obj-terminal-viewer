@@ -56,10 +56,10 @@ pub fn render_mesh(
                 );
 
                 // assumes that both normal and light direction are unit vectors
-                let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
+                let light_intensity = dot_product(&triangle.normal, &light_direction.inverted()).abs();
 
                 // TODO will not work if camera can rotate
-                if triangle.normal.z > 0.0 {
+                /* if triangle.normal.z > 0.0 */ {
                     // dbg!(&triangle);
                     render_triangle(&new_triangle, &camera_triangle, image_buffer, depth_buffer, Some(light_intensity));
                     let height = image_buffer.len() as u32;

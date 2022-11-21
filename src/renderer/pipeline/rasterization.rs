@@ -1,4 +1,4 @@
-use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function};
+use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function, paralellogram_area};
 use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, distance_from_origo, cross_product};
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
@@ -57,14 +57,13 @@ pub fn render_triangle(
                 _ => (),
             }
             let point = Point2 { x: x as f32, y: y as f32};
-            // TODO should depth values be used here? Maybe set z-coords of ss_triangle to 0
             let (w1, w2) = get_barycentric_coordinates(&ss_triangle.to_2d(), &point);
             let cs_points = cs_triangle.points();
             // position of the current frag (pixel) in 3d camera space
             let cs_frag_pos = Point3 {
                 x: cs_points[0].x + w1 * (cs_points[1].x - cs_points[0].x) + w2 * (cs_points[2].x - cs_points[0].x),
-                y: cs_points[0].y + w1 * (cs_points[1].y - cs_points[0].x) + w2 * (cs_points[2].y - cs_points[0].y),
-                z: cs_points[0].z + w1 * (cs_points[1].z - cs_points[0].x) + w2 * (cs_points[2].z - cs_points[0].z)
+                y: cs_points[0].y + w1 * (cs_points[1].y - cs_points[0].y) + w2 * (cs_points[2].y - cs_points[0].y),
+                z: cs_points[0].z + w1 * (cs_points[1].z - cs_points[0].z) + w2 * (cs_points[2].z - cs_points[0].z)
             };
             let frag_depth: f32 = distance_from_origo(&cs_frag_pos);
             if frag_depth < depth_buffer[y][x] {
@@ -84,31 +83,33 @@ pub fn render_triangle(
 /**
   P = p1 + u * (p2 - p1) + v * (p3 - p1)
  */
+// TODO does not work correctly when point is outside of triangle
 fn get_barycentric_coordinates(triangle: &Triangle2, point: &Point2) -> (f32, f32) {
-    let divisor = cross_product(triangle.p2.relative_to(&triangle.p1), triangle.p3.relative_to(&triangle.p1)).length();
-    let u = cross_product(triangle.p1.relative_to(&point), triangle.p3.relative_to(&point)).length() / divisor;
-    let v = cross_product(triangle.p1.relative_to(&point), triangle.p2.relative_to(&point)).length() / divisor;
+    let p = point.relative_to(&triangle.p1);
+    let p2 = triangle.p2.relative_to(&triangle.p1);
+    let p3 = triangle.p3.relative_to(&triangle.p1);
+    let divisor = paralellogram_area(&p2, &p3);
+    let u = paralellogram_area(&p, &p3) / divisor;
+    let v = paralellogram_area(&p, &p2) / divisor;
     (u, v)
 }
 
 #[cfg(test)]
 mod test_bc {
-    use crate::general::positions_3d::Triangle as Triangle3;
-    use crate::general::positions_3d::Point as Point3;
+    use crate::general::positions_2d::Triangle as Triangle2;
+    use crate::general::positions_2d::Point as Point2;
     use crate::renderer::pipeline::rasterization::get_barycentric_coordinates;
 
     #[test]
     fn test_get_barycentric_coordinates_1() {
-        let triangle = Triangle3 {
-            p1: Point3 { x: -2.0, y: -1.0, z: 0.0},
-            p2: Point3 { x: -2.0, y: 2.0, z: 0.0},
-            p3: Point3 { x: 1.0, y: -1.0, z: 0.0},
-            normal: Point3 { x: 3., y: 0., z: 0. }
+        let triangle = Triangle2 {
+            p1: Point2 { x: -2.0, y: -1.0},
+            p2: Point2 { x: -2.0, y: 2.0},
+            p3: Point2 { x: 1.0, y: -1.0}
         };
-        let point = Point3 {
+        let point = Point2 {
             x: -0.5,
-            y: 0.5,
-            z: 0.0
+            y: 0.5
         };
         let result = get_barycentric_coordinates(&triangle, &point);
         dbg!(result);
@@ -116,22 +117,33 @@ mod test_bc {
     }
 
     #[test]
-    // TODO
     fn test_get_barycentric_coordinates_2() {
-        let triangle = Triangle3 {
-            p1: Point3 { x: 0.0, y: 0.0, z: 0.0},
-            p2: Point3 { x: 2.0, y: 2.0, z: 0.0},
-            p3: Point3 { x: 1.0, y: -1.0, z: 0.0},
-            normal: Point3 { x: 3., y: 0., z: 0. }
+        let triangle = Triangle2 {
+            p1: Point2 { x: 9.0, y: 9.0},
+            p2: Point2 { x: 9.0, y: 0.0},
+            p3: Point2 { x: 0.0, y: 9.0}
         };
-        let point = Point3 {
-            x: -0.5,
-            y: 0.5,
-            z: 0.0
+        let point = Point2 {
+            x: 9.0,
+            y: 0.0
         };
         let result = get_barycentric_coordinates(&triangle, &point);
         dbg!(result);
-        assert_eq!(result, (0.5, 0.5));
+        assert_eq!(result, (1.0, 0.0));
+    }
+
+    #[test]
+    fn test_get_barycentric_coordinates_3() {
+        let triangle = Triangle2 {
+            p1: Point2 { x: -3.0, y: 3.0},
+            p2: Point2 { x: -3.0, y: 0.0},
+            p3: Point2 { x: 0.0, y: 0.0}
+        };
+        assert_eq!((0.0, 0.0), get_barycentric_coordinates(&triangle, &Point2 { x: -3.0, y: 3.0 }));
+        assert_eq!((1.0, 0.0), get_barycentric_coordinates(&triangle, &Point2 { x: -3.0, y: 0.0 }));
+        assert_eq!((0.0, 1.0), get_barycentric_coordinates(&triangle, &Point2 { x: 0.0, y: 0.0 }));
+
+        assert_eq!((-1.0, 1.0), get_barycentric_coordinates(&triangle, &Point2 { x: 0.0, y: 3.0 }));
     }
 }
 

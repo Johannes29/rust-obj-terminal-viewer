@@ -68,8 +68,8 @@ pub fn get_k(p1: &Point, p2: &Point) -> f32 {
 }
 
 
-fn paralellogram_area(p1: Point, p2: Point) -> f32 {
-    p1.x * p2.y - p1.y * p2.x
+pub fn paralellogram_area(p1: &Point, p2: &Point) -> f32 {
+    (p1.x * p2.y - p1.y * p2.x).abs()
 }
 
 pub fn get_linear_function(p1: &Point, p2: &Point) -> LinearFunction {
