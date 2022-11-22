@@ -15,17 +15,17 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     let mesh = parse_obj("objects/cube_inverted_top.obj");
     renderer.mesh = mesh;
     
-    let test_duration = Duration::new(10, 0);
-    let start_time = Instant::now();
+    // let test_duration = Duration::new(0, 100_000_000);
+    // let start_time = Instant::now();
 
-    let frame_loop = |renderer_todo: &mut Renderer, _events: Vec<Event>| -> ShouldExit {
-        if start_time.elapsed() > test_duration {
+    // let frame_loop = |renderer_todo: &mut Renderer, _events: Vec<Event>| -> ShouldExit {
+    //     if start_time.elapsed() > test_duration {
+    //         return ShouldExit::Yes;
+    //     }
+    //     ShouldExit::No
+    // };
 
-        }
-        ShouldExit::No
-    };
-
-    c.bench_function("fib 20", |b| b.iter(|| renderer.start_rendering(&frame_loop)));
+    c.bench_function("rendering one frame", |b| b.iter(|| renderer.render_frame()));
 }
 
 criterion_group!(benches, criterion_benchmark);
