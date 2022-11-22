@@ -13,7 +13,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     let terminal_size = terminal::size().unwrap();
     let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 90.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
     let mesh = parse_obj("objects/cube_inverted_top.obj");
-    renderer.mesh = mesh;
+    renderer.mesh = mesh.unwrap();
     
     // let test_duration = Duration::new(0, 100_000_000);
     // let start_time = Instant::now();

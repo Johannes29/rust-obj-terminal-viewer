@@ -59,22 +59,22 @@ pub fn render_mesh(
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
                 render_triangle(&new_triangle, &camera_triangle, image_buffer, depth_buffer, Some(light_intensity));
-                let height = image_buffer.len() as u32;
-                let width = image_buffer[0].len() as u32;
-                let mut img = GrayImage::new(width, height);
-                for x in 0..width {
-                    for y in 0..height {
-                        img.put_pixel(x, y, Luma([(image_buffer[y as usize][x as usize] * 255.0) as u8]));
-                    }
-                }
-                img.save(format!("frame_{}.png", triangle_index)).unwrap();
-                let mut depth_img = GrayImage::new(width, height);
-                for x in 0..width {
-                    for y in 0..height {
-                        depth_img.put_pixel(x, y, Luma([(depth_buffer[y as usize][x as usize] * 20.0) as u8]));
-                    }
-                }
-                depth_img.save(format!("frame_{}_depth.png", triangle_index)).unwrap();
+                // let height = image_buffer.len() as u32;
+                // let width = image_buffer[0].len() as u32;
+                // let mut img = GrayImage::new(width, height);
+                // for x in 0..width {
+                //     for y in 0..height {
+                //         img.put_pixel(x, y, Luma([(image_buffer[y as usize][x as usize] * 255.0) as u8]));
+                //     }
+                // }
+                // img.save(format!("frame_{}.png", triangle_index)).unwrap();
+                // let mut depth_img = GrayImage::new(width, height);
+                // for x in 0..width {
+                //     for y in 0..height {
+                //         depth_img.put_pixel(x, y, Luma([(depth_buffer[y as usize][x as usize] * 20.0) as u8]));
+                //     }
+                // }
+                // depth_img.save(format!("frame_{}_depth.png", triangle_index)).unwrap();
                 triangle_index += 1;
             },
         }
