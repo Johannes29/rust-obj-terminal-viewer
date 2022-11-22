@@ -1,0 +1,39 @@
+for line in file:
+    let verts = []
+    let normals = []
+    let triangles = []
+
+    let parts = line.split(' ')
+    let command = parts[0]
+    let arguments = parts[1..]
+    match command:
+        case 'v':
+            if arguments.len() != 3:
+                next
+            let vertex = parse_obj_point(arguments)
+            verts.append(vertex)
+        case 'vn':
+            if arguments.len() != 3:
+                next
+            let normal = parse_obj_point(arguments).normalize()
+            normal.append(vertex)
+        case 'f':
+            if arguments.len() != (3 or 4):
+                next
+            triangles.append(parse_obj_f_command(arguments, verts, normals))
+
+
+
+
+fn parse_obj_point(string_components):
+    let numbers = string_components.map(string => string.to_number())
+    let point = Point::from(numbers)
+    return point
+
+fn parse_obj_f(strings):
+    strings.map(string =>: string.split('/').map(string => number).fit(3, None))
+
+fn parse_obj_f_command(strings, verts, normals):
+    let indices = parse_obj_f(strings)
+    let points = indices.map((vertex_index, _, normal_index) => Point::from(verts[vertex_index], normals[normal_index]))
+    return Triangle::from(points)
