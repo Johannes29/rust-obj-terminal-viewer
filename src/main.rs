@@ -10,7 +10,7 @@ use crossterm::terminal;
 
 // +x is to the right, +y is up, +z is forwards
 fn main() {
-    let obj_path = "objects/1.obj";
+    let obj_path = "objects/Tree1.obj";
     // let terminal_size = terminal::size().unwrap();
     // let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 90.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
     let mesh = match parse_obj(obj_path) {

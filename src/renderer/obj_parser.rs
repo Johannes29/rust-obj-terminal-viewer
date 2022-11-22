@@ -4,7 +4,7 @@ use std::io::{self, BufRead};
 
 pub fn parse_obj(file_path: &str) -> Result<Mesh, String> {
     fn error(message: String, line: String, line_index: usize) -> String {
-        return format!("{message}\nat line {line_index}: '{line}'");
+        return format!("{message}\nAt line {line_index}: '{line}'");
     }
 
     let mut points = Vec::new();
@@ -66,11 +66,18 @@ pub fn parse_obj(file_path: &str) -> Result<Mesh, String> {
                             .map(|indices| indices[0].unwrap()) // TODO add error on unwrap
                             .collect();
 
+                        let normals_are_provided = parsed_numbers
+                            .iter()
+                            .all(|numbers| !numbers[2].is_none() );
+                        if !normals_are_provided {
+                            return Err(error("no normals provided".into(), line, line_number));
+                        }
+                        
                         let vertex_normal_indices: Vec<usize> = parsed_numbers
                             .iter()
-                            .map(|indices| indices[2].unwrap()) // TODO add error on unwrap
+                            .map(|indices| indices[2].unwrap())
                             .collect();
-                        
+                    
                         let vertex_normals: Vec<&Point3> = vertex_normal_indices
                             .clone()
                             .iter()
@@ -78,20 +85,20 @@ pub fn parse_obj(file_path: &str) -> Result<Mesh, String> {
                             .collect();
 
                         // check if all normals for this face are identical
-                        let mut first_normal: Option<&Point3> = None;
-                        let mut all_normals_are_identical = true;
-                        for vertex_normal in &vertex_normals {
-                            if let None = first_normal {
-                                first_normal = Some(vertex_normal);
-                            } else {
-                                if Some(*vertex_normal) != first_normal {
-                                    all_normals_are_identical = false
-                                }
-                            }
-                        }
-                        if !all_normals_are_identical {
-                            return Err(error("face normals are different".into(), line, line_number));
-                        }
+                        // let mut first_normal: Option<&Point3> = None;
+                        // let mut all_normals_are_identical = true;
+                        // for vertex_normal in &vertex_normals {
+                        //     if let None = first_normal {
+                        //         first_normal = Some(vertex_normal);
+                        //     } else {
+                        //         if Some(*vertex_normal) != first_normal {
+                        //             all_normals_are_identical = false
+                        //         }
+                        //     }
+                        // }
+                        // if !all_normals_are_identical {
+                        //     return Err(error("face normals are different".into(), line, line_number));
+                        // }
                         let face_normal = normals[vertex_normal_indices[0] - 1].clone();
 
                         // TODO support negative indices
