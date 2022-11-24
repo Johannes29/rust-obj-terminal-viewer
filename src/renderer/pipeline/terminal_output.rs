@@ -1,6 +1,8 @@
 use crossterm::{cursor, QueueableCommand};
 use std::io::{Write, stdout};
 
+// TODO compare performance between replacing only the changed characters and printing out everything again
+
 pub fn draw_char_buffer(char_buffer: &Vec<Vec<u8>>, prev_char_buffer: &Vec<Vec<u8>>) {
     let mut stdout = stdout();
 
@@ -30,6 +32,16 @@ pub fn draw_char_buffer(char_buffer: &Vec<Vec<u8>>, prev_char_buffer: &Vec<Vec<u
 
     stdout.queue(cursor::RestorePosition).unwrap();
     stdout.flush().unwrap();
+}
+
+fn char_buffer_to_output_string(char_buffer: &mut Vec<Vec<u8>>) {
+    let mut output_string = String::new();
+    
+    for row in char_buffer {
+        for char in row {
+            output_string.push((*char).into());
+        }
+    }
 }
 
 pub fn image_buffer_to_char_buffer(image_buffer: &Vec<Vec<f32>>, char_buffer: &mut Vec<Vec<u8>>, chars: &Vec<u8>) {
