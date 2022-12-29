@@ -66,7 +66,7 @@ pub fn render_triangle(
                 z: cs_points[0].z + w1 * (cs_points[1].z - cs_points[0].z) + w2 * (cs_points[2].z - cs_points[0].z)
             };
             let frag_depth: f32 = distance_from_origo(&cs_frag_pos);
-            if frag_depth < depth_buffer[y][x] {
+            if frag_depth - 0.01 <= depth_buffer[y][x] {
                 depth_buffer[y][x] = frag_depth;
                 // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
                 if let Some(light_intensity) = light_intensity {

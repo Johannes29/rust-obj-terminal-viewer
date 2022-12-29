@@ -1,5 +1,5 @@
 use std::{time::{Duration, Instant}, io::{stdout, Write}, thread};
-use crossterm::{cursor, ExecutableCommand, terminal, event::Event};
+use crossterm::{cursor, ExecutableCommand, terminal, event::Event, event::EnableMouseCapture};
 use crate::general::positions_3d::Point as Point3;
 use super::events::*;
 use super::render::render_mesh;
@@ -63,6 +63,7 @@ impl Renderer {
         terminal::enable_raw_mode().unwrap();
         Renderer::clear_terminal();
         stdout().execute(cursor::MoveTo(0, self.height)).unwrap();
+        stdout().execute(EnableMouseCapture).unwrap();
     }
 
     pub fn render_frame(&mut self) {
