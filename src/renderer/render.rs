@@ -3,15 +3,17 @@ use super::pipeline::rasterization::render_triangle;
 use super::pipeline::transformation::{
     persp_proj_mat,
     triangle3d_to_screen_space_triangle,
-    triangle_intersects_screen_space
+    triangle_intersects_screen_space, rotation_matrix
 };
 use image::{GrayImage, Luma};
+use super::pipeline::transformation::MatrixTrait;
 
 pub fn render_mesh(
     mesh: &Mesh,
     image_buffer: &mut Vec<Vec<f32>>,
     depth_buffer: &mut Vec<Vec<f32>>,
     view_point: &Point3,
+    object_rotation_z: f32,
     light_direction: &Point3,
     horizontal_fov: f32,
     vertical_fov: f32,
@@ -20,6 +22,8 @@ pub fn render_mesh(
     ) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
+    let rotation_matrix = rotation_matrix(0.0, object_rotation_z);
+    let transformation_matrix = persp_proj_mat.combine(rotation_matrix);
     let char_buffer_width = image_buffer[0].len() as f32;
     let char_buffer_height = image_buffer.len() as f32;
     let mut triangle_index = 0;
@@ -38,7 +42,7 @@ pub fn render_mesh(
         if camera_triangle.p1.z <= 0.0 && camera_triangle.p2.z <= 0.0 && camera_triangle.p3.z <= 0.0 {
             continue;
         }
-        let triangle = triangle3d_to_screen_space_triangle(&camera_triangle, persp_proj_mat);
+        let triangle = triangle3d_to_screen_space_triangle(&camera_triangle, transformation_matrix);
 
         match triangle_intersects_screen_space(&triangle) {
             false => {
@@ -47,6 +51,7 @@ pub fn render_mesh(
             true => {
                 let mut new_triangle = triangle.clone();
 
+                // screen space to screen coordinate
                 new_triangle.add_xyz(1.0, 1.0, 0.0);
                 new_triangle.multiply_xyz(0.5, 0.5, 1.0);
                 new_triangle.multiply_xyz(

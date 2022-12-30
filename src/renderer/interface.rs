@@ -20,7 +20,9 @@ pub struct Renderer {
     pub prev_char_buffer: Vec<Vec<u8>>,
     image_buffer: Vec<Vec<f32>>,
     depth_buffer: Vec<Vec<f32>>,
-    camera_direction: Point3,
+    pub camera_rotation_x: f32,
+    pub camera_rotation_y: f32,
+    pub camera_rotation_z: f32,
     pub light_direction: Point3,
     pub near: f32,
     pub far: f32,
@@ -51,10 +53,12 @@ impl Renderer {
             prev_char_buffer: empty_char_buffer.clone(),
             image_buffer: Renderer::get_empty_image_buffer(width, height),
             depth_buffer: Renderer::get_empty_depth_buffer(width, height),
-            camera_direction: Point3 { x: 0., y: 0., z: 1.}.normalized(),
+            camera_rotation_x: 0.0,
+            camera_rotation_y: 0.0,
+            camera_rotation_z: 0.0,
             light_direction: Point3 {x: -0.3, y: 0.5, z: 0.5}.normalized(),
-            near: 0.1,
-            far: 100.0,
+            near: 1.0,
+            far: 10.0,
         }
     }
 
@@ -69,7 +73,7 @@ impl Renderer {
     pub fn render_frame(&mut self) {
         self.clear_image_buffer();
         self.clear_depth_buffer();
-        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, &self.light_direction, self.horizontal_fov, self.vertical_fov, self.near, self.far);
+        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, self.camera_rotation_z, &self.light_direction, self.horizontal_fov, self.vertical_fov, self.near, self.far);
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
         draw_char_buffer(&self.char_buffer, &self.prev_char_buffer);
 
@@ -83,7 +87,7 @@ impl Renderer {
 
             let events = get_events_from_queue();
             if events.iter().any(|event| should_exit(event)) { break }
-            let should_exit  = call_every_frame(self, events);
+            let should_exit = call_every_frame(self, events);
             if let ShouldExit::Yes = should_exit { break }
             self.render_frame();
 

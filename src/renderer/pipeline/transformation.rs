@@ -6,8 +6,9 @@ use std::f32::consts::PI;
 type Matrix4x1 = [[f32; 1]; 4];
 type Matrix4x4 = [[f32; 4]; 4];
 
-trait MatrixTrait {
+pub trait MatrixTrait {
     fn multiply(&self, _:Matrix4x1) -> Matrix4x1;
+    fn combine(&self, _:Matrix4x4) -> Matrix4x4;
 }
 
 impl Point3 {
@@ -40,6 +41,28 @@ impl MatrixTrait for Matrix4x4  {
 
         new_matrix
     }
+
+    fn combine(&self, other: Matrix4x4) -> Matrix4x4 {
+        let mut new_matrix = [
+            [0., 0., 0., 0.],
+            [0., 0., 0., 0.],
+            [0., 0., 0., 0.],
+            [0., 0., 0., 0.],
+        ];
+        for row_i in 0..4 {
+            for col_i in 0..4 {
+                let mut sum = 0.0;
+
+                for i in 0..4 {
+                    let self_val = self[row_i][i];
+                    let other_val = other[i][col_i];
+                    sum += self_val * other_val;
+                }
+                new_matrix[row_i][col_i] = sum;
+            }
+        }
+        new_matrix
+    }
 }
 
 impl MatrixVector for Matrix4x1 {
@@ -69,6 +92,17 @@ pub fn persp_proj_mat(
         [0., -1./((v/ 2.).tan()), 0., 0.],
         [0., 0., f/(f-n), -f*n/(f-n)],
         [0., 0., 1., 0.]
+    ]
+}
+
+pub fn rotation_matrix(x_rotation: f32, z_rotation: f32) -> Matrix4x4 {
+    let x = x_rotation;
+    let z = z_rotation;
+    return [
+        [z.cos(), -z.sin(), 0., 0.],
+        [z.sin(), z.cos(), 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.],
     ]
 }
 

@@ -1,5 +1,7 @@
 mod general;
 mod renderer;
+use std::f32::consts::PI;
+
 use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 
 use renderer::interface::{Renderer, ShouldExit};
@@ -24,7 +26,7 @@ fn main() {
     renderer.mesh = mesh;
 
     let frame_loop = |renderer_todo: &mut Renderer, _events: Vec<Event>| -> ShouldExit {
-
+        let mut rotation_z = renderer_todo.camera_rotation_z;
         let mut viewpoint = &mut renderer_todo.view_point;
 
         for event in _events {
@@ -62,11 +64,19 @@ fn main() {
                         'r' => {
                             viewpoint.y += 1.0;
                         },
+                        'k' => {
+                            rotation_z -= PI / 10.0;
+                        },
+                        'l' => {
+                            rotation_z += PI / 10.0;
+                        }
                         _ => (),
                     }
                 }
             }
         }
+
+        renderer_todo.camera_rotation_z = rotation_z;
 
         ShouldExit::No
     };
