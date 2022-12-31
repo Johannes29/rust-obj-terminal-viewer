@@ -28,7 +28,7 @@ pub struct Degrees(pub f32);
 // TODO add two methods for multiplication and addition on each component of the point 
 // like add_xyz and multiply_xyz, but with only one parameter
 impl Point {
-    pub fn from_arr(array: [f32; 3]) -> Self {
+    pub fn from_array(array: [f32; 3]) -> Self {
         Point {
             x: array[0],
             y: array[1],
@@ -47,20 +47,31 @@ impl Point {
         })
     }
 
-    pub fn relative_to(&self, point: &Point) -> Point {
+    pub fn to_array(&self) -> [f32; 3] {
+        [self.x, self.y, self.z]
+    }
+
+    pub fn map<F>(&self, f: F) -> Self where F: Fn(f32) -> f32 {
+        let components = self.to_array().map(f);
+        Point::from_array(components)
+    }
+
+    pub fn combine<F>(&self, point: &Point, f: F) -> Self where F: Fn(f32, f32) -> f32 {
         Point {
-            x: self.x - point.x,
-            y: self.y - point.y,
-            z: self.z - point.z,
+            x: f(self.x, point.x),
+            y: f(self.y, point.y),
+            z: f(self.z, point.z)
         }
     }
 
+    pub fn relative_to(&self, point: &Point) -> Point {
+        let closure = |own_component, point_component| own_component - point_component;
+        self.combine(point, closure)
+    }
+
     pub fn add(&self, point: &Point) -> Point {
-        Point {
-            x: self.x + point.x,
-            y: self.y + point.y,
-            z: self.z + point.z,
-        }
+        let closure = |own_component, point_component| own_component + point_component;
+        self.combine(point, closure)
     }
 
     pub fn to_2d(&self) -> Point2 {
@@ -72,23 +83,13 @@ impl Point {
 
     pub fn normalized(&self) -> Self {
         let length = distance_from_origo(self);
-        Point {
-            x: self.x / length,
-            y: self.y / length,
-            z: self.z / length
-        }
+        let closure = |component| component / length;
+        self.map(closure)
     }
 
     pub fn inverted(&self) -> Self {
-        Point {
-            x: -self.x,
-            y: -self.y,
-            z: -self.z
-        }
-    }
-
-    pub fn length(&self) -> f32 {
-        distance_from_origo(self)
+        let closure = |component: f32| -component;
+        self.map(closure)
     }
 }
 
@@ -150,16 +151,24 @@ impl Triangle {
         })
     }
 
-    pub fn add_xyz(&mut self, x: f32, y: f32, z: f32) {
-        self.p1 = Point {x: self.p1.x + x, y: self.p1.y + y, z: self.p1.z + z};
-        self.p2 = Point {x: self.p2.x + x, y: self.p2.y + y, z: self.p2.z + z};
-        self.p3 = Point {x: self.p3.x + x, y: self.p3.y + y, z: self.p3.z + z};
+    pub fn combine_with_point<F>(&self, point: &Point, function: F)-> Self
+        where F: Fn(&Point, &Point) -> Point {
+        let points = self.points().map(|self_point| function(self_point, point));
+        Triangle::from_arr(points)
+    }
+
+    pub fn add_point(&self, point: &Point) -> Self {
+        let closure = |triangle_point: &Point, other_point: &Point| {
+            triangle_point.add(other_point)
+        };
+        self.combine_with_point(point, closure)
     }
     
-    pub fn multiply_xyz(&mut self, x: f32, y: f32, z: f32) {
-        self.p1 = Point {x: self.p1.x * x, y: self.p1.y * y, z: self.p1.z * z};
-        self.p2 = Point {x: self.p2.x * x, y: self.p2.y * y, z: self.p2.z * z};
-        self.p3 = Point {x: self.p3.x * x, y: self.p3.y * y, z: self.p3.z * z};
+    pub fn multiply_with_point(&self, point: &Point) -> Self {
+        let closure = |triangle_point: &Point, other_point: &Point| {
+            triangle_point.combine(other_point, |a, b| a * b)
+        };
+        self.combine_with_point(point, closure)
     }
 
     pub fn to_2d(&self) -> Triangle2 {

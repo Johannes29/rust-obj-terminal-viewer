@@ -186,7 +186,7 @@ pub fn triangle3d_to_screen_space_triangle(
            .multiply(pos_matrix)
             .to_vec3();
 
-        new_points.push(Point3::from_arr(new_point));
+        new_points.push(Point3::from_array(new_point));
     }
     Triangle3::from_vec_n(new_points, triangle3.normal.clone()).unwrap()
 }

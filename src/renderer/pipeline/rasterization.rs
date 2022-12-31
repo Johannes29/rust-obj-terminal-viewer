@@ -3,8 +3,6 @@ use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, dista
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
-// TODO this is not really rasterization... maybe move to another file?
-
 
 pub fn render_triangle(
     ss_triangle: &Triangle3, // screen space triangle

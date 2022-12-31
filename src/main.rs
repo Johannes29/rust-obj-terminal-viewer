@@ -15,7 +15,7 @@ use crate::general::positions_3d::Point;
 fn main() {
     let obj_path = "objects/hourglass.obj";
     let terminal_size = terminal::size().unwrap();
-    let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 110.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
+    let mut renderer = Renderer::new(terminal_size.0, terminal_size.1, 10.0, 2.0, 80.0, " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
     let mesh = match parse_obj(obj_path) {
         Ok(mesh) => mesh,
         Err(message) => {
@@ -67,7 +67,7 @@ fn main() {
                         if mouse_event.modifiers == KeyModifiers::NONE {
                             if let (Option::Some(start_column), Option::Some(start_row)) = (start_column, start_row) {
                                 let cell_movement = get_cell_movement(start_column, start_row, mouse_event.column, mouse_event.row);
-                                let mut camera_rotation = get_rotation(cell_movement[0], cell_movement[1], terminal_size.0, terminal_size.1, 1.0, 0.5);
+                                let mut camera_rotation = get_rotation(cell_movement[0], cell_movement[1], terminal_size.0, terminal_size.1, 2.0, 0.5);
                                 camera_rotation.around_x += rotation_already_applied.around_x;
                                 camera_rotation.around_y += rotation_already_applied.around_y;
                                 renderer_todo.camera_rotation_x = camera_rotation.around_x;

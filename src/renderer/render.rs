@@ -25,18 +25,18 @@ pub fn render_mesh(
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let rotation_matrix_x = rotation_matrix_x(view_point_rotation_x);
     let rotation_matrix_y = rotation_matrix_y(view_point_rotation_y);
-    // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector, then the one to the right of that one. 
+    // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector,
+    // then the one to the right of that one, etc. 
     let transformation_matrix = persp_proj_mat.combine(rotation_matrix_x).combine(rotation_matrix_y);
     let char_buffer_width = image_buffer[0].len() as f32;
     let char_buffer_height = image_buffer.len() as f32;
     let mut triangle_index = 0;
+
     for world_triangle in &mesh.triangles {
         let mut camera_positions = Vec::new();
         for world_pos in world_triangle.points() {
             camera_positions.push(world_pos.relative_to(view_point))
         }
-
-        // TODO rotate camera here
 
         let camera_triangle = Triangle3::from_vec_n(camera_positions, world_triangle.normal.clone()).unwrap();
 
@@ -52,16 +52,17 @@ pub fn render_mesh(
                 continue;
             },
             true => {
-                let mut new_triangle = triangle.clone();
-
                 // screen space to screen coordinate
-                new_triangle.add_xyz(1.0, 1.0, 0.0);
-                new_triangle.multiply_xyz(0.5, 0.5, 1.0);
-                new_triangle.multiply_xyz(
-                    char_buffer_width,
-                    char_buffer_height,
-                    1.0
-                );
+                // TODO this should be done in render_triangle function
+                let new_triangle = triangle
+                    .clone()
+                    .add_point(&Point3 {x: 1., y: 1., z: 0.})
+                    .multiply_with_point(&Point3 {x: 0.5, y: 0.5, z: 1.})
+                    .multiply_with_point(&Point3 {
+                        x: char_buffer_width,
+                        y: char_buffer_height,
+                        z: 1.0
+                    });
 
                 // assumes that both normal and light direction are unit vectors
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
@@ -83,7 +84,7 @@ pub fn render_mesh(
                 //     }
                 // }
                 // depth_img.save(format!("frame_{}_depth.png", triangle_index)).unwrap();
-                triangle_index += 1;
+                // triangle_index += 1;
             },
         }
     }
