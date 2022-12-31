@@ -25,7 +25,8 @@ fn main() {
     };
     renderer.mesh = mesh;
 
-    let mut start_row_col: Option<(u16, u16)> = None;
+    let mut start_column: Option<u16> = None;
+    let mut start_row: Option<u16> = None;
     let mut rotation_already_applied = Rotation { around_x: 0., around_y: 0. };
     let mut rotation_origin = Point {
         x: 0.,
@@ -64,8 +65,9 @@ fn main() {
                 match mouse_event.kind {
                     MouseEventKind::Drag(MouseButton::Middle) => {
                         if mouse_event.modifiers == KeyModifiers::NONE {
-                            if let Option::Some(start_row_col) = start_row_col {
-                                let mut camera_rotation = get_rotation(start_row_col.0, start_row_col.1, mouse_event.row, mouse_event.column, 0.01, 0.01);
+                            if let (Option::Some(start_column), Option::Some(start_row)) = (start_column, start_row) {
+                                let cell_movement = get_cell_movement(start_column, start_row, mouse_event.column, mouse_event.row);
+                                let mut camera_rotation = get_rotation(cell_movement[0], cell_movement[1], terminal_size.0, terminal_size.1, 1.0, 0.5);
                                 camera_rotation.around_x += rotation_already_applied.around_x;
                                 camera_rotation.around_y += rotation_already_applied.around_y;
                                 renderer_todo.camera_rotation_x = camera_rotation.around_x;
@@ -76,7 +78,8 @@ fn main() {
                         }
                     },
                     MouseEventKind::Down(MouseButton::Middle) => {
-                        start_row_col = Some((mouse_event.row, mouse_event.column));
+                        start_column = Some(mouse_event.column);
+                        start_row = Some(mouse_event.row);
                         rotation_already_applied = Rotation {
                             around_x: renderer_todo.camera_rotation_x,
                             around_y: renderer_todo.camera_rotation_y
@@ -100,14 +103,35 @@ struct Rotation {
     around_y: f32,
 }
 
-fn get_rotation(start_row: u16, start_column: u16, row: u16, column: u16, rad_per_row: f32, rad_per_column: f32)
- -> Rotation {
-    let rel_row = row as i16 - start_row as i16;
-    let rel_column = column as i16 - start_column as i16;
-    let rotation_x = rel_row as f32 * rad_per_row;
-    let rotation_y = rel_column as f32 * rad_per_column;
+// calculates rotation x and y from moved x and y
+/**
+ * char_aspect_ratio is width / height
+ */
+fn get_rotation(
+    cell_movement_x: i32,
+    cell_movement_y: i32,
+    terminal_width: u16,
+    terminal_height: u16,
+    rotation_speed: f32,
+    char_aspect_ratio: f32
+) -> Rotation {
+    let x_movement = cell_movement_x as f32 / terminal_width as f32;
+    let y_movement = cell_movement_y as f32 / terminal_height as f32;
+    let window_aspect_ratio = terminal_width as f32 / terminal_height as f32;
+    let rotation_around_x = y_movement as f32 * rotation_speed / char_aspect_ratio;
+    let rotation_around_y = x_movement as f32 * rotation_speed * window_aspect_ratio;
 
-    Rotation { around_x: rotation_x, around_y: rotation_y }
+    Rotation { around_x: rotation_around_x, around_y: rotation_around_y }
+}
+
+/**
+ * Returns [x, y], [column, row]
+ */
+fn get_cell_movement(start_column: u16, start_row: u16, column: u16, row: u16) -> [i32; 2] {
+    [
+        column as i32 - start_column as i32,
+        row as i32 - start_row as i32
+    ]
 }
 
 fn get_position(rotation: Rotation, radius: f32) -> Point {
