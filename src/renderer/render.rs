@@ -40,12 +40,13 @@ pub fn render_mesh(
 
         let camera_triangle = Triangle3::from_vec_n(camera_positions, world_triangle.normal.clone()).unwrap();
 
-        // TODO should use or instead (||)?
+        let triangle = triangle3d_to_screen_space_triangle(&camera_triangle, transformation_matrix);
+
         // Skips triangles behind the camera
+        // TODO use near instead of 0.0
         if camera_triangle.p1.z <= 0.0 && camera_triangle.p2.z <= 0.0 && camera_triangle.p3.z <= 0.0 {
             continue;
         }
-        let triangle = triangle3d_to_screen_space_triangle(&camera_triangle, transformation_matrix);
 
         match triangle_intersects_screen_space(&triangle) {
             false => {
