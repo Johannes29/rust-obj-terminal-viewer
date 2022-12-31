@@ -45,7 +45,7 @@ impl Renderer {
             height,
             horizontal_fov: fov * angle_rad.cos(),
             vertical_fov: fov * angle_rad.sin() * char_asp_ratio,
-            view_point: Point3 { x: 2.0, y: 0.0, z: -4.0 },
+            view_point: Point3 { x: 0.0, y: 0.0, z: -5.0 },
             chars: brightness_string.as_bytes().to_vec(),
             mesh: Mesh { triangles: Vec::new(), },
             frame_time: Duration::from_secs_f32(1.0 / fps),
@@ -80,7 +80,7 @@ impl Renderer {
         self.prev_char_buffer = self.char_buffer.clone();
     }
 
-    pub fn start_rendering<F>(&mut self, call_every_frame: F) where F: Fn(&mut Self, Vec<Event>) -> ShouldExit {
+    pub fn start_rendering<F>(&mut self, mut call_every_frame: F) where F: FnMut(&mut Self, Vec<Event>) -> ShouldExit {
         self.prepare_for_rendering();
         loop {
             let start_time = Instant::now();
