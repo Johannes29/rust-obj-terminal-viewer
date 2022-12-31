@@ -26,6 +26,7 @@ fn main() {
     renderer.mesh = mesh;
 
     let mut start_row_col: Option<(u16, u16)> = None;
+    let mut rotation_already_applied = Rotation { around_x: 0., around_y: 0. };
     let mut rotation_origin = Point {
         x: 0.,
         y: 0.,
@@ -63,21 +64,23 @@ fn main() {
                 match mouse_event.kind {
                     MouseEventKind::Drag(MouseButton::Middle) => {
                         if mouse_event.modifiers == KeyModifiers::NONE {
-                            // println!("Move {}, {}", mouse_event.column, mouse_event.row);
                             if let Option::Some(start_row_col) = start_row_col {
-                                let camera_rotation = get_rotation(start_row_col.0, start_row_col.1, mouse_event.row, mouse_event.column, 0.01, 0.01);
-                                // dbg!(&camera_rotation);
+                                let mut camera_rotation = get_rotation(start_row_col.0, start_row_col.1, mouse_event.row, mouse_event.column, 0.01, 0.01);
+                                camera_rotation.around_x += rotation_already_applied.around_x;
+                                camera_rotation.around_y += rotation_already_applied.around_y;
                                 renderer_todo.camera_rotation_x = camera_rotation.around_x;
                                 renderer_todo.camera_rotation_y = camera_rotation.around_y;
                                 let camera_position = get_position(camera_rotation, 5.0);
-                                // dbg!(&camera_position);
                                 renderer_todo.view_point = camera_position.add(&rotation_origin);
                             }
                         }
                     },
                     MouseEventKind::Down(MouseButton::Middle) => {
-                        // println!("Down {}, {}", mouse_event.column, mouse_event.row);
-                        start_row_col = Some((mouse_event.row, mouse_event.column))
+                        start_row_col = Some((mouse_event.row, mouse_event.column));
+                        rotation_already_applied = Rotation {
+                            around_x: renderer_todo.camera_rotation_x,
+                            around_y: renderer_todo.camera_rotation_y
+                        };
                     }
                     _ => (),
                 }
