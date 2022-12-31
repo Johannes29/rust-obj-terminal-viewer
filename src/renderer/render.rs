@@ -3,7 +3,7 @@ use super::pipeline::rasterization::render_triangle;
 use super::pipeline::transformation::{
     persp_proj_mat,
     triangle3d_to_screen_space_triangle,
-    triangle_intersects_screen_space, rotation_matrix
+    triangle_intersects_screen_space, rotation_matrix_x, rotation_matrix_y
 };
 use image::{GrayImage, Luma};
 use super::pipeline::transformation::MatrixTrait;
@@ -13,7 +13,8 @@ pub fn render_mesh(
     image_buffer: &mut Vec<Vec<f32>>,
     depth_buffer: &mut Vec<Vec<f32>>,
     view_point: &Point3,
-    object_rotation_z: f32,
+    view_point_rotation_x: f32,
+    view_point_rotation_y: f32,
     light_direction: &Point3,
     horizontal_fov: f32,
     vertical_fov: f32,
@@ -22,8 +23,10 @@ pub fn render_mesh(
     ) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
-    let rotation_matrix = rotation_matrix(0.0, object_rotation_z);
-    let transformation_matrix = persp_proj_mat.combine(rotation_matrix);
+    let rotation_matrix_x = rotation_matrix_x(view_point_rotation_x);
+    let rotation_matrix_y = rotation_matrix_y(view_point_rotation_y);
+    // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector, then the one to the right of that one. 
+    let transformation_matrix = persp_proj_mat.combine(rotation_matrix_x).combine(rotation_matrix_y);
     let char_buffer_width = image_buffer[0].len() as f32;
     let char_buffer_height = image_buffer.len() as f32;
     let mut triangle_index = 0;

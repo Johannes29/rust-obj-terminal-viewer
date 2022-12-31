@@ -95,15 +95,41 @@ pub fn persp_proj_mat(
     ]
 }
 
-pub fn rotation_matrix(x_rotation: f32, z_rotation: f32) -> Matrix4x4 {
-    let x = x_rotation;
-    let z = z_rotation;
-    return [
-        [z.cos(), -z.sin(), 0., 0.],
-        [z.sin(), z.cos(), 0., 0.],
-        [0., 0., 1., 0.],
+// from https://austinmorlan.com/posts/rotation_matrices
+// NOTE: adapted for left-hand coordinate system
+pub fn rotation_matrix_x(angle: f32) -> Matrix4x4 {
+    [
+        [1., 0., 0., 0.],
+        [0., angle.cos(), angle.sin(), 0.],
+        [0., -angle.sin(), angle.cos(), 0.],
         [0., 0., 0., 1.],
     ]
+}
+
+// from https://austinmorlan.com/posts/rotation_matrices
+// NOTE: adapted for left-hand coordinate system
+pub fn rotation_matrix_y(angle: f32) -> Matrix4x4 {
+    [
+        [angle.cos(), 0., -angle.sin(), 0.],
+        [0., 1., 0., 0.],
+        [angle.sin(), 0., angle.cos(), 0.],
+        [0., 0., 0., 1.],
+    ]
+}
+
+#[cfg(test)]
+mod rotation_matrix_tests {
+    use std::f32::consts::PI;
+    use super::{MatrixTrait, rotation_matrix_y};
+
+    // TODO does not work because floating point errors
+    #[test]
+    fn test_rotation_matrix_y() {
+        let rotation_matrix = rotation_matrix_y(PI / 2.0);
+        let point = [[0.5], [2.0], [-3.0], [1.0]];
+        let rotated_point = rotation_matrix.multiply(point);
+        assert_eq!(rotated_point, [[-3.0], [2.0], [-0.5], [1.0]])
+    }
 }
 
 // TODO not fitting for this file (transformations)

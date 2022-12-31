@@ -73,7 +73,7 @@ impl Renderer {
     pub fn render_frame(&mut self) {
         self.clear_image_buffer();
         self.clear_depth_buffer();
-        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, self.camera_rotation_z, &self.light_direction, self.horizontal_fov, self.vertical_fov, self.near, self.far);
+        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, self.camera_rotation_x, self.camera_rotation_y, &self.light_direction, self.horizontal_fov, self.vertical_fov, self.near, self.far);
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
         draw_char_buffer(&self.char_buffer, &self.prev_char_buffer);
 
