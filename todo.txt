@@ -1,8 +1,9 @@
- - Improve algorithm for deciding which triangles to not render.
+ - Should be able to rotate viewport by holding r and moving mouse
+ - Object should always be lit, independent of the current rotation
+ - Improve algorithm for deciding which triangles to not render
     Currently the top face is rendered when camera is between top and bottom face in height
     (Renders a triangle which should be backface culled)
- - 
- - Add minimum light level, so that mesh triangles never can be completely black
+ - Add minimum light level, so that mesh triangles can't be completely black
 
 ***bugs***
  - rect in torus_and_cone.obj starts to dissapear when viewpoint is only at z=-2
