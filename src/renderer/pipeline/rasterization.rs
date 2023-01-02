@@ -6,7 +6,6 @@ use std::cmp::{Ordering, min, max};
 
 pub fn render_triangle(
     ss_triangle: &Triangle3, // screen space triangle
-    cs_triangle: &Triangle3, // camera space triangle
     pixel_array: &mut Vec<Vec<f32>>,
     depth_buffer: &mut Vec<Vec<f32>>,
     light_intensity: Option<f32>
@@ -56,21 +55,15 @@ pub fn render_triangle(
             }
             let point = Point2 { x: x as f32, y: y as f32};
             let (w1, w2) = get_barycentric_coordinates(&ss_triangle.to_2d(), &point);
-            let cs_points = cs_triangle.points();
-            // position of the current frag (pixel) in 3d camera space
-            let cs_frag_pos = Point3 {
-                x: cs_points[0].x + w1 * (cs_points[1].x - cs_points[0].x) + w2 * (cs_points[2].x - cs_points[0].x),
-                y: cs_points[0].y + w1 * (cs_points[1].y - cs_points[0].y) + w2 * (cs_points[2].y - cs_points[0].y),
-                z: cs_points[0].z + w1 * (cs_points[1].z - cs_points[0].z) + w2 * (cs_points[2].z - cs_points[0].z)
-            };
-            let frag_depth: f32 = distance_from_origo(&cs_frag_pos);
+            let triangle_points = ss_triangle.points();
+            let frag_depth = triangle_points[0].z + w1 * (triangle_points[1].z - triangle_points[0].z) + w2 * (triangle_points[2].z - triangle_points[0].z);
             if frag_depth - 0.01 <= depth_buffer[y][x] {
                 depth_buffer[y][x] = frag_depth;
                 // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
                 if let Some(light_intensity) = light_intensity {
                     pixel_array[y][x] = light_intensity;
                 } else {
-                    pixel_array[y][x] = fragment_shader(ss_triangle, cs_triangle);
+                    pixel_array[y][x] = fragment_shader(ss_triangle);
                 }
             }
         }

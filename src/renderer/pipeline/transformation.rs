@@ -117,6 +117,15 @@ pub fn rotation_matrix_y(angle: f32) -> Matrix4x4 {
     ]
 }
 
+pub fn translation_matrix(x: f32, y: f32, z: f32) -> Matrix4x4 {
+    [
+        [1., 0., 0., x],
+        [0., 1., 0., y],
+        [0., 0., 1., z],
+        [0., 0., 0., 1.]
+    ]
+}
+
 #[cfg(test)]
 mod rotation_matrix_tests {
     use std::f32::consts::PI;

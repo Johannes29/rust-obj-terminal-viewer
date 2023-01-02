@@ -1,9 +1,9 @@
-use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, Mesh, dot_product};
+use crate::general::positions_3d::{Point as Point3, Mesh, dot_product};
 use super::pipeline::rasterization::render_triangle;
 use super::pipeline::transformation::{
     persp_proj_mat,
     triangle3d_to_screen_space_triangle,
-    triangle_intersects_screen_space, rotation_matrix_x, rotation_matrix_y
+    triangle_intersects_screen_space, rotation_matrix_x, rotation_matrix_y, translation_matrix
 };
 use image::{GrayImage, Luma};
 use super::pipeline::transformation::MatrixTrait;
@@ -25,26 +25,22 @@ pub fn render_mesh(
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let rotation_matrix_x = rotation_matrix_x(view_point_rotation_x);
     let rotation_matrix_y = rotation_matrix_y(view_point_rotation_y);
+    let translation_matrix = translation_matrix(-view_point.x, -view_point.y, -view_point.z);
     // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector,
     // then the one to the right of that one, etc. 
-    let transformation_matrix = persp_proj_mat.combine(rotation_matrix_x).combine(rotation_matrix_y);
+    let transformation_matrix = persp_proj_mat.combine(translation_matrix).combine(rotation_matrix_x).combine(rotation_matrix_y);
     let char_buffer_width = image_buffer[0].len() as f32;
     let char_buffer_height = image_buffer.len() as f32;
     let mut triangle_index = 0;
 
     for world_triangle in &mesh.triangles {
-        let mut camera_positions = Vec::new();
-        for world_pos in world_triangle.points() {
-            camera_positions.push(world_pos.relative_to(view_point))
-        }
-
-        let camera_triangle = Triangle3::from_vec_n(camera_positions, world_triangle.normal.clone()).unwrap();
-
-        let triangle = triangle3d_to_screen_space_triangle(&camera_triangle, transformation_matrix);
+        // TODO return Option, None if triangle is outside of frustum
+        let triangle = triangle3d_to_screen_space_triangle(&world_triangle, transformation_matrix);
 
         // Skips triangles behind the camera
         // TODO use near instead of 0.0
-        if camera_triangle.p1.z <= 0.0 && camera_triangle.p2.z <= 0.0 && camera_triangle.p3.z <= 0.0 {
+        // TODO do this in triangle3d_to_screen_space_triangle function instead
+        if triangle.p1.z <= 0.0 && triangle.p2.z <= 0.0 && triangle.p3.z <= 0.0 {
             continue;
         }
 
@@ -68,7 +64,8 @@ pub fn render_mesh(
                 // assumes that both normal and light direction are unit vectors
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
-                render_triangle(&new_triangle, &camera_triangle, image_buffer, depth_buffer, Some(light_intensity));
+                // TODO remove usage of camera_triangle, 
+                render_triangle(&new_triangle, image_buffer, depth_buffer, Some(light_intensity));
                 // let height = image_buffer.len() as u32;
                 // let width = image_buffer[0].len() as u32;
                 // let mut img = GrayImage::new(width, height);
