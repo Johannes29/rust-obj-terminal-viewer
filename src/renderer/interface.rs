@@ -45,7 +45,7 @@ impl Renderer {
             height,
             horizontal_fov: fov * angle_rad.cos(),
             vertical_fov: fov * angle_rad.sin() * char_asp_ratio,
-            view_point: Point3 { x: 0.0, y: 0.0, z: -5.0 },
+            view_point: Point3 { x: 0.0, y: 0.0, z: -8.0 },
             chars: brightness_string.as_bytes().to_vec(),
             mesh: Mesh { triangles: Vec::new(), },
             frame_time: Duration::from_secs_f32(1.0 / fps),

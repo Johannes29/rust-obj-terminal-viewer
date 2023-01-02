@@ -1,5 +1,5 @@
-use crate::general::positions_3d::Triangle as Triangle3;
 use crate::general::positions_3d::Point as Point3;
+use crate::general::positions_3d::Triangle as Triangle3;
 
 use std::f32::consts::PI;
 
@@ -7,18 +7,13 @@ type Matrix4x1 = [[f32; 1]; 4];
 type Matrix4x4 = [[f32; 4]; 4];
 
 pub trait MatrixTrait {
-    fn multiply(&self, _:Matrix4x1) -> Matrix4x1;
-    fn combine(&self, _:Matrix4x4) -> Matrix4x4;
+    fn multiply(&self, _: Matrix4x1) -> Matrix4x1;
+    fn combine(&self, _: Matrix4x4) -> Matrix4x4;
 }
 
 impl Point3 {
     fn to_matrix4x1(&self) -> Matrix4x1 {
-        [
-            [self.x],
-            [self.y],
-            [self.z],
-            [1.0]
-        ]
+        [[self.x], [self.y], [self.z], [1.0]]
     }
 }
 
@@ -26,7 +21,7 @@ trait MatrixVector {
     fn to_vec3(self) -> [f32; 3];
 }
 
-impl MatrixTrait for Matrix4x4  {
+impl MatrixTrait for Matrix4x4 {
     fn multiply(&self, other: Matrix4x1) -> Matrix4x1 {
         let mut new_matrix = [[0.0], [0.0], [0.0], [0.0]];
         for row_i in 0..4 {
@@ -77,21 +72,16 @@ impl MatrixVector for Matrix4x1 {
 }
 
 // from https://youtu.be/U0_ONQQ5ZNM?t=784
-pub fn persp_proj_mat(
-    vertical_fov_deg: f32,
-    aspect_ratio: f32,
-    near: f32,
-    far: f32
-) -> Matrix4x4 {
+pub fn persp_proj_mat(vertical_fov_deg: f32, aspect_ratio: f32, near: f32, far: f32) -> Matrix4x4 {
     let v = vertical_fov_deg * PI / 180.;
     let a = aspect_ratio;
     let n = near;
     let f = far;
     [
-        [1./(a*(v/2.).tan()), 0., 0., 0.],
-        [0., -1./((v/ 2.).tan()), 0., 0.],
-        [0., 0., f/(f-n), -f*n/(f-n)],
-        [0., 0., 1., 0.]
+        [1. / (a * (v / 2.).tan()), 0., 0., 0.],
+        [0., -1. / ((v / 2.).tan()), 0., 0.],
+        [0., 0., f / (f - n), -f * n / (f - n)],
+        [0., 0., 1., 0.],
     ]
 }
 
@@ -122,14 +112,14 @@ pub fn translation_matrix(x: f32, y: f32, z: f32) -> Matrix4x4 {
         [1., 0., 0., x],
         [0., 1., 0., y],
         [0., 0., 1., z],
-        [0., 0., 0., 1.]
+        [0., 0., 0., 1.],
     ]
 }
 
 #[cfg(test)]
 mod rotation_matrix_tests {
+    use super::{rotation_matrix_y, MatrixTrait};
     use std::f32::consts::PI;
-    use super::{MatrixTrait, rotation_matrix_y};
 
     // TODO does not work because floating point errors
     #[test]
@@ -160,42 +150,36 @@ pub fn triangle_intersects_screen_space(triangle: &Triangle3) -> bool {
 
             let k = p1.y - p2.y / (p1.x - p2.x);
             let m = p1.y - k * p1.x;
-            match k.is_nan() { 
+            match k.is_nan() {
                 false => {
                     // TODOO this does not work correctly, acts like the edges of the triangle are infinite.
                     // TODO is this inefficient?
-                    if (-1.0..=1.0).contains(&(k*-1.0 + m))
-                    || (-1.0..=1.0).contains(&(k*1.0 + m))
-                    || (-1.0..=1.0).contains(&((-1.0 - m) / k))
-                    || (-1.0..=1.0).contains(&((1.0 - m) / k)) {
-                        return true
+                    if (-1.0..=1.0).contains(&(k * -1.0 + m))
+                        || (-1.0..=1.0).contains(&(k * 1.0 + m))
+                        || (-1.0..=1.0).contains(&((-1.0 - m) / k))
+                        || (-1.0..=1.0).contains(&((1.0 - m) / k))
+                    {
+                        return true;
                     }
-                },
+                }
                 true => {
                     if (-1.0..=1.0).contains(&k) {
-                        return true
+                        return true;
                     }
                 }
             }
-            
         }
     }
 
     false
 }
 
-pub fn triangle3d_to_screen_space_triangle(
-    triangle3: &Triangle3,
-    pp_matrix: Matrix4x4,
-) -> Triangle3 {
+pub fn multiply_triangle_points_with_matrix(triangle: &Triangle3, matrix: Matrix4x4) -> Triangle3 {
     let mut new_points: Vec<Point3> = Vec::new();
-    for pos in triangle3.points() {
+    for pos in triangle.points() {
         let pos_matrix = pos.to_matrix4x1();
-        let new_point = pp_matrix
-           .multiply(pos_matrix)
-            .to_vec3();
-
+        let new_point = matrix.multiply(pos_matrix).to_vec3();
         new_points.push(Point3::from_array(new_point));
     }
-    Triangle3::from_vec_n(new_points, triangle3.normal.clone()).unwrap()
+    Triangle3::from_vec_n(new_points, triangle.normal.clone()).unwrap()
 }

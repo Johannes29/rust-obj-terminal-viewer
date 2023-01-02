@@ -1,12 +1,11 @@
-use crate::general::positions_3d::{Point as Point3, Mesh, dot_product};
 use super::pipeline::rasterization::render_triangle;
-use super::pipeline::transformation::{
-    persp_proj_mat,
-    triangle3d_to_screen_space_triangle,
-    triangle_intersects_screen_space, rotation_matrix_x, rotation_matrix_y, translation_matrix
-};
-use image::{GrayImage, Luma};
 use super::pipeline::transformation::MatrixTrait;
+use super::pipeline::transformation::{
+    multiply_triangle_points_with_matrix, persp_proj_mat, rotation_matrix_x, rotation_matrix_y,
+    translation_matrix, triangle_intersects_screen_space,
+};
+use crate::general::positions_3d::{dot_product, Mesh, Point as Point3};
+use image::{GrayImage, Luma};
 
 pub fn render_mesh(
     mesh: &Mesh,
@@ -19,23 +18,26 @@ pub fn render_mesh(
     horizontal_fov: f32,
     vertical_fov: f32,
     near: f32,
-    far: f32
-    ) {
+    far: f32,
+) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
     let rotation_matrix_x = rotation_matrix_x(view_point_rotation_x);
     let rotation_matrix_y = rotation_matrix_y(view_point_rotation_y);
     let translation_matrix = translation_matrix(-view_point.x, -view_point.y, -view_point.z);
     // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector,
-    // then the one to the right of that one, etc. 
-    let transformation_matrix = persp_proj_mat.combine(translation_matrix).combine(rotation_matrix_x).combine(rotation_matrix_y);
+    // then the one to the right of that one, etc.
+    let transformation_matrix = persp_proj_mat
+        .combine(translation_matrix)
+        .combine(rotation_matrix_x)
+        .combine(rotation_matrix_y);
     let char_buffer_width = image_buffer[0].len() as f32;
     let char_buffer_height = image_buffer.len() as f32;
     let mut triangle_index = 0;
 
     for world_triangle in &mesh.triangles {
         // TODO return Option, None if triangle is outside of frustum
-        let triangle = triangle3d_to_screen_space_triangle(&world_triangle, transformation_matrix);
+        let triangle = multiply_triangle_points_with_matrix(world_triangle, transformation_matrix);
 
         // Skips triangles behind the camera
         // TODO use near instead of 0.0
@@ -47,25 +49,38 @@ pub fn render_mesh(
         match triangle_intersects_screen_space(&triangle) {
             false => {
                 continue;
-            },
+            }
             true => {
                 // screen space to screen coordinate
                 // TODO this should be done in render_triangle function
                 let new_triangle = triangle
                     .clone()
-                    .add_point(&Point3 {x: 1., y: 1., z: 0.})
-                    .multiply_with_point(&Point3 {x: 0.5, y: 0.5, z: 1.})
+                    .add_point(&Point3 {
+                        x: 1.,
+                        y: 1.,
+                        z: 0.,
+                    })
+                    .multiply_with_point(&Point3 {
+                        x: 0.5,
+                        y: 0.5,
+                        z: 1.,
+                    })
                     .multiply_with_point(&Point3 {
                         x: char_buffer_width,
                         y: char_buffer_height,
-                        z: 1.0
+                        z: 1.0,
                     });
 
                 // assumes that both normal and light direction are unit vectors
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
-                // TODO remove usage of camera_triangle, 
-                render_triangle(&new_triangle, image_buffer, depth_buffer, Some(light_intensity));
+                // TODO remove usage of camera_triangle,
+                render_triangle(
+                    &new_triangle,
+                    image_buffer,
+                    depth_buffer,
+                    Some(light_intensity),
+                );
                 // let height = image_buffer.len() as u32;
                 // let width = image_buffer[0].len() as u32;
                 // let mut img = GrayImage::new(width, height);
@@ -83,7 +98,7 @@ pub fn render_mesh(
                 // }
                 // depth_img.save(format!("frame_{}_depth.png", triangle_index)).unwrap();
                 // triangle_index += 1;
-            },
+            }
         }
     }
 }
