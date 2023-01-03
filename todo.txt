@@ -1,4 +1,5 @@
- - Should be able to rotate viewport by holding r and moving mouse
+ - Add rotation_origin besides view_point. (Now when you move up and then rotate, the object does not stay centered)
+ - Automatically decide view_point and rotation_origin based on object size and max/min coordinates
  - Object should always be lit, independent of the current rotation
  - Improve algorithm for deciding which triangles to not render
     Currently the top face is rendered when camera is between top and bottom face in height
