@@ -57,7 +57,7 @@ impl Renderer {
             camera_rotation_y: 0.0,
             camera_rotation_z: 0.0,
             light_direction: Point3 {x: -0.3, y: 0.5, z: 0.5}.normalized(),
-            near: 1.0,
+            near: 6.0,
             far: 10.0,
         }
     }

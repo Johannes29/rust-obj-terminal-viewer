@@ -42,7 +42,8 @@ fn main() {
             if let Event::Mouse(mouse_event) = event {
                 (mouse_column, mouse_row) = (mouse_event.column, mouse_event.row);
                 match mouse_event.kind {
-                    MouseEventKind::Drag(MouseButton::Middle) => {
+                    MouseEventKind::Drag(MouseButton::Middle)
+                    | MouseEventKind::Drag(MouseButton::Left) => {
                         if mouse_event.modifiers == KeyModifiers::NONE {
                             drag_rotation.handle_drag(
                                 mouse_event.column,
@@ -60,7 +61,8 @@ fn main() {
                             );
                         }
                     }
-                    MouseEventKind::Down(MouseButton::Middle) => drag_rotation.handle_drag_start(
+                    MouseEventKind::Down(MouseButton::Middle)
+                    | MouseEventKind::Down(MouseButton::Left) => drag_rotation.handle_drag_start(
                         mouse_event.column,
                         mouse_event.row,
                         terminal::size().unwrap(),
@@ -74,7 +76,11 @@ fn main() {
                     drag_key_is_down = !drag_key_is_down;
                 }
                 if drag_key_is_down {
-                    drag_rotation.handle_drag_start(mouse_column, mouse_row, terminal::size().unwrap())
+                    drag_rotation.handle_drag_start(
+                        mouse_column,
+                        mouse_row,
+                        terminal::size().unwrap(),
+                    )
                 }
             }
         }

@@ -74,13 +74,15 @@ pub fn render_mesh(
                 // assumes that both normal and light direction are unit vectors
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
-                // TODO remove usage of camera_triangle,
                 render_triangle(
                     &new_triangle,
                     image_buffer,
                     depth_buffer,
                     Some(light_intensity),
                 );
+
+                // --- uncomment to generate images --- 
+                //
                 // let height = image_buffer.len() as u32;
                 // let width = image_buffer[0].len() as u32;
                 // let mut img = GrayImage::new(width, height);
