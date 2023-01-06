@@ -39,14 +39,14 @@ pub enum ShouldExit {
 // TODO take a config struct?
 impl Renderer {
     pub fn new(width: u16, height: u16, fps: f32, char_asp_ratio: f32, fov: f32, brightness_string: &str) -> Self {
-        let angle_rad = (height as f32 / width as f32).atan();
+        let aspect_ratio_angle = (height as f32 * char_asp_ratio / width as f32).atan();
         let empty_char_buffer = Renderer::get_empty_char_buffer(width, height);
 
         Renderer {
             width,
             height,
-            horizontal_fov: fov * angle_rad.cos(),
-            vertical_fov: fov * angle_rad.sin() * char_asp_ratio,
+            horizontal_fov: fov * aspect_ratio_angle.cos(),
+            vertical_fov: fov * aspect_ratio_angle.sin(),
             // TODO make parameter of new()
             view_point: Point3 { x: 0.0, y: 1.0, z: -8.0 },
             chars: brightness_string.as_bytes().to_vec(),
