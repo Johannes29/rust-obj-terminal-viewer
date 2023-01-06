@@ -1,7 +1,10 @@
 ## TODOs
  - Automatically decide view_point and rotation_origin based on object size and max/min coordinates
  - Object should always be lit, independent of the current rotation
-   Can not just ignore
+   Can not just ignore face orientation when transforming triangles from 3d to screen space
+ - Refactor obj parser
+    - Too many indentation levels -> Call a fn for each line, call a fn for each "command"
+    - Add support for obj files without normals
  - Improve algorithm for deciding which triangles to not render
     Currently the top face is rendered when camera is between top and bottom face in height
     (Renders a triangle which should be backface culled)
