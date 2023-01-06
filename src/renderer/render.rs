@@ -81,7 +81,7 @@ pub fn render_mesh(
                     Some(light_intensity),
                 );
 
-                // --- uncomment to generate images --- 
+                // --- uncomment to generate debug images --- 
                 //
                 // let height = image_buffer.len() as u32;
                 // let width = image_buffer[0].len() as u32;
@@ -91,14 +91,14 @@ pub fn render_mesh(
                 //         img.put_pixel(x, y, Luma([(image_buffer[y as usize][x as usize] * 255.0) as u8]));
                 //     }
                 // }
-                // img.save(format!("frame_{}.png", triangle_index)).unwrap();
+                // img.save(format!("debug_images/frame_{}.png", triangle_index)).unwrap();
                 // let mut depth_img = GrayImage::new(width, height);
                 // for x in 0..width {
                 //     for y in 0..height {
                 //         depth_img.put_pixel(x, y, Luma([(depth_buffer[y as usize][x as usize] * 20.0) as u8]));
                 //     }
                 // }
-                // depth_img.save(format!("frame_{}_depth.png", triangle_index)).unwrap();
+                // depth_img.save(format!("debug_images/frame_{}_depth.png", triangle_index)).unwrap();
                 // triangle_index += 1;
             }
         }

@@ -3,18 +3,7 @@ name = "rust-obj-terminal-viewer"
 version = "0.1.0"
 edition = "2021"
 
-[profile.release]
-debug = true
-
-[dev-dependencies]
-criterion = "0.3"
-
 [dependencies]
 crossterm = "0.25.0"
 clap = { version = "4.0", features = ["derive"] }
 image = "0.24.4"
-
-# criterion
-[[bench]]
-name = "my_benchmark"
-harness = false
