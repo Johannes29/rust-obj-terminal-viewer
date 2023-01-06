@@ -260,7 +260,6 @@ impl DragRotation {
             self.rotation_speed,
             self.char_aspect_ratio,
         );
-        (renderer.camera_rotation_x, renderer.camera_rotation_y) = self.get_rotation_xy();
-        // dbg!(renderer.camera_rotation_x, renderer.camera_rotation_y);
+        (renderer.mesh_rotation_x, renderer.mesh_rotation_y) = self.get_rotation_xy();
     }
 }

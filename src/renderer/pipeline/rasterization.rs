@@ -1,5 +1,5 @@
 use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function, paralellogram_area};
-use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3, distance_from_origo, cross_product};
+use crate::general::positions_3d::Triangle as Triangle3;
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
@@ -103,7 +103,6 @@ mod test_bc {
             y: 0.5
         };
         let result = get_barycentric_coordinates(&triangle, &point);
-        dbg!(result);
         assert_eq!(result, (0.5, 0.5));
     }
 
@@ -119,7 +118,6 @@ mod test_bc {
             y: 0.0
         };
         let result = get_barycentric_coordinates(&triangle, &point);
-        dbg!(result);
         assert_eq!(result, (1.0, 0.0));
     }
 
