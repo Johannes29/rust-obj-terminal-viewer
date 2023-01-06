@@ -116,6 +116,15 @@ pub fn translation_matrix(x: f32, y: f32, z: f32) -> Matrix4x4 {
     ]
 }
 
+pub fn translation_matrix_from_point(point: &Point3) -> Matrix4x4 {
+    [
+        [1., 0., 0., point.x],
+        [0., 1., 0., point.y],
+        [0., 0., 1., point.z],
+        [0., 0., 0., 1.],
+    ]
+}
+
 #[cfg(test)]
 mod rotation_matrix_tests {
     use super::{rotation_matrix_y, MatrixTrait};

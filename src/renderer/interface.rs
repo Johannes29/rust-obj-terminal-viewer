@@ -23,6 +23,7 @@ pub struct Renderer {
     pub mesh_rotation_x: f32,
     pub mesh_rotation_y: f32,
     pub mesh_rotation_z: f32,
+    pub rotation_origin: Point3,
     pub light_direction: Point3,
     pub near: f32,
     pub far: f32,
@@ -35,6 +36,7 @@ pub enum ShouldExit {
 }
 
 // TODO #anti_aliasing: add parameter for antialiasing sampling (aa: u8), example values: 1 (normal), 2, 4, 8, ...
+// TODO take a config struct?
 impl Renderer {
     pub fn new(width: u16, height: u16, fps: f32, char_asp_ratio: f32, fov: f32, brightness_string: &str) -> Self {
         let angle_rad = (height as f32 / width as f32).atan();
@@ -45,7 +47,8 @@ impl Renderer {
             height,
             horizontal_fov: fov * angle_rad.cos(),
             vertical_fov: fov * angle_rad.sin() * char_asp_ratio,
-            view_point: Point3 { x: 0.0, y: 0.0, z: -8.0 },
+            // TODO make parameter of new()
+            view_point: Point3 { x: 0.0, y: 1.0, z: -8.0 },
             chars: brightness_string.as_bytes().to_vec(),
             mesh: Mesh { triangles: Vec::new(), },
             frame_time: Duration::from_secs_f32(1.0 / fps),
@@ -56,6 +59,9 @@ impl Renderer {
             mesh_rotation_x: 0.0,
             mesh_rotation_y: 0.0,
             mesh_rotation_z: 0.0,
+            // TODO make parameter of new()
+            rotation_origin: Point3 { x: 0.0, y: 1.0, z: 0.0 },
+            // TODO make parameter of new()
             light_direction: Point3 {x: -0.3, y: 0.5, z: 0.5}.normalized(),
             near: 6.0,
             far: 10.0,
@@ -73,7 +79,7 @@ impl Renderer {
     pub fn render_frame(&mut self) {
         self.clear_image_buffer();
         self.clear_depth_buffer();
-        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, self.mesh_rotation_x, self.mesh_rotation_y, &self.light_direction, self.horizontal_fov, self.vertical_fov, self.near, self.far);
+        render_mesh(&self.mesh, &mut self.image_buffer, &mut self.depth_buffer, &self.view_point, self.mesh_rotation_x, self.mesh_rotation_y, &self.rotation_origin, &self.light_direction, self.horizontal_fov, self.vertical_fov, self.near, self.far);
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
         draw_char_buffer(&self.char_buffer, &self.prev_char_buffer);
 

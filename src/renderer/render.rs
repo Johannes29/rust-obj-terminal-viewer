@@ -1,5 +1,5 @@
 use super::pipeline::rasterization::render_triangle;
-use super::pipeline::transformation::MatrixTrait;
+use super::pipeline::transformation::{MatrixTrait, translation_matrix_from_point};
 use super::pipeline::transformation::{
     multiply_triangle_points_with_matrix, persp_proj_mat, rotation_matrix_x, rotation_matrix_y,
     translation_matrix, triangle_intersects_screen_space,
@@ -7,13 +7,15 @@ use super::pipeline::transformation::{
 use crate::general::positions_3d::{dot_product, Mesh, Point as Point3};
 use image::{GrayImage, Luma};
 
+// TODO pass self or settings struct, can not have this many parameters
 pub fn render_mesh(
     mesh: &Mesh,
     image_buffer: &mut Vec<Vec<f32>>,
     depth_buffer: &mut Vec<Vec<f32>>,
     view_point: &Point3,
-    view_point_rotation_x: f32,
-    view_point_rotation_y: f32,
+    mesh_rotation_x: f32,
+    mesh_rotation_y: f32,
+    rotation_origin: &Point3,
     light_direction: &Point3,
     horizontal_fov: f32,
     vertical_fov: f32,
@@ -22,15 +24,19 @@ pub fn render_mesh(
 ) {
     let aspect_ratio = horizontal_fov / vertical_fov;
     let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
-    let rotation_matrix_x = rotation_matrix_x(view_point_rotation_x);
-    let rotation_matrix_y = rotation_matrix_y(view_point_rotation_y);
+    let rotation_matrix_x = rotation_matrix_x(mesh_rotation_x);
+    let rotation_matrix_y = rotation_matrix_y(mesh_rotation_y);
     let translation_matrix = translation_matrix(-view_point.x, -view_point.y, -view_point.z);
+    let pre_rotation_translation = translation_matrix_from_point(&rotation_origin.inverted());
+    let post_rotation_translation = translation_matrix_from_point(rotation_origin);
     // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector,
     // then the one to the right of that one, etc.
     let transformation_matrix = persp_proj_mat
         .combine(translation_matrix)
+        .combine(post_rotation_translation)
         .combine(rotation_matrix_x)
-        .combine(rotation_matrix_y);
+        .combine(rotation_matrix_y)
+        .combine(pre_rotation_translation);
     let char_buffer_width = image_buffer[0].len() as f32;
     let char_buffer_height = image_buffer.len() as f32;
     let mut triangle_index = 0;
