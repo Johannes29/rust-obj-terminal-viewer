@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.runnables.extraArgs": [
+        "objects/hourglass.obj"
+    ]
+}

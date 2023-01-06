@@ -6,6 +6,9 @@
     (Renders a triangle which should be backface culled)
  - Add minimum light level, so that mesh triangles can't be completely black
 
+ - Maybe stop capturing mouse movements when program stops
+ - This should be a binary package, no lib.rs
+
 ***bugs***
  - rect in torus_and_cone.obj starts to dissapear when viewpoint is only at z=-2
 

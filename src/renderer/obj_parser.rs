@@ -1,8 +1,9 @@
 use crate::general::positions_3d::{Mesh, Triangle as Triangle3, Point as Point3};
 use std::fs::File;
 use std::io::{self, BufRead};
+use std::path::PathBuf;
 
-pub fn parse_obj(file_path: &str) -> Result<Mesh, String> {
+pub fn parse_obj(file_path: &PathBuf) -> Result<Mesh, String> {
     fn error(message: String, line: String, line_index: usize) -> String {
         return format!("{message}\nAt line {line_index}: '{line}'");
     }
@@ -129,13 +130,13 @@ pub fn parse_obj(file_path: &str) -> Result<Mesh, String> {
             }
         }
     } else {
-        return Err(format!("Could not read file '{}'", file_path));
+        return Err(format!("Could not read file '{}'", file_path.to_str().expect("valid unicode")));
     }
 
     Ok(mesh)
 }
 
-fn read_lines(file_path: &str) -> io::Result<io::Lines<io::BufReader<File>>> {
+fn read_lines(file_path: &PathBuf) -> io::Result<io::Lines<io::BufReader<File>>> {
     let file = File::open(file_path)?;
     Ok(io::BufReader::new(file).lines())
 }

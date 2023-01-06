@@ -11,6 +11,7 @@ criterion = "0.3"
 
 [dependencies]
 crossterm = "0.25.0"
+clap = { version = "4.0", features = ["derive"] }
 image = "0.24.4"
 
 # criterion

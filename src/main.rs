@@ -11,9 +11,17 @@ use crossterm::event::Event;
 use crossterm::event::MouseEventKind;
 use crossterm::terminal;
 
+use clap::Parser;
+
+#[derive(Parser)]
+struct Cli {
+    path: std::path::PathBuf
+}
+
 // +x is to the right, +y is up, +z is forwards
 fn main() {
-    let obj_path = "objects/hourglass.obj";
+    let args = Cli::parse();
+    let obj_path = args.path;
     let terminal_size = terminal::size().unwrap();
     let mut renderer = Renderer::new(
         terminal_size.0,
@@ -23,10 +31,11 @@ fn main() {
         80.0,
         " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
     );
-    let mesh = match parse_obj(obj_path) {
+    let mesh = match parse_obj(&obj_path) {
         Ok(mesh) => mesh,
         Err(message) => {
-            println!("Error when parsing {obj_path}: {message}");
+            let path_string = obj_path.to_str().unwrap();
+            println!("Error when parsing {path_string}: {message}");
             return;
         }
     };
