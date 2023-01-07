@@ -5,7 +5,7 @@ use std::io::{self, BufRead};
 use std::path::PathBuf;
 
 pub struct ObjParser {
-    points: Vec<Point3>,
+    vertices: Vec<Point3>,
     normals: Vec<Point3>,
     mesh: Mesh,
 }
@@ -28,7 +28,7 @@ impl From<Result<(), String>> for LineParseResult {
 impl ObjParser {
     fn new() -> Self {
         ObjParser {
-            points: Vec::new(),
+            vertices: Vec::new(),
             normals: Vec::new(),
             mesh: Mesh::new(),
         }
@@ -36,7 +36,7 @@ impl ObjParser {
 
     pub fn parse_file(file_path: &PathBuf) -> Result<Mesh, String> {
         if file_path.as_path().extension() != Some(OsStr::new("obj")) {
-            return Err(String::from("file must have .obj extension"))
+            return Err(String::from("file must have .obj extension"));
         }
 
         let mut obj_parser = ObjParser::new();
@@ -53,7 +53,6 @@ impl ObjParser {
                         }
                         LineParseResult::Parsed => {
                             parsed_lines += 1;
-                            dbg!(line);
                         }
                         LineParseResult::Skipped => (),
                     };
@@ -110,7 +109,7 @@ impl ObjParser {
             .collect();
 
         if argument_nums.len() == argument_strings.len() {
-            self.points.push(Point3::from_vec(argument_nums).unwrap());
+            self.vertices.push(Point3::from_vec(argument_nums).unwrap());
             return Ok(());
         } else {
             return Err("error when parsing verts".into());
@@ -147,60 +146,40 @@ impl ObjParser {
             .map(|str| parse_face_element_vertext_string(str))
             .collect();
 
-        let vertex_position_indices: Vec<usize> = parsed_numbers
+        let vertices: Vec<&Point3> = parsed_numbers
             .iter()
-            .map(|indices| indices[0].unwrap()) // TODO add error on unwrap
+            .map(|indices| indices[0].expect("vertex index in face declaration"))
+            .map(|index| &self.vertices[index - 1])
             .collect();
 
-        let normals_are_provided = parsed_numbers.iter().all(|numbers| !numbers[2].is_none());
-        if !normals_are_provided {
-            return Err(String::from("no normals provided"));
-        }
-
-        let vertex_normal_indices: Vec<usize> = parsed_numbers
+        let vertex_normals: Vec<&Point3> = parsed_numbers
             .iter()
-            .map(|indices| indices[2].unwrap())
-            .collect();
-
-        let vertex_normals: Vec<&Point3> = vertex_normal_indices
-            .clone()
-            .iter()
+            .map(|indices| indices[2].expect("vertex normal index in face declaration"))
             .map(|index| &self.normals[index - 1])
             .collect();
 
-        // check if all normals for this face are identical
-        // let mut first_normal: Option<&Point3> = None;
-        // let mut all_normals_are_identical = true;
-        // for vertex_normal in &vertex_normals {
-        //     if let None = first_normal {
-        //         first_normal = Some(vertex_normal);
-        //     } else {
-        //         if Some(*vertex_normal) != first_normal {
-        //             all_normals_are_identical = false
-        //         }
-        //     }
-        // }
-        // if !all_normals_are_identical {
-        //     return Err(error("face normals are different".into(), line, line_number));
-        // }
-        let face_normal = self.normals[vertex_normal_indices[0] - 1].clone();
+        let face_normal = if all_equal(&vertex_normals).unwrap() {
+            vertex_normals[0]
+        } else {
+            return Err("face normals are different".into());
+        };
 
         // TODO support negative indices
         // TODO cloning is not optimal for performance
         let triangle = Triangle3::from_arr_n([
-            self.points[vertex_position_indices[0] - 1].clone(),
-            self.points[vertex_position_indices[1] - 1].clone(),
-            self.points[vertex_position_indices[2] - 1].clone(),
+            vertices[0].clone(),
+            vertices[1].clone(),
+            vertices[2].clone(),
             face_normal.clone(),
         ]);
         self.mesh.triangles.push(triangle);
 
         // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
-        if vertex_position_indices.len() == 4 {
+        if vertices.len() == 4 {
             let triangle = Triangle3::from_arr_n([
-                self.points[vertex_position_indices[2] - 1].clone(),
-                self.points[vertex_position_indices[3] - 1].clone(),
-                self.points[vertex_position_indices[0] - 1].clone(),
+                vertices[2].clone(),
+                vertices[3].clone(),
+                vertices[0].clone(),
                 face_normal.clone(),
             ]);
             self.mesh.triangles.push(triangle);
@@ -230,4 +209,9 @@ fn parse_face_element_vertext_string(string: &str) -> [Option<usize>; 3] {
     }
 
     numbers
+}
+
+pub fn all_equal<T: PartialEq>(elements: &[T]) -> Option<bool> {
+    let first = elements.get(0)?;
+    Some(elements.iter().all(|elem| elem == first))
 }
