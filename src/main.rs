@@ -4,7 +4,7 @@ mod renderer;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton};
 
 use renderer::interface::{Renderer, ShouldExit};
-use renderer::obj_parser::parse_obj;
+use renderer::obj_parser::ObjParser;
 
 use crate::general::positions_3d::Point;
 use crossterm::event::Event;
@@ -31,7 +31,7 @@ fn main() {
         70.0,
         " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
     );
-    let mesh = match parse_obj(&obj_path) {
+    let mesh = match ObjParser::parse_file(&obj_path) {
         Ok(mesh) => mesh,
         Err(message) => {
             let path_string = obj_path.to_str().unwrap();

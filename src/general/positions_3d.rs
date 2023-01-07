@@ -187,6 +187,12 @@ impl Triangle {
     }
 }
 
+impl Mesh {
+    pub fn new() -> Self {
+        Mesh { triangles: Vec::new() }
+    }
+}
+
 // #[cfg(test)]
 // mod tests {
 //     use super::Point as Point3;

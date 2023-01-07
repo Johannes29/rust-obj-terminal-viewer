@@ -1,8 +1,6 @@
 use crate::general::positions_3d::Point as Point3;
 use crate::general::positions_3d::Triangle as Triangle3;
 
-use std::f32::consts::PI;
-
 type Matrix4x1 = [[f32; 1]; 4];
 type Matrix4x4 = [[f32; 4]; 4];
 
