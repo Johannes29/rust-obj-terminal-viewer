@@ -1,4 +1,5 @@
 use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3};
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::PathBuf;
@@ -7,6 +8,21 @@ pub struct ObjParser {
     points: Vec<Point3>,
     normals: Vec<Point3>,
     mesh: Mesh,
+}
+
+enum LineParseResult {
+    Error(String),
+    Parsed,
+    Skipped,
+}
+
+impl From<Result<(), String>> for LineParseResult {
+    fn from(result: Result<(), String>) -> Self {
+        match result {
+            Ok(_) => LineParseResult::Parsed,
+            Err(message) => LineParseResult::Error(message),
+        }
+    }
 }
 
 impl ObjParser {
@@ -19,16 +35,27 @@ impl ObjParser {
     }
 
     pub fn parse_file(file_path: &PathBuf) -> Result<Mesh, String> {
+        if file_path.as_path().extension() != Some(OsStr::new("obj")) {
+            return Err(String::from("file must have .obj extension"))
+        }
+
         let mut obj_parser = ObjParser::new();
         let mut line_number = 0;
+        let mut parsed_lines = 0;
 
         if let Ok(lines) = read_lines(file_path) {
             for line in lines {
                 line_number += 1;
                 if let Ok(line) = line {
                     match obj_parser.handle_line(&line) {
-                        Err(message) => return Err(ObjParser::error(message, line, line_number)),
-                        Ok(_) => (),
+                        LineParseResult::Error(message) => {
+                            return Err(ObjParser::error(message, line, line_number))
+                        }
+                        LineParseResult::Parsed => {
+                            parsed_lines += 1;
+                            dbg!(line);
+                        }
+                        LineParseResult::Skipped => (),
                     };
                 } else {
                     return Err(String::from("could not read line"));
@@ -41,23 +68,31 @@ impl ObjParser {
             ));
         }
 
+        if parsed_lines == 0 {
+            return Err(String::from("did not find any obj data"));
+        }
+        if obj_parser.mesh.triangles.len() == 0 {
+            return Err(String::from("returned empty mesh"));
+        }
+
         Ok(obj_parser.mesh)
     }
 
-    fn handle_line(&mut self, line: &str) -> Result<(), String> {
+    fn handle_line(&mut self, line: &str) -> LineParseResult {
         let space_separated_strings: Vec<&str> =
             line.split(' ').filter(|str| !str.is_empty()).collect();
         if space_separated_strings.len() < 2 {
-            return Ok(());
+            return LineParseResult::Skipped;
         }
         let command_string = space_separated_strings[0];
         let argument_strings = &space_separated_strings[1..];
-        return match command_string {
-            "v" => self.handle_v(argument_strings),
-            "vn" => self.handle_vn(argument_strings),
-            "f" => self.handle_f(argument_strings),
-            _ => Ok(()),
-        };
+
+        match command_string {
+            "v" => self.handle_v(argument_strings).into(),
+            "vn" => self.handle_vn(argument_strings).into(),
+            "f" => self.handle_f(argument_strings).into(),
+            _ => LineParseResult::Skipped,
+        }
     }
 
     fn error(message: String, line: String, line_number: usize) -> String {
