@@ -28,7 +28,7 @@ fn main() {
         terminal_size.1,
         60.0,
         2.0,
-        80.0,
+        70.0,
         " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
     );
     let mesh = match parse_obj(&obj_path) {

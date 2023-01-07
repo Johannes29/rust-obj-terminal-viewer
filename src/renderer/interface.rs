@@ -39,14 +39,14 @@ pub enum ShouldExit {
 // TODO take a config struct?
 impl Renderer {
     pub fn new(width: u16, height: u16, fps: f32, char_asp_ratio: f32, fov: f32, brightness_string: &str) -> Self {
-        let aspect_ratio_angle = (height as f32 * char_asp_ratio / width as f32).atan();
+        let aspect_ratio = height as f32 * char_asp_ratio / width as f32;
         let empty_char_buffer = Renderer::get_empty_char_buffer(width, height);
 
         Renderer {
             width,
             height,
-            horizontal_fov: fov * aspect_ratio_angle.cos(),
-            vertical_fov: fov * aspect_ratio_angle.sin(),
+            horizontal_fov: get_horizontal_fov(fov, aspect_ratio),
+            vertical_fov: get_vertical_fov(fov, aspect_ratio),
             // TODO make parameter of new()
             view_point: Point3 { x: 0.0, y: 1.0, z: -8.0 },
             chars: brightness_string.as_bytes().to_vec(),
@@ -141,4 +141,16 @@ impl Renderer {
     fn clear_depth_buffer(&mut self) {
         self.depth_buffer = Renderer::get_empty_depth_buffer(self.width, self.height);
     }
+}
+
+/// aspect ratio = height / width
+fn get_horizontal_fov(diagonal_fov: f32, aspect_ratio: f32) -> f32 {
+    let aspect_ratio_angle = aspect_ratio.atan();
+    2.0 * ((diagonal_fov.to_radians() / 2.0).tan() * aspect_ratio_angle.cos()).atan().to_degrees()
+}
+
+/// aspect ratio = height / width
+fn get_vertical_fov(diagonal_fov: f32, aspect_ratio: f32) -> f32 {
+    let aspect_ratio_angle = aspect_ratio.atan();
+    2.0 * ((diagonal_fov.to_radians() / 2.0).tan() * aspect_ratio_angle.sin()).atan().to_degrees()
 }

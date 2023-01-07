@@ -22,8 +22,7 @@ pub fn render_mesh(
     near: f32,
     far: f32,
 ) {
-    let aspect_ratio = horizontal_fov / vertical_fov;
-    let persp_proj_mat = persp_proj_mat(vertical_fov, aspect_ratio, near, far);
+    let persp_proj_mat = persp_proj_mat(horizontal_fov, vertical_fov, near, far);
     let rotation_matrix_x = rotation_matrix_x(mesh_rotation_x);
     let rotation_matrix_y = rotation_matrix_y(mesh_rotation_y);
     let translation_matrix = translation_matrix(-view_point.x, -view_point.y, -view_point.z);

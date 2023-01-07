@@ -72,14 +72,15 @@ impl MatrixVector for Matrix4x1 {
 }
 
 // from https://youtu.be/U0_ONQQ5ZNM?t=784
-pub fn persp_proj_mat(vertical_fov_deg: f32, aspect_ratio: f32, near: f32, far: f32) -> Matrix4x4 {
-    let v = vertical_fov_deg * PI / 180.;
-    let a = aspect_ratio;
+/// fov in degrees
+pub fn persp_proj_mat(horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) -> Matrix4x4 {
+    let h = horizontal_fov.to_radians();
+    let v = vertical_fov.to_radians();
     let n = near;
     let f = far;
     [
-        [1. / (a * (v / 2.).tan()), 0., 0., 0.],
-        [0., -1. / ((v / 2.).tan()), 0., 0.],
+        [1. / (h / 2.).tan(), 0., 0., 0.],
+        [0., -1. / (v / 2.).tan(), 0., 0.],
         [0., 0., f / (f - n), -f * n / (f - n)],
         [0., 0., 1., 0.],
     ]

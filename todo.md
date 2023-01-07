@@ -1,5 +1,6 @@
 ## TODOs
  - Automatically decide view_point and rotation_origin based on object size and max/min coordinates
+    - Also decide near and far fields from bounding_radius
  - Object should always be lit, independent of the current rotation
    Can not just ignore face orientation when transforming triangles from 3d to screen space
  - Refactor obj parser
