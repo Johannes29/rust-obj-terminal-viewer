@@ -1,6 +1,8 @@
 mod general;
 mod renderer;
 
+use std::cmp::min;
+
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton};
 
 use renderer::interface::{Renderer, ShouldExit};
@@ -43,7 +45,7 @@ fn main() {
     };
     renderer.mesh = mesh;
 
-    let min_fov = todo!();
+    let min_fov = renderer.horizontal_fov.max(renderer.vertical_fov);
     set_points(&mut renderer.view_point, &mut renderer.rotation_origin, &renderer.mesh, min_fov);
 
     let mut drag_key_is_down = false;
@@ -278,7 +280,7 @@ fn set_points(view_point: &mut Point, rotation_origin: &mut Point, mesh: &Mesh, 
     let relative_view_point = Point {
         x: 0.,
         y: 0.,
-        z: -get_view_point_distance(min_fov, bounding_radius)
+        z: -get_view_point_distance(min_fov, bounding_radius, 1.1),
     };
     let center_point = bounding_box.get_center();
     *view_point = center_point.add(&relative_view_point);
@@ -286,6 +288,6 @@ fn set_points(view_point: &mut Point, rotation_origin: &mut Point, mesh: &Mesh, 
 }
 
 /// horizontal_fov in radians
-fn get_view_point_distance(horizontal_fov: f32, bounding_radius: f32) -> f32 {
-    bounding_radius / (horizontal_fov / 2.0).tan()
+fn get_view_point_distance(horizontal_fov: f32, bounding_radius: f32, rel_margin: f32) -> f32 {
+    (bounding_radius * rel_margin) / (horizontal_fov / 2.0).tan()
 }

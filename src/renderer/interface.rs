@@ -10,8 +10,8 @@ use crate::general::positions_3d::Mesh;
 pub struct Renderer {
     width: u16,
     height: u16,
-    horizontal_fov: f32,
-    vertical_fov: f32,
+    pub horizontal_fov: f32,
+    pub vertical_fov: f32,
     pub view_point: Point3,
     chars: Vec<u8>,
     pub mesh: Mesh,
