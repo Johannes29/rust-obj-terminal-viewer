@@ -1,3 +1,4 @@
+use crate::general::positions_2d::Point;
 use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3};
 use std::ffi::OsStr;
 use std::fs::File;
@@ -152,16 +153,28 @@ impl ObjParser {
             .map(|index| &self.vertices[index - 1])
             .collect();
 
-        let vertex_normals: Vec<&Point3> = parsed_numbers
+        let vertext_normal_indices_option: Vec<Option<usize>> = parsed_numbers
             .iter()
-            .map(|indices| indices[2].expect("vertex normal index in face declaration"))
-            .map(|index| &self.normals[index - 1])
+            .map(|indices| indices[2])
             .collect();
+        
+        let face_normal: Point3 = match evaluate(vertext_normal_indices_option) {
+            Some(indices) => {
+                let vertex_normals: Vec<&Point3> = indices
+                    .iter()
+                    .map(|index| &self.normals[index - 1])
+                    .collect();
 
-        let face_normal = if all_equal(&vertex_normals).unwrap() {
-            vertex_normals[0]
-        } else {
-            return Err("face normals are different".into());
+                if all_equal(&vertex_normals).unwrap() {
+                    let cloned_normal: Point3 = vertex_normals[0].clone();
+                    cloned_normal
+                } else {
+                    return Err("face normals are different".into());
+                }
+            },
+            None => {
+                Triangle3::get_normal_2(&vertices[0..3])
+            },
         };
 
         // TODO support negative indices
@@ -214,4 +227,18 @@ fn parse_face_element_vertext_string(string: &str) -> [Option<usize>; 3] {
 pub fn all_equal<T: PartialEq>(elements: &[T]) -> Option<bool> {
     let first = elements.get(0)?;
     Some(elements.iter().all(|elem| elem == first))
+}
+
+fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
+    let mut new_vec: Vec<T> = Vec::new();
+    for element in a {
+        match element {
+            None => return None,
+            Some(value) => {
+                let copy: T = value.clone();
+                new_vec.push(copy);
+            }
+        }
+    }
+    Some(new_vec)
 }

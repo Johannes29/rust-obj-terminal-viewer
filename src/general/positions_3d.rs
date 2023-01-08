@@ -179,11 +179,17 @@ impl Triangle {
         }
     }
     
-    fn get_normal(points: [Point; 3]) -> Point {
+    pub fn get_normal(points: [Point; 3]) -> Point {
         let a = points[1].relative_to(&points[0]);
         let b = points[2].relative_to(&points[0]);
         cross_product(a, b).normalized()
-        
+    }
+
+    // TODO merge this and the above function
+    pub fn get_normal_2(points: &[&Point]) -> Point {
+        let a = points[1].relative_to(points[0]);
+        let b = points[2].relative_to(points[0]);
+        cross_product(a, b).normalized()
     }
 }
 
