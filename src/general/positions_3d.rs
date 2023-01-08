@@ -21,11 +21,12 @@ pub struct Triangle {
     pub normal: Point,
 }
 
+pub struct BoundingBox(Point, Point);
+
 #[derive(Debug)]
 pub struct Degrees(pub f32);
 
-
-// TODO add two methods for multiplication and addition on each component of the point 
+// TODO add two methods for multiplication and addition on each component of the point
 // like add_xyz and multiply_xyz, but with only one parameter
 impl Point {
     pub fn from_array(array: [f32; 3]) -> Self {
@@ -38,7 +39,7 @@ impl Point {
 
     pub fn from_vec(array: Vec<f32>) -> Option<Self> {
         if array.len() != 3 {
-            return None
+            return None;
         }
         Some(Point {
             x: array[0],
@@ -51,16 +52,22 @@ impl Point {
         [self.x, self.y, self.z]
     }
 
-    pub fn map<F>(&self, f: F) -> Self where F: Fn(f32) -> f32 {
+    pub fn map<F>(&self, f: F) -> Self
+    where
+        F: Fn(f32) -> f32,
+    {
         let components = self.to_array().map(f);
         Point::from_array(components)
     }
 
-    pub fn combine<F>(&self, point: &Point, f: F) -> Self where F: Fn(f32, f32) -> f32 {
+    pub fn combine<F>(&self, point: &Point, f: F) -> Self
+    where
+        F: Fn(f32, f32) -> f32,
+    {
         Point {
             x: f(self.x, point.x),
             y: f(self.y, point.y),
-            z: f(self.z, point.z)
+            z: f(self.z, point.z),
         }
     }
 
@@ -77,7 +84,7 @@ impl Point {
     pub fn to_2d(&self) -> Point2 {
         Point2 {
             x: self.x,
-            y: self.y
+            y: self.y,
         }
     }
 
@@ -107,7 +114,7 @@ impl Triangle {
             p1: array[0].clone(),
             p2: array[1].clone(),
             p3: array[2].clone(),
-            normal: array[3].clone()
+            normal: array[3].clone(),
         }
     }
 
@@ -116,7 +123,7 @@ impl Triangle {
             p1: array[0].clone(),
             p2: array[1].clone(),
             p3: array[2].clone(),
-            normal: Triangle::get_normal(array)
+            normal: Triangle::get_normal(array),
         }
     }
 
@@ -126,13 +133,13 @@ impl Triangle {
     #[allow(unused)]
     pub fn from_vec(array: Vec<Point>) -> Option<Self> {
         if array.len() < 3 {
-            return None
+            return None;
         }
         Some(Triangle {
             p1: array[0].clone(),
             p2: array[1].clone(),
             p3: array[2].clone(),
-            normal: Triangle::get_normal([array[0].clone(), array[1].clone(), array[2].clone()])
+            normal: Triangle::get_normal([array[0].clone(), array[1].clone(), array[2].clone()]),
         })
     }
 
@@ -141,29 +148,29 @@ impl Triangle {
      */
     pub fn from_vec_n(array: Vec<Point>, normal: Point) -> Option<Self> {
         if array.len() < 3 {
-            return None
+            return None;
         }
         Some(Triangle {
             p1: array[0].clone(),
             p2: array[1].clone(),
             p3: array[2].clone(),
-            normal
+            normal,
         })
     }
 
-    pub fn combine_with_point<F>(&self, point: &Point, function: F)-> Self
-        where F: Fn(&Point, &Point) -> Point {
+    pub fn combine_with_point<F>(&self, point: &Point, function: F) -> Self
+    where
+        F: Fn(&Point, &Point) -> Point,
+    {
         let points = self.points().map(|self_point| function(self_point, point));
         Triangle::from_arr(points)
     }
 
     pub fn add_point(&self, point: &Point) -> Self {
-        let closure = |triangle_point: &Point, other_point: &Point| {
-            triangle_point.add(other_point)
-        };
+        let closure = |triangle_point: &Point, other_point: &Point| triangle_point.add(other_point);
         self.combine_with_point(point, closure)
     }
-    
+
     pub fn multiply_with_point(&self, point: &Point) -> Self {
         let closure = |triangle_point: &Point, other_point: &Point| {
             triangle_point.combine(other_point, |a, b| a * b)
@@ -178,7 +185,7 @@ impl Triangle {
             p3: self.p3.to_2d(),
         }
     }
-    
+
     pub fn get_normal(points: [Point; 3]) -> Point {
         let a = points[1].relative_to(&points[0]);
         let b = points[2].relative_to(&points[0]);
@@ -195,7 +202,63 @@ impl Triangle {
 
 impl Mesh {
     pub fn new() -> Self {
-        Mesh { triangles: Vec::new() }
+        Mesh {
+            triangles: Vec::new(),
+        }
+    }
+}
+
+impl BoundingBox {
+    fn initialize() -> Self {
+        let zero_point = Point {
+            x: 0.,
+            y: 0.,
+            z: 0.,
+        };
+        BoundingBox(zero_point.clone(), zero_point)
+    }
+
+    // TODO DRY
+    fn expand(&mut self, point: &Point) {
+        if point.x < self.0.x {
+            self.0.x = point.x
+        }
+        if point.y < self.0.y {
+            self.0.y = point.y
+        }
+        if point.z < self.0.z {
+            self.0.z = point.z
+        }
+        if point.x > self.1.x {
+            self.1.x = point.x
+        }
+        if point.y > self.1.y {
+            self.1.y = point.y
+        }
+        if point.z > self.1.z {
+            self.1.z = point.z
+        }
+    }
+
+    pub fn new<'a, T: Iterator<Item = &'a Triangle>>(iter: &mut T) -> Self {
+        let mut bounding_box = BoundingBox::initialize();
+
+        while let Some(triangle) = iter.next() {
+            for point in triangle.points() {
+                bounding_box.expand(point);
+            }
+        }
+
+        bounding_box
+    }
+
+    pub fn get_center(&self) -> Point {
+        let get_middle = |point1, point2| (point1 + point2) / 2.0;
+        self.0.combine(&self.1, get_middle)
+    }
+
+    pub fn get_bounding_radius(&self) -> f32 {
+        distance(&self.0, &self.1) / 2.0
     }
 }
 
@@ -221,7 +284,7 @@ pub fn cross_product(a: Point, b: Point) -> Point {
     Point {
         x: (a.y * b.z - b.y * a.z),
         y: (a.x * b.z - b.x * a.z),
-        z: (a.x * b.y - b.x * a.y)
+        z: (a.x * b.y - b.x * a.y),
     }
 }
 
