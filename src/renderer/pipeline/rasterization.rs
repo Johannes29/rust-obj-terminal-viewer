@@ -152,7 +152,7 @@ fn get_top_and_bottom_edge<'a>(p1: &'a Point2, p2: &'a Point2, p3: &'a Point2) -
     let (mut top_edge, mut bottom_edge) = match two_v_k.partial_cmp(&three_v_k).unwrap() {
         Ordering::Less => (three_vert_edge, two_vert_edge),
         Ordering::Greater => (two_vert_edge, three_vert_edge),
-        Ordering::Equal => panic!("Triangle has no area"),
+        Ordering::Equal => (two_vert_edge, three_vert_edge) /* TODO panic!("Triangle has no area") */,
     };
 
     if pInAscX[0] == pInAscX[2] {

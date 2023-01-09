@@ -107,7 +107,7 @@ impl Triangle {
 
     // TODO the following 4 methods are inconsistent
 
-    // the last element in the array should be the normal
+    /// the last element in the array should be the normal
     #[allow(unused)]
     pub fn from_arr_n(array: [Point; 4]) -> Self {
         Triangle {

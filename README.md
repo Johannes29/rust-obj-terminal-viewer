@@ -6,4 +6,4 @@ To generate and open a flamegraph:
 - Open a terminal window as administrator
 - Change working directory to the root of this repository
 - Run 
-`cargo flamegraph --output flamegraphs/flamegraph.svg -- objects/hourglass.obj && start flamegraphs/flamegraph.svg`
+`cargo flamegraph --output flamegraphs/graph-1s.svg -- objects/hourglass.obj && start flamegraphs/graph-1.svg`

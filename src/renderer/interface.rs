@@ -90,7 +90,7 @@ impl Renderer {
             // TODO make parameter of new()
             light_direction: Point3 {
                 x: -0.3,
-                y: 0.5,
+                y: -0.5,
                 z: 0.5,
             }
             .normalized(),
