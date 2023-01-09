@@ -1,4 +1,3 @@
-use crate::general::positions_2d::Point;
 use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3};
 use std::ffi::OsStr;
 use std::fs::File;

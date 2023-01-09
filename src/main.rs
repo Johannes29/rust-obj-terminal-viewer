@@ -1,14 +1,10 @@
 mod general;
 mod renderer;
 
-use std::cmp::min;
-
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton};
 
 use renderer::interface::{Renderer, ShouldExit};
 use renderer::obj_parser::ObjParser;
-use general::positions_3d::Triangle;
-use general::positions_3d::{Mesh, BoundingBox};
 
 use crate::general::positions_3d::Point;
 use crossterm::event::Event;
@@ -43,10 +39,9 @@ fn main() {
             return;
         }
     };
-    renderer.mesh = mesh;
+    renderer.set_mesh(mesh);
 
-    let min_fov = renderer.horizontal_fov.max(renderer.vertical_fov);
-    set_points(&mut renderer.view_point, &mut renderer.rotation_origin, &renderer.mesh, min_fov);
+    dbg!(&renderer.view_point);
 
     let mut drag_key_is_down = false;
     let (mut mouse_column, mut mouse_row) = (0, 0);
@@ -270,24 +265,4 @@ impl DragRotation {
         );
         (renderer.mesh_rotation_x, renderer.mesh_rotation_y) = self.get_rotation_xy();
     }
-}
-
-/// min_fov is min(horizontal_fov, vertical_fov)
-fn set_points(view_point: &mut Point, rotation_origin: &mut Point, mesh: &Mesh, min_fov: f32) {
-    let triangles_clone: Vec<Triangle> =  mesh.triangles.clone();
-    let bounding_box = BoundingBox::new(&mut triangles_clone.iter());
-    let bounding_radius = bounding_box.get_bounding_radius();
-    let relative_view_point = Point {
-        x: 0.,
-        y: 0.,
-        z: -get_view_point_distance(min_fov, bounding_radius, 1.1),
-    };
-    let center_point = bounding_box.get_center();
-    *view_point = center_point.add(&relative_view_point);
-    *rotation_origin = center_point;
-}
-
-/// horizontal_fov in radians
-fn get_view_point_distance(horizontal_fov: f32, bounding_radius: f32, rel_margin: f32) -> f32 {
-    (bounding_radius * rel_margin) / (horizontal_fov / 2.0).tan()
 }
