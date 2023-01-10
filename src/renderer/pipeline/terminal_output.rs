@@ -61,3 +61,10 @@ pub fn image_buffer_to_char_buffer(image_buffer: &Vec<Vec<f32>>, char_buffer: &m
         }
     }
 }
+
+pub fn add_debug_line_to_char_buffer(char_buffer: &mut Vec<Vec<u8>>, line: &str) {
+    let mut chars: Vec<u8> = line.as_bytes().to_vec();
+    chars.resize(char_buffer[0].len(), b' ');
+    let last_index = char_buffer.len() - 1;
+    char_buffer[last_index] = chars;
+}

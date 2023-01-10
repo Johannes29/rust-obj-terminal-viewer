@@ -1,5 +1,5 @@
 use super::events::*;
-use super::pipeline::terminal_output::{draw_char_buffer, image_buffer_to_char_buffer};
+use super::pipeline::terminal_output::{draw_char_buffer, image_buffer_to_char_buffer, add_debug_line_to_char_buffer};
 use super::render::render_mesh;
 use crate::general::positions_3d::{Mesh, BoundingBox};
 use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3};
@@ -29,6 +29,7 @@ pub struct Renderer {
     pub prev_char_buffer: Vec<Vec<u8>>,
     image_buffer: Vec<Vec<f32>>,
     depth_buffer: Vec<Vec<f32>>,
+    pub debug_line: String,
     pub mesh_rotation_x: f32,
     pub mesh_rotation_y: f32,
     pub mesh_rotation_z: f32,
@@ -78,6 +79,7 @@ impl Renderer {
             prev_char_buffer: empty_char_buffer.clone(),
             image_buffer: Renderer::get_empty_image_buffer(width, height),
             depth_buffer: Renderer::get_empty_depth_buffer(width, height),
+            debug_line: "".to_string(),
             mesh_rotation_x: 0.0,
             mesh_rotation_y: 0.0,
             mesh_rotation_z: 0.0,
@@ -149,6 +151,7 @@ impl Renderer {
             self.far,
         );
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
+        add_debug_line_to_char_buffer(&mut self.char_buffer, &self.debug_line);
         draw_char_buffer(&self.char_buffer, &self.prev_char_buffer);
 
         self.prev_char_buffer = self.char_buffer.clone();
@@ -174,6 +177,7 @@ impl Renderer {
 
             let end_time = Instant::now();
             let compute_and_draw_time = end_time - start_time;
+            self.update_debug_line(&compute_and_draw_time);
 
             match self.frame_time.checked_sub(compute_and_draw_time) {
                 Some(duration) => thread::sleep(duration),
@@ -181,6 +185,10 @@ impl Renderer {
             };
         }
         Renderer::after_rendering_stopped();
+    }
+
+    fn update_debug_line(&mut self, frame_time: &Duration) {
+        self.debug_line = format!("frame time: {} ms", frame_time.as_micros() as f32 / 1000.0);
     }
 
     fn after_rendering_stopped() {
