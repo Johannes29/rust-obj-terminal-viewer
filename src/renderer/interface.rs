@@ -25,10 +25,10 @@ pub struct Renderer {
     chars: Vec<u8>,
     pub mesh: Mesh,
     pub frame_time: Duration,
-    pub char_buffer: Vec<Vec<u8>>,
-    pub prev_char_buffer: Vec<Vec<u8>>,
-    image_buffer: Vec<Vec<f32>>,
-    depth_buffer: Vec<Vec<f32>>,
+    pub char_buffer: Buffer<u8>,
+    pub prev_char_buffer: Buffer<u8>,
+    image_buffer: Buffer<f32>,
+    depth_buffer: Buffer<f32>,
     pub debug_line: String,
     pub mesh_rotation_x: f32,
     pub mesh_rotation_y: f32,
@@ -57,7 +57,7 @@ impl Renderer {
         brightness_string: &str,
     ) -> Self {
         let aspect_ratio = height as f32 * char_asp_ratio / width as f32;
-        let empty_char_buffer = Renderer::get_empty_char_buffer(width, height);
+        let empty_char_buffer = Buffer::new(width as usize, height as usize, b' ');
 
         Renderer {
             width,
@@ -77,8 +77,8 @@ impl Renderer {
             frame_time: Duration::from_secs_f32(1.0 / fps),
             char_buffer: empty_char_buffer.clone(),
             prev_char_buffer: empty_char_buffer.clone(),
-            image_buffer: Renderer::get_empty_image_buffer(width, height),
-            depth_buffer: Renderer::get_empty_depth_buffer(width, height),
+            image_buffer: Buffer::new(width as usize, height as usize, 0.0),
+            depth_buffer: Buffer::new(width as usize, height as usize, f32::MAX),
             debug_line: "".to_string(),
             mesh_rotation_x: 0.0,
             mesh_rotation_y: 0.0,
@@ -208,24 +208,12 @@ impl Renderer {
         // stdout().execute(terminal::Clear(terminal::ClearType::All));
     }
 
-    fn get_empty_char_buffer(width: u16, height: u16) -> Vec<Vec<u8>> {
-        vec![vec![b' '; width as usize]; height as usize]
-    }
-
-    fn get_empty_image_buffer(width: u16, height: u16) -> Vec<Vec<f32>> {
-        vec![vec![0.0; width as usize]; height as usize]
-    }
-
-    fn get_empty_depth_buffer(width: u16, height: u16) -> Vec<Vec<f32>> {
-        vec![vec![f32::MAX; width as usize]; height as usize]
-    }
-
     fn clear_image_buffer(&mut self) {
-        self.image_buffer = Renderer::get_empty_image_buffer(self.width, self.height);
+        self.image_buffer = Buffer::new(self.width as usize, self.height as usize, 0.0);
     }
 
     fn clear_depth_buffer(&mut self) {
-        self.depth_buffer = Renderer::get_empty_depth_buffer(self.width, self.height);
+        self.depth_buffer = Buffer::new(self.width as usize, self.height as usize, f32::MAX);
     }
 }
 
@@ -250,4 +238,29 @@ fn get_vertical_fov(diagonal_fov: f32, aspect_ratio: f32) -> f32 {
 /// horizontal_fov in radians
 fn get_view_point_distance(horizontal_fov: f32, bounding_radius: f32, rel_margin: f32) -> f32 {
     (bounding_radius * rel_margin) / (horizontal_fov / 2.0).tan()
+}
+
+#[derive(Clone)]
+pub struct Buffer<T: Copy> {
+    pub values: Vec<T>,
+    pub height: usize,
+    pub width: usize,
+}
+
+impl<T: Copy> Buffer<T> {
+    pub fn new(width: usize, height: usize, fill_value: T) -> Self {
+        Buffer {
+            values: vec![fill_value; width * height],
+            width,
+            height,
+        }
+    }
+
+    pub fn get(&self, x: usize, y: usize) -> T {
+        self.values[self.width * y + x]
+    }
+
+    pub fn set(&mut self, x: usize, y: usize, value: T) {
+        self.values[self.width * y + x] = value;
+    }
 }

@@ -1,13 +1,14 @@
 use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2, get_k, get_linear_function, paralellogram_area};
 use crate::general::positions_3d::Triangle as Triangle3;
+use crate::renderer::interface::Buffer;
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 use std::cmp::{Ordering, min, max};
 
 
 pub fn render_triangle(
     ss_triangle: &Triangle3, // screen space triangle
-    pixel_array: &mut Vec<Vec<f32>>,
-    depth_buffer: &mut Vec<Vec<f32>>,
+    pixel_buffer: &mut Buffer<f32>,
+    depth_buffer: &mut Buffer<f32>,
     light_intensity: Option<f32>
     ) {
     let triangle2 = ss_triangle.to_2d();
@@ -25,8 +26,8 @@ pub fn render_triangle(
 
     let start_x = pInAscX[0].x.ceil() as usize;
 
-    let max_x_i = pixel_array[0].len() - 1;
-    let max_y_i = pixel_array.len() - 1;
+    let max_x_i = pixel_buffer.width - 1;
+    let max_y_i = pixel_buffer.height - 1;
 
     let start_y_vals = get_y_values_from_edge(bottom_edge, max_x_i, max_y_i);
     let end_y_vals = get_y_values_from_edge(top_edge, max_x_i, max_y_i);
@@ -42,28 +43,18 @@ pub fn render_triangle(
         for y in start_y..end_y {
             let x = start_x + i as usize;
             let y = y as usize;
-
-            // check if x and y are within bounds of pixel_array
-            // this should not be necessary anymore, but might as well check
-            match pixel_array.get_mut(y) {
-                Option::None => continue,
-                _ => (),
-            }
-            match pixel_array[y].get_mut(x) {
-                Option::None => break,
-                _ => (),
-            }
             let point = Point2 { x: x as f32, y: y as f32};
             let (w1, w2) = get_barycentric_coordinates(&ss_triangle.to_2d(), &point);
             let triangle_points = ss_triangle.points();
+
             let frag_depth = triangle_points[0].z + w1 * (triangle_points[1].z - triangle_points[0].z) + w2 * (triangle_points[2].z - triangle_points[0].z);
-            if frag_depth - 0.01 <= depth_buffer[y][x] {
-                depth_buffer[y][x] = frag_depth;
+            if frag_depth - 0.01 <= depth_buffer.get(x, y) {
+                depth_buffer.set(x, y, frag_depth);
                 // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
                 if let Some(light_intensity) = light_intensity {
-                    pixel_array[y][x] = light_intensity;
+                    pixel_buffer.set(x, y, light_intensity);
                 } else {
-                    pixel_array[y][x] = fragment_shader(ss_triangle);
+                    pixel_buffer.set(x, y, fragment_shader(ss_triangle));
                 }
             }
         }

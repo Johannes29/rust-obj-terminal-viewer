@@ -1,3 +1,4 @@
+use super::interface::Buffer;
 use super::pipeline::rasterization::render_triangle;
 use super::pipeline::transformation::{MatrixTrait, translation_matrix_from_point};
 use super::pipeline::transformation::{
@@ -10,8 +11,8 @@ use image::{GrayImage, Luma};
 // TODO pass self or settings struct, can not have this many parameters
 pub fn render_mesh(
     mesh: &Mesh,
-    image_buffer: &mut Vec<Vec<f32>>,
-    depth_buffer: &mut Vec<Vec<f32>>,
+    image_buffer: &mut Buffer<f32>,
+    depth_buffer: &mut Buffer<f32>,
     view_point: &Point3,
     mesh_rotation_x: f32,
     mesh_rotation_y: f32,
@@ -36,8 +37,6 @@ pub fn render_mesh(
         .combine(rotation_matrix_x)
         .combine(rotation_matrix_y)
         .combine(pre_rotation_translation);
-    let char_buffer_width = image_buffer[0].len() as f32;
-    let char_buffer_height = image_buffer.len() as f32;
     let mut triangle_index = 0;
 
     for world_triangle in &mesh.triangles {
@@ -71,8 +70,8 @@ pub fn render_mesh(
                         z: 1.,
                     })
                     .multiply_with_point(&Point3 {
-                        x: char_buffer_width,
-                        y: char_buffer_height,
+                        x: image_buffer.width as f32,
+                        y: image_buffer.height as f32,
                         z: 1.0,
                     });
 
