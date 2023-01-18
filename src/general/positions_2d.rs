@@ -25,6 +25,13 @@ impl Point {
         self.y += another_point.y;
     }
 
+    pub fn scale(&self, number: f32) -> Point {
+        Point {
+            x: self.x * number,
+            y: self.y * number,
+        }
+    }
+
     pub fn relative_to(&self, point: &Point) -> Self {
         Point {
             x: self.x - point.x,
@@ -61,10 +68,6 @@ impl Triangle {
             || (self.p1.y == self.p2.y && self.p2.y == self.p3.y))
 
     }
-}
-
-pub fn dot_product_2d(p1: &Point, p2: &Point) -> f32 {
-    p1.x * p2.x + p1.y * p2.y
 }
 
 pub fn get_k(p1: &Point, p2: &Point) -> f32 {
