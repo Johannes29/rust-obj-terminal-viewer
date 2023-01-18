@@ -121,7 +121,7 @@ impl Renderer {
         let center_point = bounding_box.get_center();
         self.view_point = center_point.add(&relative_view_point);
         self.rotation_origin = center_point;
-        self.near = (view_point_distance - bounding_radius) * 1.1;
+        self.near = (view_point_distance - bounding_radius) / 1.1;
         self.far = (view_point_distance + bounding_radius) * 1.1;
     }
 
