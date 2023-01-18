@@ -186,16 +186,17 @@ impl Triangle {
         }
     }
 
+    /// Assumes clockwise winding order
     pub fn get_normal(points: [Point; 3]) -> Point {
-        let a = points[1].relative_to(&points[0]);
-        let b = points[2].relative_to(&points[0]);
+        let a = points[2].relative_to(&points[0]);
+        let b = points[1].relative_to(&points[0]);
         cross_product(a, b).normalized()
     }
 
     // TODO merge this and the above function
     pub fn get_normal_2(points: &[&Point]) -> Point {
-        let a = points[1].relative_to(points[0]);
-        let b = points[2].relative_to(points[0]);
+        let a = points[2].relative_to(points[0]);
+        let b = points[1].relative_to(points[0]);
         cross_product(a, b).normalized()
     }
 
@@ -224,6 +225,16 @@ impl Triangle {
         }
 
         [min_x, max_x, min_y, max_y]
+    }
+
+    pub fn make_clockwise(&mut self) {
+        if Triangle::get_normal_2(&self.points()) == self.normal {
+            return;
+        }
+
+        let p3_clone = self.p3.clone();
+        self.p3 = self.p2.clone();
+        self.p2 = p3_clone;
     }
 }
 

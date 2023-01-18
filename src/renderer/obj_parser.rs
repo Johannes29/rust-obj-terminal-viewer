@@ -178,22 +178,24 @@ impl ObjParser {
 
         // TODO support negative indices
         // TODO cloning is not optimal for performance
-        let triangle = Triangle3::from_arr_n([
+        let mut triangle = Triangle3::from_arr_n([
             vertices[0].clone(),
             vertices[1].clone(),
             vertices[2].clone(),
             face_normal.clone(),
         ]);
+        triangle.make_clockwise();
         self.mesh.triangles.push(triangle);
 
         // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
         if vertices.len() == 4 {
-            let triangle = Triangle3::from_arr_n([
+            let mut triangle = Triangle3::from_arr_n([
                 vertices[2].clone(),
                 vertices[3].clone(),
                 vertices[0].clone(),
                 face_normal.clone(),
             ]);
+            triangle.make_clockwise();
             self.mesh.triangles.push(triangle);
         }
 
