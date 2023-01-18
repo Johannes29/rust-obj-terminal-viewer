@@ -63,6 +63,10 @@ impl Triangle {
     }
 }
 
+pub fn dot_product_2d(p1: &Point, p2: &Point) -> f32 {
+    p1.x * p2.x + p1.y * p2.y
+}
+
 pub fn get_k(p1: &Point, p2: &Point) -> f32 {
     (p2.y - p1.y) / (p2.x - p1.x)
 }

@@ -198,6 +198,33 @@ impl Triangle {
         let b = points[2].relative_to(points[0]);
         cross_product(a, b).normalized()
     }
+
+    pub fn get_min_max_x_y(&self) -> [f32; 4] {
+        let points = self.points();
+        let mut min_x = f32::MAX;
+        let mut max_x = f32::MIN;
+        let mut min_y = f32::MAX;
+        let mut max_y = f32::MIN;
+
+        for point in points {
+            let x = point.x;
+            let y = point.y;
+            if x < min_x {
+                min_x = x;
+            }
+            if x > max_x {
+                max_x = x;
+            }
+            if y < min_y {
+                min_y = y;
+            }
+            if y > max_y {
+                max_y = y;
+            }
+        }
+
+        [min_x, max_x, min_y, max_y]
+    }
 }
 
 impl Mesh {
