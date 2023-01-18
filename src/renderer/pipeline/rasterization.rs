@@ -1,5 +1,5 @@
-use crate::general::positions_2d::{paralellogram_area, Point as Point2, Triangle as Triangle2};
-use crate::general::positions_3d::{dot_product, Point as Point3, Triangle as Triangle3};
+use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2};
+use crate::general::positions_3d::{Triangle as Triangle3};
 use crate::renderer::interface::Buffer;
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 
@@ -11,7 +11,7 @@ pub fn render_triangle(
 ) {
     let triangle2 = ss_triangle.to_2d();
     if !triangle2.has_area() {
-        return;
+        // return;
     }
 
     // let bc_calculator = BarycentricCoordinates::new(&triangle2);
@@ -37,9 +37,9 @@ pub fn render_triangle(
             }
             let triangle_points = ss_triangle.points();
             let frag_depth = triangle_points[0].z
-                + v * (triangle_points[1].z - triangle_points[0].z)
-                + w * (triangle_points[2].z - triangle_points[0].z);
-            if frag_depth - 0.01 <= depth_buffer.get(x, y) {
+                + u * (triangle_points[1].z - triangle_points[0].z)
+                + v * (triangle_points[2].z - triangle_points[0].z);
+            if frag_depth <= depth_buffer.get(x, y) {
                 depth_buffer.set(x, y, frag_depth);
                 // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
                 if let Some(light_intensity) = light_intensity {
