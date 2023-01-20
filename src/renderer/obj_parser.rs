@@ -243,3 +243,35 @@ fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
     }
     Some(new_vec)
 }
+
+/* pseudocode for filtering duplicate vertices
+
+struct unique_list {
+    list: Vec<T>,
+    identifying_bytes_list: Vec<u8>
+}
+
+impl unique_list {
+    pub fn add(T) {
+        let identifying_bytes = get_identifying_bytes(T);
+        // binary search through identifying_bytes_list
+        // if in list, return
+        // else determine where it should be added in the identifying_bytes_list
+        // (should not need to do a binary search again)
+        // add T to list
+        // add identifying_bytes to identifying_bytes_list in correct position
+        // (identifying_bytes_list should be sorted after adding)
+    }
+}
+
+type identifying_bytes: [u8]
+
+impl identifying_bytes {
+    fn get_identifying_bytes(Point)
+}
+
+impl Cmp for identifying_bytes {
+    fn cmp(a, b)
+}
+
+*/
