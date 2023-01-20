@@ -124,6 +124,17 @@ pub fn translation_matrix_from_point(point: &Point3) -> Matrix4x4 {
     ]
 }
 
+pub fn screen_to_pixel_coordinates(screen_width: u16, screen_height: u16) -> Matrix4x4 {
+    let w = screen_width as f32;
+    let h = screen_height as f32;
+    [
+        [w/2., 0., 0., w/2.],
+        [0., h/2., 0., h/2.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.],
+    ]
+}
+
 #[cfg(test)]
 mod rotation_matrix_tests {
     use super::{rotation_matrix_y, MatrixTrait};
@@ -188,7 +199,12 @@ pub fn multiply_triangle_points_with_matrix(triangle: &Triangle3, matrix: Matrix
         y: 0.,
         z: 0.,
     };
-    let mut new_points_and_normal: [Point3; 4] = [empty_point.clone(), empty_point.clone(), empty_point.clone(), empty_point];
+    let mut new_points_and_normal: [Point3; 4] = [
+        empty_point.clone(),
+        empty_point.clone(),
+        empty_point.clone(),
+        empty_point,
+    ];
     for (i, pos) in triangle.points().iter().enumerate() {
         let pos_matrix = pos.to_matrix4x1();
         let new_point = matrix.multiply(pos_matrix).to_vec3();
