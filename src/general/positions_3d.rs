@@ -186,17 +186,55 @@ impl Triangle {
         }
     }
 
+    /// Assumes clockwise winding order
     pub fn get_normal(points: [Point; 3]) -> Point {
-        let a = points[1].relative_to(&points[0]);
-        let b = points[2].relative_to(&points[0]);
+        let a = points[2].relative_to(&points[0]);
+        let b = points[1].relative_to(&points[0]);
         cross_product(a, b).normalized()
     }
 
     // TODO merge this and the above function
     pub fn get_normal_2(points: &[&Point]) -> Point {
-        let a = points[1].relative_to(points[0]);
-        let b = points[2].relative_to(points[0]);
+        let a = points[2].relative_to(points[0]);
+        let b = points[1].relative_to(points[0]);
         cross_product(a, b).normalized()
+    }
+
+    pub fn get_min_max_x_y(&self) -> [f32; 4] {
+        let points = self.points();
+        let mut min_x = f32::MAX;
+        let mut max_x = f32::MIN;
+        let mut min_y = f32::MAX;
+        let mut max_y = f32::MIN;
+
+        for point in points {
+            let x = point.x;
+            let y = point.y;
+            if x < min_x {
+                min_x = x;
+            }
+            if x > max_x {
+                max_x = x;
+            }
+            if y < min_y {
+                min_y = y;
+            }
+            if y > max_y {
+                max_y = y;
+            }
+        }
+
+        [min_x, max_x, min_y, max_y]
+    }
+
+    pub fn make_clockwise(&mut self) {
+        if Triangle::get_normal_2(&self.points()) == self.normal {
+            return;
+        }
+
+        let p3_clone = self.p3.clone();
+        self.p3 = self.p2.clone();
+        self.p2 = p3_clone;
     }
 }
 

@@ -1,9 +1,11 @@
 use super::interface::Buffer;
 use super::pipeline::rasterization::render_triangle;
-use super::pipeline::transformation::{MatrixTrait, translation_matrix_from_point};
 use super::pipeline::transformation::{
     multiply_triangle_points_with_matrix, persp_proj_mat, rotation_matrix_x, rotation_matrix_y,
     translation_matrix, triangle_intersects_screen_space,
+};
+use super::pipeline::transformation::{
+    screen_to_pixel_coordinates, translation_matrix_from_point, MatrixTrait,
 };
 use crate::general::positions_3d::{dot_product, Mesh, Point as Point3};
 use image::{GrayImage, Luma};
@@ -14,6 +16,7 @@ pub fn render_mesh(
     image_buffer: &mut Buffer<f32>,
     depth_buffer: &mut Buffer<f32>,
     view_point: &Point3,
+    view_direction: &Point3,
     mesh_rotation_x: f32,
     mesh_rotation_y: f32,
     rotation_origin: &Point3,
@@ -29,9 +32,11 @@ pub fn render_mesh(
     let translation_matrix = translation_matrix(-view_point.x, -view_point.y, -view_point.z);
     let pre_rotation_translation = translation_matrix_from_point(&rotation_origin.inverted());
     let post_rotation_translation = translation_matrix_from_point(rotation_origin);
+    let screen_to_pixel_coordinates = screen_to_pixel_coordinates(image_buffer.width as u16, image_buffer.height as u16);
     // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector,
     // then the one to the right of that one, etc.
-    let transformation_matrix = persp_proj_mat
+    let transformation_matrix = 
+        persp_proj_mat
         .combine(translation_matrix)
         .combine(post_rotation_translation)
         .combine(rotation_matrix_x)
@@ -55,37 +60,26 @@ pub fn render_mesh(
                 continue;
             }
             true => {
-                // screen space to screen coordinate
-                // TODO this should be done in render_triangle function
-                let new_triangle = triangle
-                    .clone()
-                    .add_point(&Point3 {
-                        x: 1.,
-                        y: 1.,
-                        z: 0.,
-                    })
-                    .multiply_with_point(&Point3 {
-                        x: 0.5,
-                        y: 0.5,
-                        z: 1.,
-                    })
-                    .multiply_with_point(&Point3 {
-                        x: image_buffer.width as f32,
-                        y: image_buffer.height as f32,
-                        z: 1.0,
-                    });
+                let pixel_space_triangle = multiply_triangle_points_with_matrix(&triangle, screen_to_pixel_coordinates);
 
                 // assumes that both normal and light direction are unit vectors
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
+                // TODO fix backface culling
+                // Does not work currently because normals are not recalculated when rotating mesh.
+                // Maybe rotate camera instead of mesh, then no need to recalculate all triangle normals every frame
+                // if dot_product(&triangle.normal, &view_direction) >= 0.0 {
+                //     continue
+                // }
+
                 render_triangle(
-                    &new_triangle,
+                    &pixel_space_triangle,
                     image_buffer,
                     depth_buffer,
                     Some(light_intensity),
                 );
 
-                // --- uncomment to generate debug images --- 
+                // --- uncomment to generate debug images ---
                 //
                 // let height = image_buffer.len() as u32;
                 // let width = image_buffer[0].len() as u32;

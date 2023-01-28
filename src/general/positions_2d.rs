@@ -25,6 +25,13 @@ impl Point {
         self.y += another_point.y;
     }
 
+    pub fn scale(&self, number: f32) -> Point {
+        Point {
+            x: self.x * number,
+            y: self.y * number,
+        }
+    }
+
     pub fn relative_to(&self, point: &Point) -> Self {
         Point {
             x: self.x - point.x,
