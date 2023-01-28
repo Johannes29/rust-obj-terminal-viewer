@@ -1,8 +1,11 @@
+use crate::general::positions_2d::Point;
 use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3};
+use std::cmp::Ordering;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::PathBuf;
+use std::vec;
 
 pub struct ObjParser {
     vertices: Vec<Point3>,
@@ -244,16 +247,15 @@ fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
     Some(new_vec)
 }
 
-/* pseudocode for filtering duplicate vertices
 
-struct unique_list {
+struct unique_list<T> {
     list: Vec<T>,
-    identifying_bytes_list: Vec<u8>
+    identifying_bytes_list: Vec<Vec<u8>>
 }
 
-impl unique_list {
-    pub fn add(T) {
-        let identifying_bytes = get_identifying_bytes(T);
+impl<T> unique_list<T> where Vec<u8>: From<T> {
+    pub fn add(item: T) {
+        let identifying_bytes: Vec<u8> = item.into();
         // binary search through identifying_bytes_list
         // if in list, return
         // else determine where it should be added in the identifying_bytes_list
@@ -264,14 +266,71 @@ impl unique_list {
     }
 }
 
-type identifying_bytes: [u8]
+pub fn contains(list: Vec<Vec<u8>>, item: &Vec<u8>) -> bool {
+    let split_index = list.len() / 2;
+    let split_item = &list[split_index];
 
-impl identifying_bytes {
-    fn get_identifying_bytes(Point)
+    let mut min_index = 0;
+    let mut max_index = list.len() - 1;
+    let split_index = min_index + max_index / 2;
+    loop {
+        if max_index - min_index >= 2 {
+            match split_item.cmp(item) {
+                Ordering::Equal => return true,
+                Ordering::Greater => {
+                    max_index = split_index - 1;
+                },
+                Ordering::Less => {
+                    min_index = split_index + 1;
+                },
+            }
+        } else {
+            let item1 = &list[min_index];
+            let item2 = &list[max_index];
+            return item == item1 || item == item2
+        }
+    }
 }
 
-impl Cmp for identifying_bytes {
-    fn cmp(a, b)
+impl From<Point3> for Vec<u8> {
+    fn from(point: Point3) -> Self {
+        let mut bytes = Vec::new();
+        bytes.append(&mut point.x.to_le_bytes().into());
+        bytes.append(&mut point.y.to_le_bytes().into());
+        bytes.append(&mut point.z.to_le_bytes().into());
+        bytes
+    }
 }
 
-*/
+type identifying_bytes = [u8];
+
+trait MyOrd {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering;
+}
+
+fn hi() {
+    let a = vec![2, 4];
+    let b = vec![2, 4];
+    dbg!(a.cmp(&b));
+}
+
+// impl MyOrd for identifying_bytes {
+//     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+//         let len_ordering = self.len().cmp(&other.len());
+//         if len_ordering != Ordering::Equal {
+//             return len_ordering;
+//         }
+//         for i in 0..(self.len()) {
+//             let self_item = self[i];
+//             let other_item = other[i];
+//             let ordering = self_item.cmp(&other_item);
+//             if ordering != Ordering::Equal {
+//                 return ordering;
+//             }
+//             if i + 1 == self.len() {
+//                 return Ordering::Equal;
+//             }
+//         }
+//         Ordering::Equal
+//     }
+// }
