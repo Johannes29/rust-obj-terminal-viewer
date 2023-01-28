@@ -22,6 +22,7 @@ pub struct Renderer {
     pub horizontal_fov: f32,
     pub vertical_fov: f32,
     pub view_point: Point3,
+    pub view_direction: Point3, // Is not used when transforming points, only when culling backfaces
     chars: Vec<u8>,
     pub mesh: Mesh,
     pub frame_time: Duration,
@@ -69,6 +70,11 @@ impl Renderer {
                 x: 0.0,
                 y: 1.0,
                 z: -8.0,
+            },
+            view_direction: Point3 {
+                x: 0.0,
+                y: 0.0,
+                z: 1.0,
             },
             chars: brightness_string.as_bytes().to_vec(),
             mesh: Mesh {
@@ -141,6 +147,7 @@ impl Renderer {
             &mut self.image_buffer,
             &mut self.depth_buffer,
             &self.view_point,
+            &self.view_direction,
             self.mesh_rotation_x,
             self.mesh_rotation_y,
             &self.rotation_origin,

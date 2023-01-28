@@ -16,6 +16,7 @@ pub fn render_mesh(
     image_buffer: &mut Buffer<f32>,
     depth_buffer: &mut Buffer<f32>,
     view_point: &Point3,
+    view_direction: &Point3,
     mesh_rotation_x: f32,
     mesh_rotation_y: f32,
     rotation_origin: &Point3,
@@ -63,6 +64,13 @@ pub fn render_mesh(
 
                 // assumes that both normal and light direction are unit vectors
                 let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
+
+                // TODO fix backface culling
+                // Does not work currently because normals are not recalculated when rotating mesh.
+                // Maybe rotate camera instead of mesh, then no need to recalculate all triangle normals every frame
+                // if dot_product(&triangle.normal, &view_direction) >= 0.0 {
+                //     continue
+                // }
 
                 render_triangle(
                     &pixel_space_triangle,
