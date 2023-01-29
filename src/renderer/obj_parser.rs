@@ -1,4 +1,6 @@
 use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3};
+use std::cmp::Ordering;
+use std::collections::btree_set::Union;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
@@ -152,11 +154,9 @@ impl ObjParser {
             .map(|index| &self.vertices[index - 1])
             .collect();
 
-        let vertext_normal_indices_option: Vec<Option<usize>> = parsed_numbers
-            .iter()
-            .map(|indices| indices[2])
-            .collect();
-        
+        let vertext_normal_indices_option: Vec<Option<usize>> =
+            parsed_numbers.iter().map(|indices| indices[2]).collect();
+
         let face_normal: Point3 = match evaluate(vertext_normal_indices_option) {
             Some(indices) => {
                 let vertex_normals: Vec<&Point3> = indices
@@ -170,10 +170,8 @@ impl ObjParser {
                 } else {
                     return Err("face normals are different".into());
                 }
-            },
-            None => {
-                Triangle3::get_normal_2(&vertices[0..3])
-            },
+            }
+            None => Triangle3::get_normal_2(&vertices[0..3]),
         };
 
         // TODO support negative indices
@@ -244,34 +242,96 @@ fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
     Some(new_vec)
 }
 
-/* pseudocode for filtering duplicate vertices
-
-struct unique_list {
+struct UniqueList<T> {
     list: Vec<T>,
-    identifying_bytes_list: Vec<u8>
+    identifying_bytes_list: Vec<Vec<u8>>,
 }
 
-impl unique_list {
-    pub fn add(T) {
-        let identifying_bytes = get_identifying_bytes(T);
-        // binary search through identifying_bytes_list
-        // if in list, return
-        // else determine where it should be added in the identifying_bytes_list
-        // (should not need to do a binary search again)
-        // add T to list
-        // add identifying_bytes to identifying_bytes_list in correct position
-        // (identifying_bytes_list should be sorted after adding)
+impl<T> UniqueList<T>
+where
+    Vec<u8>: From<T>,
+    T: Clone,
+{
+    pub fn new() -> Self {
+        UniqueList {
+            list: Vec::new(),
+            identifying_bytes_list: Vec::new(),
+        }
+    }
+
+
+    // TODO return index of the added item, or index of the already existing copy of the item
+    pub fn add(&mut self, item: T) {
+        let identifying_bytes: Vec<u8> = item.clone().into();
+        let inserting_index = 
+            if self.list.len() > 0 {
+                match index_to_add(&self.identifying_bytes_list, &identifying_bytes) {
+                    None => return,
+                    Some(index) => index,
+                }
+            } else { 0 };
+        self.identifying_bytes_list
+            .insert(inserting_index, identifying_bytes);
+        self.list.insert(inserting_index, item);
     }
 }
 
-type identifying_bytes: [u8]
+/// Returns the index where the item should be added so that the list remains sorted.
+/// Assumes that the list is sorted.
+/// Returns none if item is already in list.
+/// Assumes that all elements after the inserted elements would move when inserting the element.
+pub fn index_to_add(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> Option<usize> {
+    let split_index = list.len() / 2;
+    let split_item = &list[split_index];
 
-impl identifying_bytes {
-    fn get_identifying_bytes(Point)
+    let mut min_index = 0;
+    let mut max_index = list.len() - 1;
+    let split_index = min_index + max_index / 2;
+    loop {
+        if max_index - min_index >= 2 {
+            match split_item.cmp(item) {
+                Ordering::Equal => return None,
+                Ordering::Greater => {
+                    max_index = split_index - 1;
+                }
+                Ordering::Less => {
+                    min_index = split_index + 1;
+                }
+            }
+        } else {
+            let item1 = &list[min_index];
+            let item2 = &list[max_index];
+            if item == item1 || item == item2 {
+                return None;
+            }
+            if item < item1 {
+                return Some(min_index);
+            }
+            if item < item2 {
+                return Some(max_index);
+            }
+            return Some(max_index + 1);
+        }
+    }
 }
 
-impl Cmp for identifying_bytes {
-    fn cmp(a, b)
+#[test]
+fn test_binary_search_index_to_add() {
+    let item1 = vec![12, 120, 240];
+    let item2 = vec![13, 130, 230];
+    let item_not_in_list = vec![14, 140, 255];
+    let list: Vec<Vec<u8>> = vec![item1.clone(), item2.clone()];
+    assert!(index_to_add(&list, &item1).is_none());
+    assert!(index_to_add(&list, &item2).is_none());
+    assert!(index_to_add(&list, &item_not_in_list).is_some());
 }
 
-*/
+impl From<Point3> for Vec<u8> {
+    fn from(point: Point3) -> Self {
+        let mut bytes = Vec::new();
+        bytes.append(&mut point.x.to_le_bytes().into());
+        bytes.append(&mut point.y.to_le_bytes().into());
+        bytes.append(&mut point.z.to_le_bytes().into());
+        bytes
+    }
+}
