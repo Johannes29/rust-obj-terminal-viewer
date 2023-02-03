@@ -193,10 +193,11 @@ pub fn triangle_intersects_screen_space(triangle: &Triangle3) -> bool {
     false
 }
 
-pub fn multiply_points_with_matrix(points: &mut Vec<Point3>, matrix: Matrix4x4) {
-    for point in &mut points.iter() {
+pub fn get_multiplied_points_with_matrix(points: &Vec<Point3>, matrix: &Matrix4x4) -> Vec<Point3> {
+    points.iter().map(|point| {
         let pos_matrix = point.to_matrix4x1();
         let new_pos_matrix = matrix.multiply(pos_matrix).to_vec3();
-        *point = Point3::from_array(new_pos_matrix);
-    }
+        Point3::from_array(new_pos_matrix)
+    }).collect()
+        
 }

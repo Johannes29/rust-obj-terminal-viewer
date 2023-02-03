@@ -1,7 +1,7 @@
 use super::interface::Buffer;
 use super::pipeline::rasterization::render_triangle;
 use super::pipeline::transformation::{
-    multiply_points_with_matrix, persp_proj_mat,
+    get_multiplied_points_with_matrix, persp_proj_mat,
     rotation_matrix_x, rotation_matrix_y, translation_matrix,
 };
 use super::pipeline::transformation::{
@@ -44,11 +44,11 @@ pub fn render_mesh(
         .combine(rotation_matrix_y)
         .combine(pre_rotation_translation);
 
-    multiply_points_with_matrix(&mut mesh.points, transformation_matrix);
+    let ss_points = get_multiplied_points_with_matrix(&mesh.points, &transformation_matrix);
 
     let mut triangle_index = 0;
     for incides_triangle in &mesh.indices_triangles {
-        let triangle = Triangle3::from_indices(incides_triangle, &mesh.points);
+        let triangle = Triangle3::from_indices(incides_triangle, &ss_points);
         // Skips triangles behind the camera
         // TODO use near instead of 0.0
         // TODO do this in triangle3d_to_screen_space_triangle function instead

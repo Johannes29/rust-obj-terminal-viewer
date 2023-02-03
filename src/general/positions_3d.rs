@@ -108,7 +108,7 @@ impl Point {
 }
 
 impl <'a> Triangle<'a> {
-    pub fn from_indices(indices_triangle: &IndicesTriangle, points: &Vec<Point>) -> Self {
+    pub fn from_indices(indices_triangle: &'a IndicesTriangle, points: &'a Vec<Point>) -> Self {
         Triangle {
             p1: &points[indices_triangle.p1],
             p2: &points[indices_triangle.p2],
@@ -227,6 +227,7 @@ impl <'a> Triangle<'a> {
     // TODO should be able to merge these functions somehow
     
     pub fn get_normal(points: &[Point]) -> Point {
+        assert!(points.len() >= 3);
         let a = points[2].relative_to(&points[0]);
         let b = points[1].relative_to(&points[0]);
         cross_product(a, b).normalized()
@@ -262,6 +263,7 @@ impl <'a> Triangle<'a> {
 
 impl IndicesTriangle {
     pub fn make_clockwise(&mut self, points: &Vec<Point>) -> Result<(), String> {
+        // TODO CURRENT this function never considers the indices of the indices_triangle
         if Triangle::get_normal(points) == self.normal {
             return Ok(());
         }

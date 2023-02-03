@@ -50,8 +50,11 @@ impl ObjParser {
     } */
 
     fn add_vertex(&mut self, vertex: Point3) {
-        let index = self.unique_vertices.add(vertex);
-        self.vertices_indices.push(index);
+        // TODO this code is commented out because unique_vertices.add() seems to get stuck
+        // let index = self.unique_vertices.add(vertex);
+        // self.vertices_indices.push(index);
+        self.unique_vertices.items.push(vertex);
+        self.vertices_indices.push(self.vertices_indices.len());
     }
 
     pub fn parse_file(file_path: &PathBuf) -> Result<Mesh, String> {
@@ -204,7 +207,7 @@ impl ObjParser {
             p3: vertices_indices[2],
             normal: face_normal.clone(),
         };
-        triangle.make_clockwise(&self.mesh.points);
+        triangle.make_clockwise(&self.mesh.points).unwrap();
         self.mesh.indices_triangles.push(triangle);
 
         // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
@@ -215,7 +218,7 @@ impl ObjParser {
                 p3: vertices_indices[0],
                 normal: face_normal,
             };
-            triangle.make_clockwise(&self.mesh.points);
+            triangle.make_clockwise(&self.mesh.points).unwrap();
             self.mesh.indices_triangles.push(triangle);
         }
 
@@ -314,6 +317,7 @@ pub fn search_list(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> SearchResult {
     let split_index = min_index + max_index / 2;
     loop {
         if max_index - min_index >= 2 {
+            // TODO seems to get stuck here...
             match split_item.cmp(item) {
                 Ordering::Equal => return SearchResult::IsAt(split_index),
                 Ordering::Greater => {
@@ -342,7 +346,7 @@ pub fn search_list(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> SearchResult {
     }
 }
 
-enum SearchResult {
+pub enum SearchResult {
     AddAt(usize),
     IsAt(usize),
 }
