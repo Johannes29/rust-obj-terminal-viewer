@@ -9,15 +9,22 @@ pub struct Point {
 }
 
 #[derive(Clone, Debug)]
-pub struct Mesh {
-    pub triangles: Vec<Triangle>,
+pub struct Mesh<'a> {
+    pub triangles: Vec<Triangle<'a>>,
 }
 
 #[derive(Clone, Debug)]
-pub struct Triangle {
-    pub p1: Point,
-    pub p2: Point,
-    pub p3: Point,
+pub struct Triangle<'a> {
+    pub p1: &'a Point,
+    pub p2: &'a Point,
+    pub p3: &'a Point,
+    pub normal: Point,
+}
+
+pub struct TriangleIndices {
+    pub p1: usize,
+    pub p2: usize,
+    pub p3: usize,
     pub normal: Point,
 }
 
@@ -111,9 +118,9 @@ impl Triangle {
     #[allow(unused)]
     pub fn from_arr_n(array: [Point; 4]) -> Self {
         Triangle {
-            p1: array[0].clone(),
-            p2: array[1].clone(),
-            p3: array[2].clone(),
+            p1: array[0],
+            p2: array[1],
+            p3: array[2],
             normal: array[3].clone(),
         }
     }

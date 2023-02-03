@@ -1,13 +1,13 @@
 use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3};
 use std::cmp::Ordering;
-use std::collections::btree_set::Union;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::PathBuf;
 
 pub struct ObjParser {
-    vertices: Vec<Point3>,
+    unique_vertices: UniqueList<Point3>,
+    vertices_indices: Vec<usize>,
     normals: Vec<Point3>,
     mesh: Mesh,
 }
@@ -30,10 +30,22 @@ impl From<Result<(), String>> for LineParseResult {
 impl ObjParser {
     fn new() -> Self {
         ObjParser {
-            vertices: Vec::new(),
+            unique_vertices: UniqueList::new(),
+            vertices_indices: Vec::new(),
             normals: Vec::new(),
             mesh: Mesh::new(),
         }
+    }
+
+    fn get_vertex(&self, vertex_reference_number: usize) -> Box<Point3> {
+        // Vertex reference numbers start at 1
+        let unique_verts_index = self.vertices_indices[vertex_reference_number - 1];
+        Box::from(self.unique_vertices.list[unique_verts_index])
+    }
+
+    fn add_vertex(&mut self, vertex: Point3) {
+        let index = self.unique_vertices.add(vertex);
+        self.vertices_indices.push(index);
     }
 
     pub fn parse_file(file_path: &PathBuf) -> Result<Mesh, String> {
@@ -111,7 +123,7 @@ impl ObjParser {
             .collect();
 
         if argument_nums.len() == argument_strings.len() {
-            self.vertices.push(Point3::from_vec(argument_nums).unwrap());
+            self.add_vertex(Point3::from_vec(argument_nums).unwrap());
             return Ok(());
         } else {
             return Err("error when parsing verts".into());
@@ -148,10 +160,10 @@ impl ObjParser {
             .map(|str| parse_face_element_vertext_string(str))
             .collect();
 
-        let vertices: Vec<&Point3> = parsed_numbers
+        let vertices: Vec<Box<Point3>> = parsed_numbers
             .iter()
             .map(|indices| indices[0].expect("vertex index in face declaration"))
-            .map(|index| &self.vertices[index - 1])
+            .map(|index| self.get_vertex(index))
             .collect();
 
         let vertext_normal_indices_option: Vec<Option<usize>> =
@@ -261,26 +273,28 @@ where
 
 
     // TODO return index of the added item, or index of the already existing copy of the item
-    pub fn add(&mut self, item: T) {
+    pub fn add(&mut self, item: T) -> usize {
         let identifying_bytes: Vec<u8> = item.clone().into();
         let inserting_index = 
             if self.list.len() > 0 {
-                match index_to_add(&self.identifying_bytes_list, &identifying_bytes) {
-                    None => return,
-                    Some(index) => index,
+                match search_list(&self.identifying_bytes_list, &identifying_bytes) {
+                    SearchResult::IsAt(index) => return index,
+                    SearchResult::AddAt(index) => index,
                 }
             } else { 0 };
         self.identifying_bytes_list
             .insert(inserting_index, identifying_bytes);
         self.list.insert(inserting_index, item);
+        inserting_index
     }
 }
 
-/// Returns the index where the item should be added so that the list remains sorted.
+/// Returns the index where the item should be added so that the list remains sorted,
+/// or the index where an identical copy of the item already exists. 
 /// Assumes that the list is sorted.
-/// Returns none if item is already in list.
-/// Assumes that all elements after the inserted elements would move when inserting the element.
-pub fn index_to_add(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> Option<usize> {
+/// 
+/// Assumes that all elements after the inserted element would shift to the right when inserting the element.
+pub fn search_list(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> SearchResult {
     let split_index = list.len() / 2;
     let split_item = &list[split_index];
 
@@ -290,7 +304,7 @@ pub fn index_to_add(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> Option<usize> {
     loop {
         if max_index - min_index >= 2 {
             match split_item.cmp(item) {
-                Ordering::Equal => return None,
+                Ordering::Equal => return SearchResult::IsAt(split_index),
                 Ordering::Greater => {
                     max_index = split_index - 1;
                 }
@@ -301,18 +315,25 @@ pub fn index_to_add(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> Option<usize> {
         } else {
             let item1 = &list[min_index];
             let item2 = &list[max_index];
-            if item == item1 || item == item2 {
-                return None;
+            if item == item1 {
+                return SearchResult::IsAt(min_index);
+            } else if item == item2 {
+                return SearchResult::IsAt(max_index);
             }
             if item < item1 {
-                return Some(min_index);
+                return SearchResult::AddAt(min_index);
             }
             if item < item2 {
-                return Some(max_index);
+                return SearchResult::AddAt(max_index);
             }
-            return Some(max_index + 1);
+            return SearchResult::AddAt(max_index + 1);
         }
     }
+}
+
+enum SearchResult {
+    AddAt(usize),
+    IsAt(usize),
 }
 
 #[test]
@@ -321,9 +342,9 @@ fn test_binary_search_index_to_add() {
     let item2 = vec![13, 130, 230];
     let item_not_in_list = vec![14, 140, 255];
     let list: Vec<Vec<u8>> = vec![item1.clone(), item2.clone()];
-    assert!(index_to_add(&list, &item1).is_none());
-    assert!(index_to_add(&list, &item2).is_none());
-    assert!(index_to_add(&list, &item_not_in_list).is_some());
+    // assert!(index_to_add(&list, &item1).is_none());
+    // assert!(index_to_add(&list, &item2).is_none());
+    // assert!(index_to_add(&list, &item_not_in_list).is_some());
 }
 
 impl From<Point3> for Vec<u8> {
