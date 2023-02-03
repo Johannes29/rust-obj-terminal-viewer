@@ -1,6 +1,4 @@
-use crate::general::positions_2d::Point as Point2;
-use crate::general::positions_2d::Triangle as Triangle2;
-
+use crate::general::positions_2d::{ Point as Point2, Triangle as Triangle2 };
 #[derive(Debug, PartialEq, Clone)]
 pub struct Point {
     pub x: f32,
@@ -9,8 +7,9 @@ pub struct Point {
 }
 
 #[derive(Clone, Debug)]
-pub struct Mesh<'a> {
-    pub triangles: Vec<Triangle<'a>>,
+pub struct Mesh {
+    pub points: Vec<Point>,
+    pub indices_triangles: Vec<IndicesTriangle>,
 }
 
 #[derive(Clone, Debug)]
@@ -18,10 +17,11 @@ pub struct Triangle<'a> {
     pub p1: &'a Point,
     pub p2: &'a Point,
     pub p3: &'a Point,
-    pub normal: Point,
+    pub normal: &'a Point, // maybe this should have different lifetime
 }
 
-pub struct TriangleIndices {
+#[derive(Clone, Debug)]
+pub struct IndicesTriangle {
     pub p1: usize,
     pub p2: usize,
     pub p3: usize,
@@ -107,10 +107,21 @@ impl Point {
     }
 }
 
-impl Triangle {
+impl <'a> Triangle<'a> {
+    pub fn from_indices(indices_triangle: &IndicesTriangle, points: &Vec<Point>) -> Self {
+        Triangle {
+            p1: &points[indices_triangle.p1],
+            p2: &points[indices_triangle.p2],
+            p3: &points[indices_triangle.p3],
+            normal: &indices_triangle.normal,
+        }
+    }
+
     pub fn points(&self) -> [&Point; 3] {
         [&self.p1, &self.p2, &self.p3]
     }
+
+    /*
 
     // TODO the following 4 methods are inconsistent
 
@@ -164,6 +175,7 @@ impl Triangle {
             normal,
         })
     }
+     
 
     pub fn combine_with_point<F>(&self, point: &Point, function: F) -> Self
     where
@@ -185,6 +197,8 @@ impl Triangle {
         self.combine_with_point(point, closure)
     }
 
+    */
+
     pub fn to_2d(&self) -> Triangle2 {
         Triangle2 {
             p1: self.p1.to_2d(),
@@ -193,17 +207,28 @@ impl Triangle {
         }
     }
 
+    /*
+
     /// Assumes clockwise winding order
     pub fn get_normal(points: [Point; 3]) -> Point {
         let a = points[2].relative_to(&points[0]);
         let b = points[1].relative_to(&points[0]);
         cross_product(a, b).normalized()
     }
+    */
 
     // TODO merge this and the above function
-    pub fn get_normal_2(points: &[&Point]) -> Point {
+    pub fn get_normal_ref(points: &[&Point]) -> Point {
         let a = points[2].relative_to(points[0]);
         let b = points[1].relative_to(points[0]);
+        cross_product(a, b).normalized()
+    }
+
+    // TODO should be able to merge these functions somehow
+    
+    pub fn get_normal(points: &[Point]) -> Point {
+        let a = points[2].relative_to(&points[0]);
+        let b = points[1].relative_to(&points[0]);
         cross_product(a, b).normalized()
     }
 
@@ -233,22 +258,30 @@ impl Triangle {
 
         [min_x, max_x, min_y, max_y]
     }
+}
 
-    pub fn make_clockwise(&mut self) {
-        if Triangle::get_normal_2(&self.points()) == self.normal {
-            return;
+impl IndicesTriangle {
+    pub fn make_clockwise(&mut self, points: &Vec<Point>) -> Result<(), String> {
+        if Triangle::get_normal(points) == self.normal {
+            return Ok(());
         }
 
-        let p3_clone = self.p3.clone();
-        self.p3 = self.p2.clone();
+        let p3_clone = self.p3;
+        self.p3 = self.p2;
         self.p2 = p3_clone;
+
+        match Triangle::get_normal(points) == self.normal {
+            true => Ok(()),
+            false => Err(String::from("the triangle normal is not perpendicular to the triangle surface")),
+        }
     }
 }
 
 impl Mesh {
     pub fn new() -> Self {
         Mesh {
-            triangles: Vec::new(),
+            points: Vec::new(),
+            indices_triangles: Vec::new(),
         }
     }
 }
@@ -285,15 +318,11 @@ impl BoundingBox {
         }
     }
 
-    pub fn new<'a, T: Iterator<Item = &'a Triangle>>(iter: &mut T) -> Self {
+    pub fn new(points: &Vec<Point>) -> Self {
         let mut bounding_box = BoundingBox::initialize();
-
-        while let Some(triangle) = iter.next() {
-            for point in triangle.points() {
-                bounding_box.expand(point);
-            }
+        for point in points {
+            bounding_box.expand(point);
         }
-
         bounding_box
     }
 

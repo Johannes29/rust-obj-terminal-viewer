@@ -193,23 +193,10 @@ pub fn triangle_intersects_screen_space(triangle: &Triangle3) -> bool {
     false
 }
 
-pub fn multiply_triangle_points_with_matrix(triangle: &Triangle3, matrix: Matrix4x4) -> Triangle3 {
-    let empty_point = Point3 {
-        x: 0.,
-        y: 0.,
-        z: 0.,
-    };
-    let mut new_points_and_normal: [Point3; 4] = [
-        empty_point.clone(),
-        empty_point.clone(),
-        empty_point.clone(),
-        empty_point,
-    ];
-    for (i, pos) in triangle.points().iter().enumerate() {
-        let pos_matrix = pos.to_matrix4x1();
-        let new_point = matrix.multiply(pos_matrix).to_vec3();
-        new_points_and_normal[i] = Point3::from_array(new_point);
+pub fn multiply_points_with_matrix(points: &mut Vec<Point3>, matrix: Matrix4x4) {
+    for point in &mut points.iter() {
+        let pos_matrix = point.to_matrix4x1();
+        let new_pos_matrix = matrix.multiply(pos_matrix).to_vec3();
+        *point = Point3::from_array(new_pos_matrix);
     }
-    new_points_and_normal[3] = triangle.normal.clone();
-    Triangle3::from_arr_n(new_points_and_normal)
 }

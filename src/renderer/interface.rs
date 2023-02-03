@@ -2,7 +2,7 @@ use super::events::*;
 use super::pipeline::terminal_output::{draw_char_buffer, image_buffer_to_char_buffer, add_debug_line_to_char_buffer};
 use super::render::render_mesh;
 use crate::general::positions_3d::{Mesh, BoundingBox};
-use crate::general::positions_3d::{Point as Point3, Triangle as Triangle3};
+use crate::general::positions_3d::{Point as Point3};
 use crossterm::{
     cursor,
     event::Event,
@@ -77,9 +77,7 @@ impl Renderer {
                 z: 1.0,
             },
             chars: brightness_string.as_bytes().to_vec(),
-            mesh: Mesh {
-                triangles: Vec::new(),
-            },
+            mesh: Mesh::new(),
             frame_time: Duration::from_secs_f32(1.0 / fps),
             char_buffer: empty_char_buffer.clone(),
             prev_char_buffer: empty_char_buffer.clone(),
@@ -114,8 +112,7 @@ impl Renderer {
 
     pub fn adapt_renderer_to_mesh(&mut self) {
         dbg!(self.horizontal_fov, self.vertical_fov);
-        let triangles_clone: Vec<Triangle3> = self.mesh.triangles.clone();
-        let bounding_box = BoundingBox::new(&mut triangles_clone.iter());
+        let bounding_box = BoundingBox::new(&self.mesh.points);
         let bounding_radius = bounding_box.get_bounding_radius();
         let min_fov = self.horizontal_fov.min(self.vertical_fov).to_radians();
         let view_point_distance = get_view_point_distance(min_fov, bounding_radius, 1.1);

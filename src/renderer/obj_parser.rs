@@ -1,4 +1,4 @@
-use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3};
+use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3, IndicesTriangle};
 use std::cmp::Ordering;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -37,11 +37,17 @@ impl ObjParser {
         }
     }
 
+    /// Returns the index of unique_vertices where the vertex with specified obj reference number can be found
+    fn get_unique_verts_index(&self, vertex_reference_number: usize) -> usize {
+        self.vertices_indices[vertex_reference_number - 1]
+    }
+
+    /*
     fn get_vertex(&self, vertex_reference_number: usize) -> Box<Point3> {
         // Vertex reference numbers start at 1
-        let unique_verts_index = self.vertices_indices[vertex_reference_number - 1];
-        Box::from(self.unique_vertices.list[unique_verts_index])
-    }
+        let unique_verts_index = self.get_unique_verts_index(vertex_reference_number);
+        Box::from(self.unique_vertices.items[unique_verts_index])
+    } */
 
     fn add_vertex(&mut self, vertex: Point3) {
         let index = self.unique_vertices.add(vertex);
@@ -84,8 +90,8 @@ impl ObjParser {
         if parsed_lines == 0 {
             return Err(String::from("did not find any obj data"));
         }
-        if obj_parser.mesh.triangles.len() == 0 {
-            return Err(String::from("returned empty mesh"));
+        if obj_parser.mesh.indices_triangles.len() == 0 {
+            return Err(String::from("returned a mesh without any triangles"));
         }
 
         Ok(obj_parser.mesh)
@@ -160,10 +166,15 @@ impl ObjParser {
             .map(|str| parse_face_element_vertext_string(str))
             .collect();
 
-        let vertices: Vec<Box<Point3>> = parsed_numbers
+        let vertices_indices: Vec<usize> = parsed_numbers
             .iter()
             .map(|indices| indices[0].expect("vertex index in face declaration"))
-            .map(|index| self.get_vertex(index))
+            .map(|vertex_reference_number| self.get_unique_verts_index(vertex_reference_number))
+            .collect();
+
+        let vertices: Vec<&Point3> =vertices_indices
+            .iter()
+            .map(|unique_verts_index| &self.unique_vertices.items[*unique_verts_index])
             .collect();
 
         let vertext_normal_indices_option: Vec<Option<usize>> =
@@ -183,30 +194,29 @@ impl ObjParser {
                     return Err("face normals are different".into());
                 }
             }
-            None => Triangle3::get_normal_2(&vertices[0..3]),
+            None => Triangle3::get_normal_ref(&vertices[0..3]),
         };
 
         // TODO support negative indices
-        // TODO cloning is not optimal for performance
-        let mut triangle = Triangle3::from_arr_n([
-            vertices[0].clone(),
-            vertices[1].clone(),
-            vertices[2].clone(),
-            face_normal.clone(),
-        ]);
-        triangle.make_clockwise();
-        self.mesh.triangles.push(triangle);
+        let mut triangle = IndicesTriangle {
+            p1: vertices_indices[0],
+            p2: vertices_indices[1],
+            p3: vertices_indices[2],
+            normal: face_normal.clone(),
+        };
+        triangle.make_clockwise(&self.mesh.points);
+        self.mesh.indices_triangles.push(triangle);
 
         // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
         if vertices.len() == 4 {
-            let mut triangle = Triangle3::from_arr_n([
-                vertices[2].clone(),
-                vertices[3].clone(),
-                vertices[0].clone(),
-                face_normal.clone(),
-            ]);
-            triangle.make_clockwise();
-            self.mesh.triangles.push(triangle);
+            let mut triangle = IndicesTriangle {
+                p1: vertices_indices[2],
+                p2: vertices_indices[3],
+                p3: vertices_indices[0],
+                normal: face_normal,
+            };
+            triangle.make_clockwise(&self.mesh.points);
+            self.mesh.indices_triangles.push(triangle);
         }
 
         Ok(())
@@ -255,7 +265,7 @@ fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
 }
 
 struct UniqueList<T> {
-    list: Vec<T>,
+    items: Vec<T>,
     identifying_bytes_list: Vec<Vec<u8>>,
 }
 
@@ -266,17 +276,18 @@ where
 {
     pub fn new() -> Self {
         UniqueList {
-            list: Vec::new(),
+            items: Vec::new(),
             identifying_bytes_list: Vec::new(),
         }
     }
 
 
-    // TODO return index of the added item, or index of the already existing copy of the item
+    /// returns the index of the added item,
+    /// or the index of the already existing copy of the item
     pub fn add(&mut self, item: T) -> usize {
         let identifying_bytes: Vec<u8> = item.clone().into();
         let inserting_index = 
-            if self.list.len() > 0 {
+            if self.items.len() > 0 {
                 match search_list(&self.identifying_bytes_list, &identifying_bytes) {
                     SearchResult::IsAt(index) => return index,
                     SearchResult::AddAt(index) => index,
@@ -284,7 +295,7 @@ where
             } else { 0 };
         self.identifying_bytes_list
             .insert(inserting_index, identifying_bytes);
-        self.list.insert(inserting_index, item);
+        self.items.insert(inserting_index, item);
         inserting_index
     }
 }
