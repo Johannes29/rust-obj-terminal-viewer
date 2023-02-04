@@ -267,6 +267,7 @@ fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
     Some(new_vec)
 }
 
+#[derive(Debug)]
 struct UniqueList<T> {
     items: Vec<T>,
     identifying_bytes_list: Vec<Vec<u8>>,
@@ -314,8 +315,9 @@ pub fn search_list(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> SearchResult {
 
     let mut min_index = 0;
     let mut max_index = list.len() - 1;
-    let split_index = min_index + max_index / 2;
     loop {
+        let split_index = (min_index + max_index) / 2;
+        dbg!(min_index, max_index, split_index);
         if max_index - min_index >= 2 {
             // TODO seems to get stuck here...
             match split_item.cmp(item) {
@@ -354,6 +356,7 @@ pub enum SearchResult {
 // TODO this test freezes
 #[test]
 fn test_unique_list() {
+    dbg!("start");
     let mut unique_list: UniqueList<Point3> = UniqueList::new();
     let points = vec![
         Point3 { x: 0.5, y: -0.3, z: 31.2 },
@@ -368,9 +371,11 @@ fn test_unique_list() {
     let mut indices_list: Vec<usize> = Vec::new();
     let duplicate_count = 2;
     for point in points.clone() {
+        dbg!(&unique_list);
         let index = unique_list.add(point);
         indices_list.push(index);
     }
+    dbg!(&unique_list);
     assert_eq!(unique_list.items.len(), points.len() - duplicate_count);
     for index in 0..points.len() {
         let point_from_unique_list = &unique_list.items[indices_list[index]];
