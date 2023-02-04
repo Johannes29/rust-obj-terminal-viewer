@@ -351,15 +351,31 @@ pub enum SearchResult {
     IsAt(usize),
 }
 
+// TODO this test freezes
 #[test]
-fn test_binary_search_index_to_add() {
-    let item1 = vec![12, 120, 240];
-    let item2 = vec![13, 130, 230];
-    let item_not_in_list = vec![14, 140, 255];
-    let list: Vec<Vec<u8>> = vec![item1.clone(), item2.clone()];
-    // assert!(index_to_add(&list, &item1).is_none());
-    // assert!(index_to_add(&list, &item2).is_none());
-    // assert!(index_to_add(&list, &item_not_in_list).is_some());
+fn test_unique_list() {
+    let mut unique_list: UniqueList<Point3> = UniqueList::new();
+    let points = vec![
+        Point3 { x: 0.5, y: -0.3, z: 31.2 },
+        Point3 { x: 2.5, y: 0.8, z: 1.6 },
+        Point3 { x: -1.5, y: -4.3, z: 11.2 },
+        Point3 { x: 3.5, y: -0.1, z: 1.9 },
+        Point3 { x: -0.5, y: 4.4, z: 9.2 },
+        Point3 { x: -0.5, y: 4.4, z: 9.2 },
+        Point3 { x: 5.5, y: -1.7, z: -11.2 },
+        Point3 { x: 5.5, y: -1.7, z: -11.2 },
+    ];
+    let mut indices_list: Vec<usize> = Vec::new();
+    let duplicate_count = 2;
+    for point in points.clone() {
+        let index = unique_list.add(point);
+        indices_list.push(index);
+    }
+    assert_eq!(unique_list.items.len(), points.len() - duplicate_count);
+    for index in 0..points.len() {
+        let point_from_unique_list = &unique_list.items[indices_list[index]];
+        assert_eq!(point_from_unique_list, &points[index]);
+    }
 }
 
 impl From<Point3> for Vec<u8> {
