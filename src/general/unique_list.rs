@@ -55,20 +55,20 @@ where
 
     /// returns the index of the added item,
     /// or the index of the already existing copy of the item
-    // TODO the index can change if more values are added...
     pub fn add_if_unique(&mut self, item: T) {
         let identifying_bytes: Vec<u8> = item.clone().into();
         dbg!(&item, &identifying_bytes, &self);
         let search_result = search_list(&self.identifying_bytes_list, &identifying_bytes);
         if let SearchResult::AddAt(inserting_index) = search_result {
             self.identifying_bytes_list
-            .insert(inserting_index, identifying_bytes);
-        self.items.insert(inserting_index, item);
+                .insert(inserting_index, identifying_bytes);
+            self.items.insert(inserting_index, item);
+            self.shift_indices(inserting_index);
         }
-        self.add_index(search_result.index());
+        self.indices_in_added_order.push(search_result.index());
     }
 
-    fn add_index(&mut self, insertion_index: usize) {
+    fn shift_indices(&mut self, insertion_index: usize) {
         if insertion_index != self.indices_in_added_order.len() {
             self.indices_in_added_order = self.indices_in_added_order
                 .iter()
@@ -81,8 +81,6 @@ where
                 })
                 .collect();
         }
-        self.indices_in_added_order.push(insertion_index);
-        
     }
 }
 
@@ -101,7 +99,6 @@ pub fn search_list(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> SearchResult {
     loop {
         let split_index = (min_index + max_index) / 2;
         let split_item = &list[split_index];
-        dbg!(min_index, max_index, split_index);
         if max_index - min_index >= 2 {
             match split_item.cmp(item) {
                 Ordering::Equal => return SearchResult::IsAt(split_index),
@@ -115,7 +112,6 @@ pub fn search_list(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> SearchResult {
         } else {
             let item1 = &list[min_index];
             let item2 = &list[max_index];
-            dbg!(&item1, &item2);
             if item == item1 {
                 return SearchResult::IsAt(min_index);
             } else if item == item2 {
@@ -142,7 +138,6 @@ impl From<Point3> for Vec<u8> {
     }
 }
 
-// TODO this test fails
 #[test]
 fn test_unique_list() {
     let mut unique_list: UniqueList<Point3> = UniqueList::new();
