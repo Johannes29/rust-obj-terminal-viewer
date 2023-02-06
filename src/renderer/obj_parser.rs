@@ -1,5 +1,5 @@
 use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3, IndicesTriangle};
-use std::cmp::Ordering;
+use crate::general::unique_list::UniqueList;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 pub struct ObjParser {
     unique_vertices: UniqueList<Point3>,
+    // vertices: Vec<Point3>,
     vertices_indices: Vec<usize>,
     normals: Vec<Point3>,
     mesh: Mesh,
@@ -32,6 +33,7 @@ impl ObjParser {
         ObjParser {
             unique_vertices: UniqueList::new(),
             vertices_indices: Vec::new(),
+            // vertices: Vec::new(),
             normals: Vec::new(),
             mesh: Mesh::new(),
         }
@@ -265,130 +267,4 @@ fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
         }
     }
     Some(new_vec)
-}
-
-#[derive(Debug)]
-struct UniqueList<T> {
-    items: Vec<T>,
-    identifying_bytes_list: Vec<Vec<u8>>,
-}
-
-impl<T> UniqueList<T>
-where
-    Vec<u8>: From<T>,
-    T: Clone,
-{
-    pub fn new() -> Self {
-        UniqueList {
-            items: Vec::new(),
-            identifying_bytes_list: Vec::new(),
-        }
-    }
-
-
-    /// returns the index of the added item,
-    /// or the index of the already existing copy of the item
-    pub fn add(&mut self, item: T) -> usize {
-        let identifying_bytes: Vec<u8> = item.clone().into();
-        let inserting_index = 
-            if self.items.len() > 0 {
-                match search_list(&self.identifying_bytes_list, &identifying_bytes) {
-                    SearchResult::IsAt(index) => return index,
-                    SearchResult::AddAt(index) => index,
-                }
-            } else { 0 };
-        self.identifying_bytes_list
-            .insert(inserting_index, identifying_bytes);
-        self.items.insert(inserting_index, item);
-        inserting_index
-    }
-}
-
-/// Returns the index where the item should be added so that the list remains sorted,
-/// or the index where an identical copy of the item already exists. 
-/// Assumes that the list is sorted.
-/// 
-/// Assumes that all elements after the inserted element would shift to the right when inserting the element.
-pub fn search_list(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> SearchResult {
-    let split_index = list.len() / 2;
-    let split_item = &list[split_index];
-
-    let mut min_index = 0;
-    let mut max_index = list.len() - 1;
-    loop {
-        let split_index = (min_index + max_index) / 2;
-        dbg!(min_index, max_index, split_index);
-        if max_index - min_index >= 2 {
-            // TODO seems to get stuck here...
-            match split_item.cmp(item) {
-                Ordering::Equal => return SearchResult::IsAt(split_index),
-                Ordering::Greater => {
-                    max_index = split_index - 1;
-                }
-                Ordering::Less => {
-                    min_index = split_index + 1;
-                }
-            }
-        } else {
-            let item1 = &list[min_index];
-            let item2 = &list[max_index];
-            if item == item1 {
-                return SearchResult::IsAt(min_index);
-            } else if item == item2 {
-                return SearchResult::IsAt(max_index);
-            }
-            if item < item1 {
-                return SearchResult::AddAt(min_index);
-            }
-            if item < item2 {
-                return SearchResult::AddAt(max_index);
-            }
-            return SearchResult::AddAt(max_index + 1);
-        }
-    }
-}
-
-pub enum SearchResult {
-    AddAt(usize),
-    IsAt(usize),
-}
-
-// TODO this test freezes
-#[test]
-fn test_unique_list() {
-    dbg!("start");
-    let mut unique_list: UniqueList<Point3> = UniqueList::new();
-    let points = vec![
-        Point3 { x: 0.5, y: -0.3, z: 31.2 },
-        Point3 { x: 2.5, y: 0.8, z: 1.6 },
-        Point3 { x: -1.5, y: -4.3, z: 11.2 },
-        Point3 { x: 3.5, y: -0.1, z: 1.9 },
-        Point3 { x: -0.5, y: 4.4, z: 9.2 },
-        Point3 { x: -0.5, y: 4.4, z: 9.2 },
-        Point3 { x: 5.5, y: -1.7, z: -11.2 },
-        Point3 { x: 5.5, y: -1.7, z: -11.2 },
-    ];
-    let mut indices_list: Vec<usize> = Vec::new();
-    let duplicate_count = 2;
-    for point in points.clone() {
-        dbg!(&unique_list);
-        let index = unique_list.add(point);
-        indices_list.push(index);
-    }
-    dbg!(&unique_list);
-    assert_eq!(unique_list.items.len(), points.len() - duplicate_count);
-    for index in 0..points.len() {
-        let point_from_unique_list = &unique_list.items[indices_list[index]];
-        assert_eq!(point_from_unique_list, &points[index]);
-    }
-}
-
-impl From<Point3> for Vec<u8> {
-    fn from(point: Point3) -> Self {
-        let mut bytes = Vec::new();
-        bytes.append(&mut point.x.to_le_bytes().into());
-        bytes.append(&mut point.y.to_le_bytes().into());
-        bytes.append(&mut point.z.to_le_bytes().into());
-        bytes
-    }
 }
