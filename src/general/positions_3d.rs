@@ -1,5 +1,3 @@
-use std::cmp::min;
-
 use crate::general::positions_2d::{ Point as Point2, Triangle as Triangle2 };
 #[derive(Debug, PartialEq, Clone)]
 pub struct Point {
@@ -302,8 +300,10 @@ impl IndicesTriangle {
         ]
     }
 
-    pub fn make_clockwise(&mut self, points: &Vec<Point>) /* -> Result<(), String> */ {
-        // TODO CURRENT this function never considers the indices of the indices_triangle
+    pub fn make_clockwise(&mut self, points: &Vec<Point>) {
+        // TODO use dot product of self.normal to determine the correct order of verts
+        // then change order of verts
+        // optionally also set normal to more precise (probably don't)
         if Triangle::get_normal(&self.triangle_points(points)) == self.normal {
             return;
         }
@@ -311,12 +311,6 @@ impl IndicesTriangle {
         let p3_clone = self.p3;
         self.p3 = self.p2;
         self.p2 = p3_clone;
-
-        dbg!(Triangle::get_normal(&self.triangle_points(points)), &self.normal);
-        // match Triangle::get_normal(&self.triangle_points(points)) == self.normal {
-        //     true => Ok(()),
-        //     false => Err(String::from("the triangle normal is not perpendicular to the triangle surface")),
-        // }
     }
 }
 
@@ -378,20 +372,6 @@ impl BoundingBox {
         distance(&self.0, &self.1) / 2.0
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::Point as Point3;
-// #[test]
-// fn get_normal() {
-//     let points = [
-//         Point3 { x: -1., y: -1., z: 1. },
-//         Point3 { x: -1., y: 1., z: 1. },
-//         Point3 { x: 1., y: 1., z: 1. }
-//     ];
-//     assert_eq!(result, 4);
-// }
-// }
 
 pub fn dot_product(a: &Point, b: &Point) -> f32 {
     a.x * b.x + a.y * b.y + a.z * b.z

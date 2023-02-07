@@ -132,7 +132,6 @@ mod test_bc {
     /// bcc => BaryCentric Coordinates
     fn get_point_from_bcc(triangle: &Triangle2, point: &Point2) -> Point2 {
         let [w0, w1, w2] = get_barycentric_coordinates(&triangle, &point, true);
-        dbg!(w0, w1, w2);
         let mut point_from_barycentric_coordinates = Point2 { x: 0.0, y: 0.0 };
         point_from_barycentric_coordinates.add(&triangle.p1.scale(w0));
         point_from_barycentric_coordinates.add(&triangle.p2.scale(w1));

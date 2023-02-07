@@ -49,15 +49,19 @@ where
     /// `add_index` 100 to get the 101:th item that was added
     pub fn get_item(&self, add_index: usize) -> &T {
         let items_index = self.indices_in_added_order[add_index];
-        // dbg!(self, add_index);
         &self.items[items_index]
+    }
+    
+    /// `add_index` 0 to get the index of the first item that was added
+    /// `add_index` 100 to get the index of the 101:th item that was added
+    pub fn get_index(&self, add_index: usize) -> usize {
+        self.indices_in_added_order[add_index]
     }
 
     /// returns the index of the added item,
     /// or the index of the already existing copy of the item
     pub fn add_if_unique(&mut self, item: T) {
         let identifying_bytes: Vec<u8> = item.clone().into();
-        dbg!(&item, &identifying_bytes, &self);
         let search_result = search_list(&self.identifying_bytes_list, &identifying_bytes);
         if let SearchResult::AddAt(inserting_index) = search_result {
             self.identifying_bytes_list
@@ -155,7 +159,6 @@ fn test_unique_list() {
     for point in points.clone() {
         unique_list.add_if_unique(point.clone());
     }
-    dbg!("after adding", &unique_list);
     assert_eq!(unique_list.items.len(), points.len() - duplicate_count);
     for index in 0..points.len() {
         let point_from_unique_list = unique_list.get_item(index);

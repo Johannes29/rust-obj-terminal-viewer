@@ -36,8 +36,8 @@ pub fn render_mesh(
         screen_to_pixel_coordinates(image_buffer.width as u16, image_buffer.height as u16);
     // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector,
     // then the one to the right of that one, etc.
-    let transformation_matrix = persp_proj_mat
-        .combine(screen_to_pixel_coordinates)
+    let transformation_matrix = screen_to_pixel_coordinates
+        .combine(persp_proj_mat)
         .combine(translation_matrix)
         .combine(post_rotation_translation)
         .combine(rotation_matrix_x)

@@ -7,8 +7,6 @@ use std::path::PathBuf;
 
 pub struct ObjParser {
     unique_vertices: UniqueList<Point3>,
-    // vertices: Vec<Point3>,
-    vertices_indices: Vec<usize>,
     normals: Vec<Point3>,
     mesh: Mesh,
 }
@@ -32,8 +30,6 @@ impl ObjParser {
     fn new() -> Self {
         ObjParser {
             unique_vertices: UniqueList::new(),
-            vertices_indices: Vec::new(),
-            // vertices: Vec::new(),
             normals: Vec::new(),
             mesh: Mesh::new(),
         }
@@ -41,22 +37,11 @@ impl ObjParser {
 
     /// Returns the index of unique_vertices where the vertex with specified obj reference number can be found
     fn get_unique_verts_index(&self, vertex_reference_number: usize) -> usize {
-        self.vertices_indices[vertex_reference_number - 1]
+        self.unique_vertices.get_index(vertex_reference_number - 1)
     }
 
-    /*
-    fn get_vertex(&self, vertex_reference_number: usize) -> Box<Point3> {
-        // Vertex reference numbers start at 1
-        let unique_verts_index = self.get_unique_verts_index(vertex_reference_number);
-        Box::from(self.unique_vertices.items[unique_verts_index])
-    } */
-
     fn add_vertex(&mut self, vertex: Point3) {
-        // TODO this code is commented out because unique_vertices.add() seems to get stuck
-        // let index = self.unique_vertices.add(vertex);
-        // self.vertices_indices.push(index);
-        self.unique_vertices.items.push(vertex);
-        self.vertices_indices.push(self.vertices_indices.len());
+        self.unique_vertices.add_if_unique(vertex);
     }
 
     pub fn parse_file(file_path: &PathBuf) -> Result<Mesh, String> {
@@ -179,7 +164,7 @@ impl ObjParser {
             .map(|vertex_reference_number| self.get_unique_verts_index(vertex_reference_number))
             .collect();
 
-        let vertices: Vec<&Point3> =vertices_indices
+        let vertices: Vec<&Point3> = vertices_indices
             .iter()
             .map(|unique_verts_index| &self.unique_vertices.items[*unique_verts_index])
             .collect();

@@ -111,7 +111,6 @@ impl Renderer {
     }
 
     pub fn adapt_renderer_to_mesh(&mut self) {
-        dbg!(self.horizontal_fov, self.vertical_fov);
         let bounding_box = BoundingBox::new(&self.mesh.points);
         let bounding_radius = bounding_box.get_bounding_radius();
         let min_fov = self.horizontal_fov.min(self.vertical_fov).to_radians();
