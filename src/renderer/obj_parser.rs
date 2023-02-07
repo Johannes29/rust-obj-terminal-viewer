@@ -92,6 +92,8 @@ impl ObjParser {
             ));
         }
 
+        obj_parser.mesh.points = obj_parser.unique_vertices.items;
+
         if parsed_lines == 0 {
             return Err(String::from("did not find any obj data"));
         }
@@ -209,7 +211,7 @@ impl ObjParser {
             p3: vertices_indices[2],
             normal: face_normal.clone(),
         };
-        triangle.make_clockwise(&self.mesh.points).unwrap();
+        triangle.make_clockwise(&self.unique_vertices.items);
         self.mesh.indices_triangles.push(triangle);
 
         // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
@@ -220,7 +222,7 @@ impl ObjParser {
                 p3: vertices_indices[0],
                 normal: face_normal,
             };
-            triangle.make_clockwise(&self.mesh.points).unwrap();
+            triangle.make_clockwise(&self.unique_vertices.items);
             self.mesh.indices_triangles.push(triangle);
         }
 

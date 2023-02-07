@@ -48,7 +48,7 @@ pub fn render_mesh(
 
     let mut triangle_index = 0;
     for incides_triangle in &mesh.indices_triangles {
-        let triangle = Triangle3::from_indices(incides_triangle, &ss_points);
+        let triangle = Triangle3::from_indices(incides_triangle, &ss_points).unwrap();
         // Skips triangles behind the camera
         // TODO use near instead of 0.0
         // TODO do this in triangle3d_to_screen_space_triangle function instead

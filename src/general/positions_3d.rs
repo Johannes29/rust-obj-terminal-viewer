@@ -1,3 +1,5 @@
+use std::cmp::min;
+
 use crate::general::positions_2d::{ Point as Point2, Triangle as Triangle2 };
 #[derive(Debug, PartialEq, Clone)]
 pub struct Point {
@@ -105,16 +107,46 @@ impl Point {
         let closure = |component: f32| -component;
         self.map(closure)
     }
+
+    // Rounds one point to the other points decimal count,
+    // then compares them
+    
+    // pub fn rounded_points_are_equal(point1: Point, point2: Point) -> bool {
+    //     fn get_decimal_count(number: f32) -> usize {
+    //         number.to_string().split(".").next().unwrap().len()
+    //     }
+    //     fn rounded_string(number: f32, decimals: usize) -> String {
+    //         let string = number.to_string();
+    //         let dec_sep_index = string.find('.').unwrap();
+    //         let inc_last_digit = string[dec_sep_index + decimals as usize + 1].parse()
+    //         let decimal_string = number.to_string().split(".").next().unwrap();
+            
+    //         todo!()
+    //     }
+    //     fn rounded_f32_are_equal(number1: f32, number2: f32) -> bool {
+    //         let rounding_decimals = min(
+    //             get_decimal_count(number1),
+    //             get_decimal_count(number2),
+    //         );
+
+    //         todo!()
+    //     }
+
+    //     for i in 0..3 {
+    //     }
+
+    //     todo!()
+    // }
 }
 
 impl <'a> Triangle<'a> {
-    pub fn from_indices(indices_triangle: &'a IndicesTriangle, points: &'a Vec<Point>) -> Self {
-        Triangle {
-            p1: &points[indices_triangle.p1],
-            p2: &points[indices_triangle.p2],
-            p3: &points[indices_triangle.p3],
+    pub fn from_indices(indices_triangle: &'a IndicesTriangle, points: &'a Vec<Point>) -> Option<Self> {
+        Some(Triangle {
+            p1: points.get(indices_triangle.p1)?,
+            p2: points.get(indices_triangle.p2)?,
+            p3: points.get(indices_triangle.p3)?,
             normal: &indices_triangle.normal,
-        }
+        })
     }
 
     pub fn points(&self) -> [&Point; 3] {
@@ -226,7 +258,7 @@ impl <'a> Triangle<'a> {
 
     // TODO should be able to merge these functions somehow
     
-    pub fn get_normal(points: &[Point]) -> Point {
+    pub fn get_normal(points: &[&Point]) -> Point {
         assert!(points.len() >= 3);
         let a = points[2].relative_to(&points[0]);
         let b = points[1].relative_to(&points[0]);
@@ -262,20 +294,29 @@ impl <'a> Triangle<'a> {
 }
 
 impl IndicesTriangle {
-    pub fn make_clockwise(&mut self, points: &Vec<Point>) -> Result<(), String> {
+    pub fn triangle_points<'a>(&self, points: &'a Vec<Point>) -> [&'a Point; 3] {
+        [
+            &points[self.p1],
+            &points[self.p2],
+            &points[self.p3],
+        ]
+    }
+
+    pub fn make_clockwise(&mut self, points: &Vec<Point>) /* -> Result<(), String> */ {
         // TODO CURRENT this function never considers the indices of the indices_triangle
-        if Triangle::get_normal(points) == self.normal {
-            return Ok(());
+        if Triangle::get_normal(&self.triangle_points(points)) == self.normal {
+            return;
         }
 
         let p3_clone = self.p3;
         self.p3 = self.p2;
         self.p2 = p3_clone;
 
-        match Triangle::get_normal(points) == self.normal {
-            true => Ok(()),
-            false => Err(String::from("the triangle normal is not perpendicular to the triangle surface")),
-        }
+        dbg!(Triangle::get_normal(&self.triangle_points(points)), &self.normal);
+        // match Triangle::get_normal(&self.triangle_points(points)) == self.normal {
+        //     true => Ok(()),
+        //     false => Err(String::from("the triangle normal is not perpendicular to the triangle surface")),
+        // }
     }
 }
 
