@@ -11,3 +11,10 @@ image = "0.24.4"
 # needed to generate flamegraphs with `cargo flamegraph`
 [profile.release]
 debug = true
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "obj_parsing_benchmark"
+harness = false

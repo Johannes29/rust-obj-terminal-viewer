@@ -57,9 +57,9 @@ impl ObjParser {
             for line in lines {
                 line_number += 1;
                 if line_number % 1000 == 0 {
-                    println!("line {line_number}");
+                    // println!("line {line_number}");
                 }
-                if line_number > 100_000 {
+                if line_number > 10_000 {
                     return Err("".to_string());
                 }
                 if let Ok(line) = line {
