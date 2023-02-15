@@ -1,10 +1,13 @@
 mod general;
 mod renderer;
 
+use std::time::Instant;
+
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton};
 
 use renderer::interface::{Renderer, ShouldExit};
 use renderer::obj_parser::ObjParser;
+use rust_obj_terminal_viewer::general::positions_3d::Mesh;
 
 use crate::general::positions_3d::Point;
 use crossterm::event::Event;
@@ -31,14 +34,14 @@ fn main() {
         70.0,
         " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
     );
-    let mesh = match ObjParser::parse_file(&obj_path) {
-        Ok(mesh) => mesh,
-        Err(message) => {
-            let path_string = obj_path.to_str().unwrap();
-            println!("Error when parsing {path_string}: {message}");
-            return;
-        }
-    };
+
+    let mesh_parse_start_time = Instant::now();
+    ObjParser::parse_file(&obj_path);
+    let mesh_parse_seconds = mesh_parse_start_time.elapsed().as_millis() as f32 / 1000.0;
+    println!("Time to parse: {} seconds", mesh_parse_seconds)
+    // values (in secs): 11, 14, 12, 17, 17, 12, 16
+
+    /*
     renderer.set_mesh(mesh);
 
     let mut drag_key_is_down = false;
@@ -98,6 +101,7 @@ fn main() {
     };
 
     renderer.start_rendering(&mut frame_loop);
+     */
 }
 
 // calculates rotation x and y from moved x and y

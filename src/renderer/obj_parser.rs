@@ -56,6 +56,12 @@ impl ObjParser {
         if let Ok(lines) = read_lines(file_path) {
             for line in lines {
                 line_number += 1;
+                if line_number % 1000 == 0 {
+                    println!("line {line_number}");
+                }
+                if line_number > 100_000 {
+                    return Err("".to_string());
+                }
                 if let Ok(line) = line {
                     match obj_parser.handle_line(&line) {
                         LineParseResult::Error(message) => {

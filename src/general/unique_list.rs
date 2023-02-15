@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt::Debug;
+use std::thread;
+use std::time::Duration;
 use crate::general::positions_3d::Point as Point3;
 
 
@@ -85,6 +87,15 @@ where
                 })
                 .collect();
         }
+
+        // this loop should just take time, doesn't do anything
+        // let mut a: f64 = 1.2397;
+        // for _ in 0..1000000 {
+        //     a = a.powf(1.0001);
+        // }
+        // if a % 10.0 > 8.0 {
+        //     println!("{}", a);
+        // }
     }
 }
 
