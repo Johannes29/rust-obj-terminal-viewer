@@ -1,12 +1,10 @@
 use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3, IndicesTriangle};
-use crate::general::unique_list::UniqueList;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::PathBuf;
 
 pub struct ObjParser {
-    unique_vertices: UniqueList<Point3>,
     normals: Vec<Point3>,
     mesh: Mesh,
 }
@@ -29,19 +27,12 @@ impl From<Result<(), String>> for LineParseResult {
 impl ObjParser {
     fn new() -> Self {
         ObjParser {
-            unique_vertices: UniqueList::new(),
             normals: Vec::new(),
             mesh: Mesh::new(),
         }
     }
-
-    /// Returns the index of unique_vertices where the vertex with specified obj reference number can be found
-    fn get_unique_verts_index(&self, vertex_reference_number: usize) -> usize {
-        self.unique_vertices.get_index(vertex_reference_number - 1)
-    }
-
     fn add_vertex(&mut self, vertex: Point3) {
-        self.unique_vertices.add_if_unique(vertex);
+        self.mesh.points.push(vertex);
     }
 
     pub fn parse_file(file_path: &PathBuf) -> Result<Mesh, String> {
@@ -56,12 +47,6 @@ impl ObjParser {
         if let Ok(lines) = read_lines(file_path) {
             for line in lines {
                 line_number += 1;
-                if line_number % 1000 == 0 {
-                    // println!("line {line_number}");
-                }
-                if line_number > 10_000 {
-                    return Err("".to_string());
-                }
                 if let Ok(line) = line {
                     match obj_parser.handle_line(&line) {
                         LineParseResult::Error(message) => {
@@ -82,8 +67,6 @@ impl ObjParser {
                 file_path.to_str().expect("valid unicode")
             ));
         }
-
-        obj_parser.mesh.points = obj_parser.unique_vertices.items;
 
         if parsed_lines == 0 {
             return Err(String::from("did not find any obj data"));
@@ -166,13 +149,12 @@ impl ObjParser {
 
         let vertices_indices: Vec<usize> = parsed_numbers
             .iter()
-            .map(|indices| indices[0].expect("vertex index in face declaration"))
-            .map(|vertex_reference_number| self.get_unique_verts_index(vertex_reference_number))
+            .map(|indices| indices[0].expect("vertex index in face declaration") - 1)
             .collect();
 
         let vertices: Vec<&Point3> = vertices_indices
             .iter()
-            .map(|unique_verts_index| &self.unique_vertices.items[*unique_verts_index])
+            .map(|vertex_index| &self.mesh.points[*vertex_index])
             .collect();
 
         let vertext_normal_indices_option: Vec<Option<usize>> =
@@ -202,7 +184,7 @@ impl ObjParser {
             p3: vertices_indices[2],
             normal: face_normal.clone(),
         };
-        triangle.make_clockwise(&self.unique_vertices.items);
+        triangle.make_clockwise(&self.mesh.points);
         self.mesh.indices_triangles.push(triangle);
 
         // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
@@ -213,7 +195,7 @@ impl ObjParser {
                 p3: vertices_indices[0],
                 normal: face_normal,
             };
-            triangle.make_clockwise(&self.unique_vertices.items);
+            triangle.make_clockwise(&self.mesh.points);
             self.mesh.indices_triangles.push(triangle);
         }
 
