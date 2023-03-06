@@ -1,6 +1,4 @@
-use crate::general::positions_2d::Point as Point2;
-use crate::general::positions_2d::Triangle as Triangle2;
-
+use crate::general::positions_2d::{ Point as Point2, Triangle as Triangle2 };
 #[derive(Debug, PartialEq, Clone)]
 pub struct Point {
     pub x: f32,
@@ -10,14 +8,23 @@ pub struct Point {
 
 #[derive(Clone, Debug)]
 pub struct Mesh {
-    pub triangles: Vec<Triangle>,
+    pub points: Vec<Point>,
+    pub indices_triangles: Vec<IndicesTriangle>,
 }
 
 #[derive(Clone, Debug)]
-pub struct Triangle {
-    pub p1: Point,
-    pub p2: Point,
-    pub p3: Point,
+pub struct Triangle<'a> {
+    pub p1: &'a Point,
+    pub p2: &'a Point,
+    pub p3: &'a Point,
+    pub normal: &'a Point, // maybe this should have different lifetime
+}
+
+#[derive(Clone, Debug)]
+pub struct IndicesTriangle {
+    pub p1: usize,
+    pub p2: usize,
+    pub p3: usize,
     pub normal: Point,
 }
 
@@ -98,12 +105,53 @@ impl Point {
         let closure = |component: f32| -component;
         self.map(closure)
     }
+
+    // Rounds one point to the other points decimal count,
+    // then compares them
+    
+    // pub fn rounded_points_are_equal(point1: Point, point2: Point) -> bool {
+    //     fn get_decimal_count(number: f32) -> usize {
+    //         number.to_string().split(".").next().unwrap().len()
+    //     }
+    //     fn rounded_string(number: f32, decimals: usize) -> String {
+    //         let string = number.to_string();
+    //         let dec_sep_index = string.find('.').unwrap();
+    //         let inc_last_digit = string[dec_sep_index + decimals as usize + 1].parse()
+    //         let decimal_string = number.to_string().split(".").next().unwrap();
+            
+    //         todo!()
+    //     }
+    //     fn rounded_f32_are_equal(number1: f32, number2: f32) -> bool {
+    //         let rounding_decimals = min(
+    //             get_decimal_count(number1),
+    //             get_decimal_count(number2),
+    //         );
+
+    //         todo!()
+    //     }
+
+    //     for i in 0..3 {
+    //     }
+
+    //     todo!()
+    // }
 }
 
-impl Triangle {
+impl <'a> Triangle<'a> {
+    pub fn from_indices(indices_triangle: &'a IndicesTriangle, points: &'a Vec<Point>) -> Option<Self> {
+        Some(Triangle {
+            p1: points.get(indices_triangle.p1)?,
+            p2: points.get(indices_triangle.p2)?,
+            p3: points.get(indices_triangle.p3)?,
+            normal: &indices_triangle.normal,
+        })
+    }
+
     pub fn points(&self) -> [&Point; 3] {
         [&self.p1, &self.p2, &self.p3]
     }
+
+    /*
 
     // TODO the following 4 methods are inconsistent
 
@@ -111,9 +159,9 @@ impl Triangle {
     #[allow(unused)]
     pub fn from_arr_n(array: [Point; 4]) -> Self {
         Triangle {
-            p1: array[0].clone(),
-            p2: array[1].clone(),
-            p3: array[2].clone(),
+            p1: array[0],
+            p2: array[1],
+            p3: array[2],
             normal: array[3].clone(),
         }
     }
@@ -157,6 +205,7 @@ impl Triangle {
             normal,
         })
     }
+     
 
     pub fn combine_with_point<F>(&self, point: &Point, function: F) -> Self
     where
@@ -178,6 +227,8 @@ impl Triangle {
         self.combine_with_point(point, closure)
     }
 
+    */
+
     pub fn to_2d(&self) -> Triangle2 {
         Triangle2 {
             p1: self.p1.to_2d(),
@@ -186,17 +237,29 @@ impl Triangle {
         }
     }
 
+    /*
+
     /// Assumes clockwise winding order
     pub fn get_normal(points: [Point; 3]) -> Point {
         let a = points[2].relative_to(&points[0]);
         let b = points[1].relative_to(&points[0]);
         cross_product(a, b).normalized()
     }
+    */
 
     // TODO merge this and the above function
-    pub fn get_normal_2(points: &[&Point]) -> Point {
+    pub fn get_normal_ref(points: &[&Point]) -> Point {
         let a = points[2].relative_to(points[0]);
         let b = points[1].relative_to(points[0]);
+        cross_product(a, b).normalized()
+    }
+
+    // TODO should be able to merge these functions somehow
+    
+    pub fn get_normal(points: &[&Point]) -> Point {
+        assert!(points.len() >= 3);
+        let a = points[2].relative_to(&points[0]);
+        let b = points[1].relative_to(&points[0]);
         cross_product(a, b).normalized()
     }
 
@@ -226,14 +289,27 @@ impl Triangle {
 
         [min_x, max_x, min_y, max_y]
     }
+}
 
-    pub fn make_clockwise(&mut self) {
-        if Triangle::get_normal_2(&self.points()) == self.normal {
+impl IndicesTriangle {
+    pub fn triangle_points<'a>(&self, points: &'a Vec<Point>) -> [&'a Point; 3] {
+        [
+            &points[self.p1],
+            &points[self.p2],
+            &points[self.p3],
+        ]
+    }
+
+    pub fn make_clockwise(&mut self, points: &Vec<Point>) {
+        // TODO use dot product of self.normal to determine the correct order of verts
+        // then change order of verts
+        // optionally also set normal to more precise (probably don't)
+        if Triangle::get_normal(&self.triangle_points(points)) == self.normal {
             return;
         }
 
-        let p3_clone = self.p3.clone();
-        self.p3 = self.p2.clone();
+        let p3_clone = self.p3;
+        self.p3 = self.p2;
         self.p2 = p3_clone;
     }
 }
@@ -241,7 +317,8 @@ impl Triangle {
 impl Mesh {
     pub fn new() -> Self {
         Mesh {
-            triangles: Vec::new(),
+            points: Vec::new(),
+            indices_triangles: Vec::new(),
         }
     }
 }
@@ -278,15 +355,11 @@ impl BoundingBox {
         }
     }
 
-    pub fn new<'a, T: Iterator<Item = &'a Triangle>>(iter: &mut T) -> Self {
+    pub fn new(points: &Vec<Point>) -> Self {
         let mut bounding_box = BoundingBox::initialize();
-
-        while let Some(triangle) = iter.next() {
-            for point in triangle.points() {
-                bounding_box.expand(point);
-            }
+        for point in points {
+            bounding_box.expand(point);
         }
-
         bounding_box
     }
 
@@ -299,20 +372,6 @@ impl BoundingBox {
         distance(&self.0, &self.1) / 2.0
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::Point as Point3;
-// #[test]
-// fn get_normal() {
-//     let points = [
-//         Point3 { x: -1., y: -1., z: 1. },
-//         Point3 { x: -1., y: 1., z: 1. },
-//         Point3 { x: 1., y: 1., z: 1. }
-//     ];
-//     assert_eq!(result, 4);
-// }
-// }
 
 pub fn dot_product(a: &Point, b: &Point) -> f32 {
     a.x * b.x + a.y * b.y + a.z * b.z

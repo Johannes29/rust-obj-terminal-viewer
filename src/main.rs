@@ -41,8 +41,6 @@ fn main() {
     };
     renderer.set_mesh(mesh);
 
-    dbg!(&renderer.view_point);
-
     let mut drag_key_is_down = false;
     let (mut mouse_column, mut mouse_row) = (0, 0);
 

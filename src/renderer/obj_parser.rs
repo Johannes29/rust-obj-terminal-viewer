@@ -1,13 +1,10 @@
-use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3};
-use std::cmp::Ordering;
-use std::collections::btree_set::Union;
+use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3, IndicesTriangle};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::PathBuf;
 
 pub struct ObjParser {
-    vertices: Vec<Point3>,
     normals: Vec<Point3>,
     mesh: Mesh,
 }
@@ -30,10 +27,12 @@ impl From<Result<(), String>> for LineParseResult {
 impl ObjParser {
     fn new() -> Self {
         ObjParser {
-            vertices: Vec::new(),
             normals: Vec::new(),
             mesh: Mesh::new(),
         }
+    }
+    fn add_vertex(&mut self, vertex: Point3) {
+        self.mesh.points.push(vertex);
     }
 
     pub fn parse_file(file_path: &PathBuf) -> Result<Mesh, String> {
@@ -72,8 +71,8 @@ impl ObjParser {
         if parsed_lines == 0 {
             return Err(String::from("did not find any obj data"));
         }
-        if obj_parser.mesh.triangles.len() == 0 {
-            return Err(String::from("returned empty mesh"));
+        if obj_parser.mesh.indices_triangles.len() == 0 {
+            return Err(String::from("returned a mesh without any triangles"));
         }
 
         Ok(obj_parser.mesh)
@@ -111,7 +110,7 @@ impl ObjParser {
             .collect();
 
         if argument_nums.len() == argument_strings.len() {
-            self.vertices.push(Point3::from_vec(argument_nums).unwrap());
+            self.add_vertex(Point3::from_vec(argument_nums).unwrap());
             return Ok(());
         } else {
             return Err("error when parsing verts".into());
@@ -148,10 +147,14 @@ impl ObjParser {
             .map(|str| parse_face_element_vertext_string(str))
             .collect();
 
-        let vertices: Vec<&Point3> = parsed_numbers
+        let vertices_indices: Vec<usize> = parsed_numbers
             .iter()
-            .map(|indices| indices[0].expect("vertex index in face declaration"))
-            .map(|index| &self.vertices[index - 1])
+            .map(|indices| indices[0].expect("vertex index in face declaration") - 1)
+            .collect();
+
+        let vertices: Vec<&Point3> = vertices_indices
+            .iter()
+            .map(|vertex_index| &self.mesh.points[*vertex_index])
             .collect();
 
         let vertext_normal_indices_option: Vec<Option<usize>> =
@@ -171,30 +174,29 @@ impl ObjParser {
                     return Err("face normals are different".into());
                 }
             }
-            None => Triangle3::get_normal_2(&vertices[0..3]),
+            None => Triangle3::get_normal_ref(&vertices[0..3]),
         };
 
         // TODO support negative indices
-        // TODO cloning is not optimal for performance
-        let mut triangle = Triangle3::from_arr_n([
-            vertices[0].clone(),
-            vertices[1].clone(),
-            vertices[2].clone(),
-            face_normal.clone(),
-        ]);
-        triangle.make_clockwise();
-        self.mesh.triangles.push(triangle);
+        let mut triangle = IndicesTriangle {
+            p1: vertices_indices[0],
+            p2: vertices_indices[1],
+            p3: vertices_indices[2],
+            normal: face_normal.clone(),
+        };
+        triangle.make_clockwise(&self.mesh.points);
+        self.mesh.indices_triangles.push(triangle);
 
         // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
         if vertices.len() == 4 {
-            let mut triangle = Triangle3::from_arr_n([
-                vertices[2].clone(),
-                vertices[3].clone(),
-                vertices[0].clone(),
-                face_normal.clone(),
-            ]);
-            triangle.make_clockwise();
-            self.mesh.triangles.push(triangle);
+            let mut triangle = IndicesTriangle {
+                p1: vertices_indices[2],
+                p2: vertices_indices[3],
+                p3: vertices_indices[0],
+                normal: face_normal,
+            };
+            triangle.make_clockwise(&self.mesh.points);
+            self.mesh.indices_triangles.push(triangle);
         }
 
         Ok(())
@@ -240,98 +242,4 @@ fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
         }
     }
     Some(new_vec)
-}
-
-struct UniqueList<T> {
-    list: Vec<T>,
-    identifying_bytes_list: Vec<Vec<u8>>,
-}
-
-impl<T> UniqueList<T>
-where
-    Vec<u8>: From<T>,
-    T: Clone,
-{
-    pub fn new() -> Self {
-        UniqueList {
-            list: Vec::new(),
-            identifying_bytes_list: Vec::new(),
-        }
-    }
-
-
-    // TODO return index of the added item, or index of the already existing copy of the item
-    pub fn add(&mut self, item: T) {
-        let identifying_bytes: Vec<u8> = item.clone().into();
-        let inserting_index = 
-            if self.list.len() > 0 {
-                match index_to_add(&self.identifying_bytes_list, &identifying_bytes) {
-                    None => return,
-                    Some(index) => index,
-                }
-            } else { 0 };
-        self.identifying_bytes_list
-            .insert(inserting_index, identifying_bytes);
-        self.list.insert(inserting_index, item);
-    }
-}
-
-/// Returns the index where the item should be added so that the list remains sorted.
-/// Assumes that the list is sorted.
-/// Returns none if item is already in list.
-/// Assumes that all elements after the inserted elements would move when inserting the element.
-pub fn index_to_add(list: &Vec<Vec<u8>>, item: &Vec<u8>) -> Option<usize> {
-    let split_index = list.len() / 2;
-    let split_item = &list[split_index];
-
-    let mut min_index = 0;
-    let mut max_index = list.len() - 1;
-    let split_index = min_index + max_index / 2;
-    loop {
-        if max_index - min_index >= 2 {
-            match split_item.cmp(item) {
-                Ordering::Equal => return None,
-                Ordering::Greater => {
-                    max_index = split_index - 1;
-                }
-                Ordering::Less => {
-                    min_index = split_index + 1;
-                }
-            }
-        } else {
-            let item1 = &list[min_index];
-            let item2 = &list[max_index];
-            if item == item1 || item == item2 {
-                return None;
-            }
-            if item < item1 {
-                return Some(min_index);
-            }
-            if item < item2 {
-                return Some(max_index);
-            }
-            return Some(max_index + 1);
-        }
-    }
-}
-
-#[test]
-fn test_binary_search_index_to_add() {
-    let item1 = vec![12, 120, 240];
-    let item2 = vec![13, 130, 230];
-    let item_not_in_list = vec![14, 140, 255];
-    let list: Vec<Vec<u8>> = vec![item1.clone(), item2.clone()];
-    assert!(index_to_add(&list, &item1).is_none());
-    assert!(index_to_add(&list, &item2).is_none());
-    assert!(index_to_add(&list, &item_not_in_list).is_some());
-}
-
-impl From<Point3> for Vec<u8> {
-    fn from(point: Point3) -> Self {
-        let mut bytes = Vec::new();
-        bytes.append(&mut point.x.to_le_bytes().into());
-        bytes.append(&mut point.y.to_le_bytes().into());
-        bytes.append(&mut point.z.to_le_bytes().into());
-        bytes
-    }
 }

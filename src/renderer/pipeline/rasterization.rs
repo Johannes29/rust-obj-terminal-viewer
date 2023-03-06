@@ -4,12 +4,14 @@ use crate::renderer::interface::Buffer;
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 
 pub fn render_triangle(
-    ss_triangle: &Triangle3, // screen space triangle
+    ps_triangle: &Triangle3, // pixel space triangle 
+    // TODO ^ function should take screen space triangle (normalized screen coordinates) instead
+    // Then you can check screen space intersection and render with the same triangle
     pixel_buffer: &mut Buffer<f32>,
     depth_buffer: &mut Buffer<f32>,
     light_intensity: Option<f32>,
 ) {
-    let triangle2 = ss_triangle.to_2d();
+    let triangle2 = ps_triangle.to_2d();
     if !triangle2.has_area() {
         // return;
     }
@@ -17,7 +19,7 @@ pub fn render_triangle(
     // let bc_calculator = BarycentricCoordinates::new(&triangle2);
 
     // make 2d bounding box
-    let [min_x, max_x, min_y, max_y] = ss_triangle.get_min_max_x_y();
+    let [min_x, max_x, min_y, max_y] = ps_triangle.get_min_max_x_y();
     let start_x = min_x.floor() as usize;
     let stop_x = (max_x.ceil() + 1.) as usize;
     let start_y = min_y.floor() as usize;
@@ -35,7 +37,7 @@ pub fn render_triangle(
             if !pixel_is_inside_triangle {
                 continue;
             }
-            let triangle_points = ss_triangle.points();
+            let triangle_points = ps_triangle.points();
             let frag_depth = triangle_points[0].z
                 + u * (triangle_points[1].z - triangle_points[0].z)
                 + v * (triangle_points[2].z - triangle_points[0].z);
@@ -45,7 +47,7 @@ pub fn render_triangle(
                 if let Some(light_intensity) = light_intensity {
                     pixel_buffer.set(x, y, light_intensity);
                 } else {
-                    pixel_buffer.set(x, y, fragment_shader(ss_triangle));
+                    pixel_buffer.set(x, y, fragment_shader(ps_triangle));
                 }
             }
         }
@@ -130,7 +132,6 @@ mod test_bc {
     /// bcc => BaryCentric Coordinates
     fn get_point_from_bcc(triangle: &Triangle2, point: &Point2) -> Point2 {
         let [w0, w1, w2] = get_barycentric_coordinates(&triangle, &point, true);
-        dbg!(w0, w1, w2);
         let mut point_from_barycentric_coordinates = Point2 { x: 0.0, y: 0.0 };
         point_from_barycentric_coordinates.add(&triangle.p1.scale(w0));
         point_from_barycentric_coordinates.add(&triangle.p2.scale(w1));
