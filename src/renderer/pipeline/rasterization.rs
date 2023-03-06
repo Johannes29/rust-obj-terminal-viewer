@@ -54,46 +54,6 @@ pub fn render_triangle(
     }
 }
 
-// from https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf
-// TODO might only work with 3d points
-struct BarycentricCoordinates {
-    d00: f32,
-    d01: f32,
-    d11: f32,
-    v0: Point2,
-    v1: Point2,
-    denominator: f32,
-}
-
-// impl BarycentricCoordinates {
-//     fn new(triangle: &Triangle2) -> Self {
-//         let origin_vertex = &triangle.p1;
-//         let vertex0 = triangle.p2.relative_to(origin_vertex);
-//         let vertex1 = triangle.p3.relative_to(origin_vertex);
-//         let d00 = dot_product_2d(&vertex0, &vertex0);
-//         let d01 = dot_product_2d(&vertex0, &vertex1);
-//         let d11 = dot_product_2d(&vertex1, &vertex1);
-
-//         BarycentricCoordinates {
-//             d00,
-//             d01,
-//             d11,
-//             v0: vertex0,
-//             v1: vertex1,
-//             denominator: d00 * d11 - d01 * d01
-//         }
-//     }
-
-//     fn get_coordinates(&self, point: &Point2) -> [f32; 2] {
-//         let d20 = dot_product_2d(&point, &self.v0);
-//         let d21 = dot_product_2d(&point, &self.v1);
-//         [
-//             (self.d11 * d20 - self.d01 * d21) / self.denominator,
-//             (self.d00 * d21 - self.d01 * d20) / self.denominator,
-//         ]
-//     }
-// }
-
 /// `P = v0 * w0 + v1 * w1 + v2 * w2` where
 /// v0, v1, v2 are vertices of triangle, P is point,
 /// and \[w0, w1, w2\] the return value of this function

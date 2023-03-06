@@ -6,11 +6,6 @@ pub struct Point {
     pub y: f32,
 }
 
-pub struct LinearFunction {
-    pub k: f32,
-    pub m: f32,
-}
-
 #[derive(Debug)]
 pub struct Triangle {
     pub p1: Point,
@@ -19,7 +14,6 @@ pub struct Triangle {
 }
 
 impl Point {
-    #[allow(unused)]
     pub fn add(&mut self, another_point: &Point) {
         self.x += another_point.x;
         self.y += another_point.y;
@@ -50,13 +44,6 @@ impl Mul for Point {
         }
     }
 }
-
-impl LinearFunction {
-    pub fn calc(&self, x: f32) -> f32 {
-        self.k * x + self.m
-    }
-}
-
 impl Triangle {    
     pub fn points(&self) -> [&Point; 3] {
         [&self.p1, &self.p2, &self.p3]
@@ -68,19 +55,4 @@ impl Triangle {
             || (self.p1.y == self.p2.y && self.p2.y == self.p3.y))
 
     }
-}
-
-pub fn get_k(p1: &Point, p2: &Point) -> f32 {
-    (p2.y - p1.y) / (p2.x - p1.x)
-}
-
-
-pub fn paralellogram_area(p1: &Point, p2: &Point) -> f32 {
-    (p1.x * p2.y - p1.y * p2.x).abs()
-}
-
-pub fn get_linear_function(p1: &Point, p2: &Point) -> LinearFunction {
-    let k = (p2.y - p1.y) / (p2.x - p1.x);
-    let m = p1.y - k * p1.x;
-    LinearFunction { k, m } // shorthand for { k: k, m: m}
 }

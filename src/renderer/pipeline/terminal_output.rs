@@ -3,8 +3,6 @@ use std::io::{Write, stdout};
 
 use crate::renderer::interface::Buffer;
 
-// TODO compare performance between replacing only the changed characters and printing out everything again
-
 pub fn draw_char_buffer(char_buffer: &Buffer<u8>, prev_char_buffer: &Buffer<u8>) {
     let mut stdout = stdout();
     let mut chars_to_change: Vec<(u8, usize, usize)> = Vec::new();
@@ -31,6 +29,8 @@ pub fn draw_char_buffer(char_buffer: &Buffer<u8>, prev_char_buffer: &Buffer<u8>)
     stdout.flush().unwrap();
 }
 
+// TODO compare performance between replacing only the changed characters and printing out everything again
+#[allow(dead_code)]
 fn char_buffer_to_output_string(char_buffer: &mut Vec<Vec<u8>>) {
     let mut output_string = String::new();
     
