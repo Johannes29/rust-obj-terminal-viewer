@@ -1,6 +1,6 @@
 use super::events::*;
 use super::pipeline::terminal_output::{draw_char_buffer, image_buffer_to_char_buffer, add_debug_line_to_char_buffer};
-use super::render::render_mesh;
+use super::render::{render_mesh, Camera};
 use crate::general::positions_3d::{Mesh, BoundingBox};
 use crate::general::positions_3d::{Point as Point3};
 use crossterm::{
@@ -19,10 +19,7 @@ use std::{
 pub struct Renderer {
     width: u16,
     height: u16,
-    pub horizontal_fov: f32,
-    pub vertical_fov: f32,
-    pub view_point: Point3,
-    pub view_direction: Point3, // Is not used when transforming points, only when culling backfaces
+    pub camera: Camera,
     chars: Vec<u8>,
     pub mesh: Mesh,
     pub frame_time: Duration,
@@ -31,10 +28,6 @@ pub struct Renderer {
     image_buffer: Buffer<f32>,
     depth_buffer: Buffer<f32>,
     pub debug_line: String,
-    pub mesh_rotation_x: f32,
-    pub mesh_rotation_y: f32,
-    pub mesh_rotation_z: f32,
-    pub rotation_origin: Point3,
     pub light_direction: Point3,
     pub near: f32,
     pub far: f32,
@@ -60,22 +53,21 @@ impl Renderer {
         let aspect_ratio = height as f32 * char_asp_ratio / width as f32;
         let empty_char_buffer = Buffer::new(width as usize, height as usize, b' ');
 
+        let camera = Camera {
+            horizontal_fov: get_horizontal_fov(fov, aspect_ratio),
+            vertical_fov: get_vertical_fov(fov, aspect_ratio),
+            // TODO make parameter of Renderer::new()
+            position: Point3::new(),
+            rotation_around_x: 0.0,
+            rotation_around_y: 0.0,
+            near: 0.01,
+            far: 100.0,
+        };
+
         Renderer {
             width,
             height,
-            horizontal_fov: get_horizontal_fov(fov, aspect_ratio),
-            vertical_fov: get_vertical_fov(fov, aspect_ratio),
-            // TODO make parameter of new()
-            view_point: Point3 {
-                x: 0.0,
-                y: 1.0,
-                z: -8.0,
-            },
-            view_direction: Point3 {
-                x: 0.0,
-                y: 0.0,
-                z: 1.0,
-            },
+            camera,
             chars: brightness_string.as_bytes().to_vec(),
             mesh: Mesh::new(),
             frame_time: Duration::from_secs_f32(1.0 / fps),
@@ -84,16 +76,7 @@ impl Renderer {
             image_buffer: Buffer::new(width as usize, height as usize, 0.0),
             depth_buffer: Buffer::new(width as usize, height as usize, f32::MAX),
             debug_line: "".to_string(),
-            mesh_rotation_x: 0.0,
-            mesh_rotation_y: 0.0,
-            mesh_rotation_z: 0.0,
-            // TODO make parameter of new()
-            rotation_origin: Point3 {
-                x: 0.0,
-                y: 1.0,
-                z: 0.0,
-            },
-            // TODO make parameter of new()
+            // TODO make parameter of Renderer::new()
             light_direction: Point3 {
                 x: -0.3,
                 y: -0.5,
@@ -110,10 +93,11 @@ impl Renderer {
         self.adapt_renderer_to_mesh();
     }
 
+    // TODO make this a function in impl Camera, like a new function
     pub fn adapt_renderer_to_mesh(&mut self) {
         let bounding_box = BoundingBox::new(&self.mesh.points);
         let bounding_radius = bounding_box.get_bounding_radius();
-        let min_fov = self.horizontal_fov.min(self.vertical_fov).to_radians();
+        let min_fov = self.camera.horizontal_fov.min(self.camera.vertical_fov).to_radians();
         let view_point_distance = get_view_point_distance(min_fov, bounding_radius, 1.1);
         let relative_view_point = Point3 {
             x: 0.,
@@ -121,10 +105,10 @@ impl Renderer {
             z: -view_point_distance,
         };
         let center_point = bounding_box.get_center();
-        self.view_point = center_point.add(&relative_view_point);
-        self.rotation_origin = center_point;
-        self.near = (view_point_distance - bounding_radius) / 1.1;
-        self.far = (view_point_distance + bounding_radius) * 1.1;
+        self.camera.position = center_point.add(&relative_view_point);
+        // self.rotation_origin = center_point;
+        self.camera.near = (view_point_distance - bounding_radius) / 1.1;
+        self.camera.far = (view_point_distance + bounding_radius) * 1.1;
     }
 
     fn prepare_for_rendering(&self) {
@@ -142,16 +126,8 @@ impl Renderer {
             &self.mesh,
             &mut self.image_buffer,
             &mut self.depth_buffer,
-            &self.view_point,
-            &self.view_direction,
-            self.mesh_rotation_x,
-            self.mesh_rotation_y,
-            &self.rotation_origin,
+            &self.camera,
             &self.light_direction,
-            self.horizontal_fov,
-            self.vertical_fov,
-            self.near,
-            self.far,
         );
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
         add_debug_line_to_char_buffer(&mut self.char_buffer, &self.debug_line);

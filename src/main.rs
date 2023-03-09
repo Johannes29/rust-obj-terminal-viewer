@@ -80,8 +80,7 @@ fn main() {
                 }
             }
             if let Event::Key(key_event) = event {
-                move_point(&mut renderer_todo.view_point, key_event);
-                move_point(&mut renderer_todo.rotation_origin, key_event);
+                move_point(&mut renderer_todo.camera.position, key_event);
                 if key_event.code == KeyCode::Char('c') {
                     drag_key_is_down = !drag_key_is_down;
                 }
