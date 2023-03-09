@@ -18,12 +18,12 @@ pub fn render_triangle(
 
     // let bc_calculator = BarycentricCoordinates::new(&triangle2);
 
-    // make 2d bounding box
+    // Using + 2 instead of .roof() + 1 because it's faster
     let [min_x, max_x, min_y, max_y] = ps_triangle.get_min_max_x_y();
-    let start_x = min_x.floor() as usize;
-    let stop_x = (max_x.ceil() + 1.) as usize;
-    let start_y = min_y.floor() as usize;
-    let stop_y = (max_y.ceil() + 1.) as usize;
+    let start_x = min_x as usize;
+    let stop_x = max_x as usize + 2;
+    let start_y = min_y as usize;
+    let stop_y = max_y as usize + 2;
 
     // fill in the correct pixels
     for y in start_y..stop_y {
