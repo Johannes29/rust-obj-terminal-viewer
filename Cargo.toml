@@ -16,5 +16,9 @@ debug = true
 criterion = "0.3"
 
 [[bench]]
-name = "obj_parsing_benchmark"
+name = "obj_parsing"
+harness = false
+
+[[bench]]
+name = "rendering"
 harness = false
