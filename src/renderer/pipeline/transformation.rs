@@ -72,24 +72,24 @@ impl MatrixVector for Matrix4x1 {
 
 // from https://austinmorlan.com/posts/rotation_matrices
 /// Rotates around the x-axis.
-/// NOTE: adapted for left-hand coordinate system
+/// NOTE: adapted for right-hand coordinate system
 pub fn rotation_matrix_x(angle: f32) -> Matrix4x4 {
     [
         [1., 0., 0., 0.],
-        [0., angle.cos(), angle.sin(), 0.],
-        [0., -angle.sin(), angle.cos(), 0.],
+        [0., angle.cos(), -angle.sin(), 0.],
+        [0., angle.sin(), angle.cos(), 0.],
         [0., 0., 0., 1.],
     ]
 }
 
 // from https://austinmorlan.com/posts/rotation_matrices
 /// Rotates around the y-axis.
-/// NOTE: adapted for left-hand coordinate system
+/// NOTE: adapted for right-hand coordinate system
 pub fn rotation_matrix_y(angle: f32) -> Matrix4x4 {
     [
-        [angle.cos(), 0., -angle.sin(), 0.],
+        [angle.cos(), 0., angle.sin(), 0.],
         [0., 1., 0., 0.],
-        [angle.sin(), 0., angle.cos(), 0.],
+        [-angle.sin(), 0., angle.cos(), 0.],
         [0., 0., 0., 1.],
     ]
 }
@@ -103,7 +103,7 @@ pub fn translation_matrix(x: f32, y: f32, z: f32) -> Matrix4x4 {
     ]
 }
 
-pub fn translation_matrix_from_point(point: &Point3) -> Matrix4x4 {
+pub fn translation_matrix_subtract_point(point: &Point3) -> Matrix4x4 {
     [
         [1., 0., 0., point.x],
         [0., 1., 0., point.y],
@@ -195,9 +195,9 @@ pub fn get_multiplied_points_with_matrix(points: &Vec<Point3>, matrix: &Matrix4x
 impl Camera {
     pub fn world_to_screen_space_matrix(&self) -> Matrix4x4 {
         self.persp_proj_mat()
-            .combine(rotation_matrix_x(self.rotation_around_x))
-            .combine(rotation_matrix_y(self.rotation_around_y))
-            .combine(translation_matrix_from_point(&self.position))
+            .combine(translation_matrix_subtract_point(&self.position))
+            .combine(rotation_matrix_x(-self.rotation_around_x))
+            .combine(rotation_matrix_y(-self.rotation_around_y))
     }
     // from https://youtu.be/U0_ONQQ5ZNM?t=784
     /// fov in degrees

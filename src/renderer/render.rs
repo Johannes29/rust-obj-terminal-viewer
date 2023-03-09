@@ -1,15 +1,10 @@
 use super::interface::Buffer;
 use super::pipeline::rasterization::render_triangle;
-use super::pipeline::transformation::{
-    get_multiplied_points_with_matrix, rotation_matrix_x, rotation_matrix_y, translation_matrix,
-};
-use super::pipeline::transformation::{
-    screen_to_pixel_coordinates, translation_matrix_from_point, MatrixTrait,
-};
+use super::pipeline::transformation::get_multiplied_points_with_matrix;
+use super::pipeline::transformation::{screen_to_pixel_coordinates, MatrixTrait};
 use crate::general::positions_3d::{dot_product, Mesh, Point as Point3, Triangle as Triangle3};
 use image::{GrayImage, Luma};
 
-// TODO pass self or settings struct, can not have this many parameters
 pub fn render_mesh(
     mesh: &Mesh,
     image_buffer: &mut Buffer<f32>,
@@ -69,6 +64,7 @@ pub fn render_mesh(
     }
 }
 
+#[derive(Debug)]
 pub struct Camera {
     pub horizontal_fov: f32,
     pub vertical_fov: f32,

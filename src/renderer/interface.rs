@@ -90,25 +90,6 @@ impl Renderer {
 
     pub fn set_mesh(&mut self, mesh: Mesh) {
         self.mesh = mesh;
-        self.adapt_renderer_to_mesh();
-    }
-
-    // TODO make this a function in impl Camera, like a new function
-    pub fn adapt_renderer_to_mesh(&mut self) {
-        let bounding_box = BoundingBox::new(&self.mesh.points);
-        let bounding_radius = bounding_box.get_bounding_radius();
-        let min_fov = self.camera.horizontal_fov.min(self.camera.vertical_fov).to_radians();
-        let view_point_distance = get_view_point_distance(min_fov, bounding_radius, 1.1);
-        let relative_view_point = Point3 {
-            x: 0.,
-            y: 0.,
-            z: -view_point_distance,
-        };
-        let center_point = bounding_box.get_center();
-        self.camera.position = center_point.add(&relative_view_point);
-        // self.rotation_origin = center_point;
-        self.camera.near = (view_point_distance - bounding_radius) / 1.1;
-        self.camera.far = (view_point_distance + bounding_radius) * 1.1;
     }
 
     fn prepare_for_rendering(&self) {

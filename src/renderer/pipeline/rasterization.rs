@@ -21,9 +21,9 @@ pub fn render_triangle(
     // make 2d bounding box
     let [min_x, max_x, min_y, max_y] = ps_triangle.get_min_max_x_y();
     let start_x = min_x.floor() as usize;
-    let stop_x = (max_x.ceil() + 1.) as usize;
-    let start_y = min_y.floor() as usize;
-    let stop_y = (max_y.ceil() + 1.) as usize;
+    let stop_x = ((max_x.ceil() + 1.) as usize).min(pixel_buffer.width - 1);
+    let start_y = min_y.floor() as usize;   
+    let stop_y = ((max_y.ceil() + 1.) as usize).min(pixel_buffer.height - 1);
 
     // fill in the correct pixels
     for y in start_y..stop_y {
