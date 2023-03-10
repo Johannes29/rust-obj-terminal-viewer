@@ -105,9 +105,9 @@ pub fn translation_matrix(x: f32, y: f32, z: f32) -> Matrix4x4 {
 
 pub fn translation_matrix_subtract_point(point: &Point3) -> Matrix4x4 {
     [
-        [1., 0., 0., point.x],
-        [0., 1., 0., point.y],
-        [0., 0., 1., point.z],
+        [1., 0., 0., -point.x],
+        [0., 1., 0., -point.y],
+        [0., 0., 1., -point.z],
         [0., 0., 0., 1.],
     ]
 }
@@ -194,12 +194,17 @@ pub fn get_multiplied_points_with_matrix(points: &Vec<Point3>, matrix: &Matrix4x
 
 impl Camera {
     pub fn world_to_screen_space_matrix(&self) -> Matrix4x4 {
+        let test_point = Point3 {
+            x: 0.0,
+            y: 0.0,
+            z: 10.0,
+        };
         self.persp_proj_mat()
-            .combine(translation_matrix_subtract_point(&self.position))
+            .combine(translation_matrix_subtract_point(&test_point))
             .combine(rotation_matrix_x(-self.rotation_around_x))
             .combine(rotation_matrix_y(-self.rotation_around_y))
     }
-    // from https://youtu.be/U0_ONQQ5ZNM?t=784
+    // from https://youtu.be/U0_ONQQ5ZNM?t=784 but adapted for right hand coordinate system with -z forwards and +y up
     /// fov in degrees
     fn persp_proj_mat(&self) -> Matrix4x4 {
         let h = self.horizontal_fov.to_radians();
@@ -209,8 +214,8 @@ impl Camera {
         [
             [1. / (h / 2.).tan(), 0., 0., 0.],
             [0., -1. / (v / 2.).tan(), 0., 0.],
-            [0., 0., f / (f - n), -f * n / (f - n)],
-            [0., 0., 1., 0.],
+            [0., 0., -f / (f - n), -f * n / (f - n)],
+            [0., 0., -1., 0.],
         ]
     }
 }

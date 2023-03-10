@@ -18,12 +18,12 @@ pub fn render_mesh(
     // then the one to the right of that one, etc.
     let transformation_matrix = screen_to_pixel.combine(world_to_screen);
 
-    let screen_space_points =
+    let mut pixel_space_points =
         get_multiplied_points_with_matrix(&mesh.points, &transformation_matrix);
 
     let mut triangle_index = 0;
     for incides_triangle in &mesh.indices_triangles {
-        let triangle = Triangle3::from_indices(incides_triangle, &screen_space_points).unwrap();
+        let triangle = Triangle3::from_indices(incides_triangle, &pixel_space_points).unwrap();
         // Skips triangles behind the camera
         // TODO use near instead of 0.0
         // TODO do this in triangle3d_to_screen_space_triangle function instead

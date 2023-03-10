@@ -92,7 +92,6 @@ fn main() {
                 }
             }
         }
-        dbg!(&renderer_todo.camera);
 
         ShouldExit::No
     };
@@ -206,7 +205,7 @@ impl DragRotation {
         let z = rotation_around_y.cos() * rotation_around_x.cos() * distance;
         camera.position = Point3 { x, y, z };
         let (rotation_x, rotation_y) = self.get_rotation_xy();
-        camera.rotation_around_x = rotation_x;
+        camera.rotation_around_x = -rotation_x;
         camera.rotation_around_y = rotation_y;
     }
 
