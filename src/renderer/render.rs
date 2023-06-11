@@ -1,54 +1,29 @@
 use super::interface::Buffer;
 use super::pipeline::rasterization::render_triangle;
-use super::pipeline::transformation::{
-    get_multiplied_points_with_matrix, persp_proj_mat,
-    rotation_matrix_x, rotation_matrix_y, translation_matrix,
-};
-use super::pipeline::transformation::{
-    screen_to_pixel_coordinates, translation_matrix_from_point, MatrixTrait,
-};
+use super::pipeline::transformation::get_multiplied_points_with_matrix;
+use super::pipeline::transformation::{screen_to_pixel_coordinates, MatrixTrait};
 use crate::general::positions_3d::{dot_product, Mesh, Point as Point3, Triangle as Triangle3};
 use image::{GrayImage, Luma};
 
-// TODO pass self or settings struct, can not have this many parameters
 pub fn render_mesh(
     mesh: &Mesh,
     image_buffer: &mut Buffer<f32>,
     depth_buffer: &mut Buffer<f32>,
-    view_point: &Point3,
-    view_direction: &Point3,
-    mesh_rotation_x: f32,
-    mesh_rotation_y: f32,
-    rotation_origin: &Point3,
+    camera: &Camera,
     light_direction: &Point3,
-    horizontal_fov: f32,
-    vertical_fov: f32,
-    near: f32,
-    far: f32,
 ) {
-    let persp_proj_mat = persp_proj_mat(horizontal_fov, vertical_fov, near, far);
-    let rotation_matrix_x = rotation_matrix_x(mesh_rotation_x);
-    let rotation_matrix_y = rotation_matrix_y(mesh_rotation_y);
-    let translation_matrix = translation_matrix(-view_point.x, -view_point.y, -view_point.z);
-    let pre_rotation_translation = translation_matrix_from_point(&rotation_origin.inverted());
-    let post_rotation_translation = translation_matrix_from_point(rotation_origin);
-    let screen_to_pixel_coordinates =
-        screen_to_pixel_coordinates(image_buffer.width as u16, image_buffer.height as u16);
+    let world_to_screen = camera.world_to_screen_space_matrix();
+    let screen_to_pixel = screen_to_pixel_coordinates(image_buffer.width, image_buffer.height);
     // the matrices are combined is equal to if you would first apply the leftmost matrix to the vector,
     // then the one to the right of that one, etc.
-    let transformation_matrix = screen_to_pixel_coordinates
-        .combine(persp_proj_mat)
-        .combine(translation_matrix)
-        .combine(post_rotation_translation)
-        .combine(rotation_matrix_x)
-        .combine(rotation_matrix_y)
-        .combine(pre_rotation_translation);
+    let transformation_matrix = screen_to_pixel.combine(world_to_screen);
 
-    let ss_points = get_multiplied_points_with_matrix(&mesh.points, &transformation_matrix);
+    let mut pixel_space_points =
+        get_multiplied_points_with_matrix(&mesh.points, &transformation_matrix);
 
     let mut triangle_index = 0;
     for incides_triangle in &mesh.indices_triangles {
-        let triangle = Triangle3::from_indices(incides_triangle, &ss_points).unwrap();
+        let triangle = Triangle3::from_indices(incides_triangle, &pixel_space_points).unwrap();
         // Skips triangles behind the camera
         // TODO use near instead of 0.0
         // TODO do this in triangle3d_to_screen_space_triangle function instead
@@ -65,12 +40,7 @@ pub fn render_mesh(
         //     continue
         // }
 
-        render_triangle(
-            &triangle,
-            image_buffer,
-            depth_buffer,
-            Some(light_intensity),
-        );
+        render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
 
         // --- uncomment to generate debug images ---
         //
@@ -92,4 +62,15 @@ pub fn render_mesh(
         // depth_img.save(format!("debug_images/frame_{}_depth.png", triangle_index)).unwrap();
         // triangle_index += 1;
     }
+}
+
+#[derive(Debug)]
+pub struct Camera {
+    pub horizontal_fov: f32,
+    pub vertical_fov: f32,
+    pub position: Point3,
+    pub rotation_around_x: f32,
+    pub rotation_around_y: f32,
+    pub near: f32,
+    pub far: f32,
 }

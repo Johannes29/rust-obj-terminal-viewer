@@ -1,4 +1,4 @@
-use crate::general::positions_2d::{ Point as Point2, Triangle as Triangle2 };
+use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2};
 #[derive(Debug, PartialEq, Clone)]
 pub struct Point {
     pub x: f32,
@@ -36,6 +36,14 @@ pub struct Degrees(pub f32);
 // TODO add two methods for multiplication and addition on each component of the point
 // like add_xyz and multiply_xyz, but with only one parameter
 impl Point {
+    pub fn new() -> Self {
+        Self {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        }
+    }
+
     pub fn from_array(array: [f32; 3]) -> Self {
         Point {
             x: array[0],
@@ -108,7 +116,7 @@ impl Point {
 
     // Rounds one point to the other points decimal count,
     // then compares them
-    
+
     // pub fn rounded_points_are_equal(point1: Point, point2: Point) -> bool {
     //     fn get_decimal_count(number: f32) -> usize {
     //         number.to_string().split(".").next().unwrap().len()
@@ -118,7 +126,7 @@ impl Point {
     //         let dec_sep_index = string.find('.').unwrap();
     //         let inc_last_digit = string[dec_sep_index + decimals as usize + 1].parse()
     //         let decimal_string = number.to_string().split(".").next().unwrap();
-            
+
     //         todo!()
     //     }
     //     fn rounded_f32_are_equal(number1: f32, number2: f32) -> bool {
@@ -137,8 +145,11 @@ impl Point {
     // }
 }
 
-impl <'a> Triangle<'a> {
-    pub fn from_indices(indices_triangle: &'a IndicesTriangle, points: &'a Vec<Point>) -> Option<Self> {
+impl<'a> Triangle<'a> {
+    pub fn from_indices(
+        indices_triangle: &'a IndicesTriangle,
+        points: &'a Vec<Point>,
+    ) -> Option<Self> {
         Some(Triangle {
             p1: points.get(indices_triangle.p1)?,
             p2: points.get(indices_triangle.p2)?,
@@ -205,7 +216,7 @@ impl <'a> Triangle<'a> {
             normal,
         })
     }
-     
+
 
     pub fn combine_with_point<F>(&self, point: &Point, function: F) -> Self
     where
@@ -255,7 +266,7 @@ impl <'a> Triangle<'a> {
     }
 
     // TODO should be able to merge these functions somehow
-    
+
     pub fn get_normal(points: &[&Point]) -> Point {
         assert!(points.len() >= 3);
         let a = points[2].relative_to(&points[0]);
@@ -293,11 +304,7 @@ impl <'a> Triangle<'a> {
 
 impl IndicesTriangle {
     pub fn triangle_points<'a>(&self, points: &'a Vec<Point>) -> [&'a Point; 3] {
-        [
-            &points[self.p1],
-            &points[self.p2],
-            &points[self.p3],
-        ]
+        [&points[self.p1], &points[self.p2], &points[self.p3]]
     }
 
     pub fn make_clockwise(&mut self, points: &Vec<Point>) {

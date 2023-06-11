@@ -1,12 +1,11 @@
-mod general;
-mod renderer;
-
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton};
 
-use renderer::interface::{Renderer, ShouldExit};
-use renderer::obj_parser::ObjParser;
+use rust_obj_terminal_viewer::renderer::interface::{Renderer, ShouldExit};
+use rust_obj_terminal_viewer::renderer::obj_parser::ObjParser;
+use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
+use rust_obj_terminal_viewer::renderer::render::Camera;
 
-use crate::general::positions_3d::Point;
+use rust_obj_terminal_viewer::general::positions_3d::Point;
 use crossterm::event::Event;
 use crossterm::event::MouseEventKind;
 use crossterm::terminal;
@@ -57,7 +56,7 @@ fn main() {
                             drag_rotation.handle_drag(
                                 mouse_event.column,
                                 mouse_event.row,
-                                renderer_todo,
+                                &mut renderer_todo.camera,
                             );
                         }
                     }
@@ -66,7 +65,7 @@ fn main() {
                             drag_rotation.handle_drag(
                                 mouse_event.column,
                                 mouse_event.row,
-                                renderer_todo,
+                                &mut renderer_todo.camera,
                             );
                         }
                     }
@@ -80,8 +79,7 @@ fn main() {
                 }
             }
             if let Event::Key(key_event) = event {
-                move_point(&mut renderer_todo.view_point, key_event);
-                move_point(&mut renderer_todo.rotation_origin, key_event);
+                move_point(&mut renderer_todo.camera.position, key_event);
                 if key_event.code == KeyCode::Char('c') {
                     drag_key_is_down = !drag_key_is_down;
                 }
@@ -94,34 +92,11 @@ fn main() {
                 }
             }
         }
+
         ShouldExit::No
     };
 
     renderer.start_rendering(&mut frame_loop);
-}
-
-// calculates rotation x and y from moved x and y
-/**
- * char_aspect_ratio is width / height
- */
-fn get_rotation(
-    cell_movement_x: i32,
-    cell_movement_y: i32,
-    terminal_width: u16,
-    terminal_height: u16,
-    rotation_speed: f32,
-    char_aspect_ratio: f32,
-) -> Rotation {
-    let x_movement = cell_movement_x as f32 / terminal_width as f32;
-    let y_movement = cell_movement_y as f32 / terminal_height as f32;
-    let window_aspect_ratio = terminal_width as f32 / terminal_height as f32;
-    let rotation_around_x = y_movement as f32 * rotation_speed / char_aspect_ratio;
-    let rotation_around_y = x_movement as f32 * rotation_speed * window_aspect_ratio;
-
-    Rotation {
-        around_x: rotation_around_x,
-        around_y: rotation_around_y,
-    }
 }
 
 fn move_point(point: &mut Point, key_event: KeyEvent) {
@@ -191,7 +166,7 @@ impl CellPosition {
     }
 }
 
-// drag refers to when you move the mouse with a special modifier pressed, here the middle mouse button
+/// drag refers to when you move the mouse with a special modifier pressed, here the middle mouse button
 #[derive(Debug)]
 struct DragRotation {
     drag_start_pos: CellPosition,
@@ -221,6 +196,19 @@ impl DragRotation {
         }
     }
 
+    /// Uses the right hand coordinate system.
+    fn apply_to_camera(&self, camera: &mut Camera, distance: f32) {
+        // Assumes that camera is pointing towards +Z when rotation is 0.
+        let (rotation_around_x, rotation_around_y) = self.get_rotation_xy();
+        let x = rotation_around_y.sin() * rotation_around_x.cos() * distance;
+        let y = rotation_around_x.sin() * distance;
+        let z = rotation_around_y.cos() * rotation_around_x.cos() * distance;
+        camera.position = Point3 { x, y, z };
+        let (rotation_x, rotation_y) = self.get_rotation_xy();
+        camera.rotation_around_x = -rotation_x;
+        camera.rotation_around_y = rotation_y;
+    }
+
     fn get_rotation(&self) -> Rotation {
         Rotation::sum(&self.rotation_before_drag, &self.drag_rotation)
     }
@@ -246,21 +234,27 @@ impl DragRotation {
         self.terminal_width = terminal_dimensions.0;
     }
 
-    fn handle_drag(&mut self, current_column: u16, current_row: u16, renderer: &mut Renderer) {
+    fn handle_drag(&mut self, current_column: u16, current_row: u16, camera: &mut Camera) {
         let current_pos = CellPosition {
             column: current_column,
             row: current_row,
         };
         let (relative_x, relative_y) = current_pos.relative_xy_to(&self.drag_start_pos);
-        // TODO convert to method
-        self.drag_rotation = get_rotation(
-            relative_x as i32,
-            relative_y as i32,
-            self.terminal_width,
-            self.terminal_height,
-            self.rotation_speed,
-            self.char_aspect_ratio,
-        );
-        (renderer.mesh_rotation_x, renderer.mesh_rotation_y) = self.get_rotation_xy();
+        self.update_drag_rotation(relative_x, relative_y);
+        // TODO 10.0 should not be hardcoded
+        self.apply_to_camera(camera, 10.0);
+    }
+
+    fn update_drag_rotation(&mut self, relative_x: i16, relative_y: i16) {
+        let x_movement = relative_x as f32 / self.terminal_width as f32;
+        let y_movement = relative_y as f32 / self.terminal_height as f32;
+        let window_aspect_ratio = self.terminal_width as f32 / self.terminal_height as f32;
+        let rotation_around_x = y_movement as f32 * self.rotation_speed / self.char_aspect_ratio;
+        let rotation_around_y = -x_movement as f32 * self.rotation_speed * window_aspect_ratio;
+
+        self.drag_rotation = Rotation {
+            around_x: rotation_around_x,
+            around_y: rotation_around_y,
+        }
     }
 }

@@ -1,5 +1,6 @@
 use crate::general::positions_3d::Point as Point3;
 use crate::general::positions_3d::Triangle as Triangle3;
+use crate::renderer::render::Camera;
 
 type Matrix4x1 = [[f32; 1]; 4];
 type Matrix4x4 = [[f32; 4]; 4];
@@ -69,39 +70,26 @@ impl MatrixVector for Matrix4x1 {
     }
 }
 
-// from https://youtu.be/U0_ONQQ5ZNM?t=784
-/// fov in degrees
-pub fn persp_proj_mat(horizontal_fov: f32, vertical_fov: f32, near: f32, far: f32) -> Matrix4x4 {
-    let h = horizontal_fov.to_radians();
-    let v = vertical_fov.to_radians();
-    let n = near;
-    let f = far;
-    [
-        [1. / (h / 2.).tan(), 0., 0., 0.],
-        [0., -1. / (v / 2.).tan(), 0., 0.],
-        [0., 0., f / (f - n), -f * n / (f - n)],
-        [0., 0., 1., 0.],
-    ]
-}
-
 // from https://austinmorlan.com/posts/rotation_matrices
-// NOTE: adapted for left-hand coordinate system
+/// Rotates around the x-axis.
+/// NOTE: adapted for right-hand coordinate system
 pub fn rotation_matrix_x(angle: f32) -> Matrix4x4 {
     [
         [1., 0., 0., 0.],
-        [0., angle.cos(), angle.sin(), 0.],
-        [0., -angle.sin(), angle.cos(), 0.],
+        [0., angle.cos(), -angle.sin(), 0.],
+        [0., angle.sin(), angle.cos(), 0.],
         [0., 0., 0., 1.],
     ]
 }
 
 // from https://austinmorlan.com/posts/rotation_matrices
-// NOTE: adapted for left-hand coordinate system
+/// Rotates around the y-axis.
+/// NOTE: adapted for right-hand coordinate system
 pub fn rotation_matrix_y(angle: f32) -> Matrix4x4 {
     [
-        [angle.cos(), 0., -angle.sin(), 0.],
+        [angle.cos(), 0., angle.sin(), 0.],
         [0., 1., 0., 0.],
-        [angle.sin(), 0., angle.cos(), 0.],
+        [-angle.sin(), 0., angle.cos(), 0.],
         [0., 0., 0., 1.],
     ]
 }
@@ -115,21 +103,21 @@ pub fn translation_matrix(x: f32, y: f32, z: f32) -> Matrix4x4 {
     ]
 }
 
-pub fn translation_matrix_from_point(point: &Point3) -> Matrix4x4 {
+pub fn translation_matrix_subtract_point(point: &Point3) -> Matrix4x4 {
     [
-        [1., 0., 0., point.x],
-        [0., 1., 0., point.y],
-        [0., 0., 1., point.z],
+        [1., 0., 0., -point.x],
+        [0., 1., 0., -point.y],
+        [0., 0., 1., -point.z],
         [0., 0., 0., 1.],
     ]
 }
 
-pub fn screen_to_pixel_coordinates(screen_width: u16, screen_height: u16) -> Matrix4x4 {
+pub fn screen_to_pixel_coordinates(screen_width: usize, screen_height: usize) -> Matrix4x4 {
     let w = screen_width as f32;
     let h = screen_height as f32;
     [
-        [w/2., 0., 0., w/2.],
-        [0., h/2., 0., h/2.],
+        [w / 2., 0., 0., w / 2.],
+        [0., h / 2., 0., h / 2.],
         [0., 0., 1., 0.],
         [0., 0., 0., 1.],
     ]
@@ -194,10 +182,40 @@ pub fn triangle_intersects_screen_space(triangle: &Triangle3) -> bool {
 }
 
 pub fn get_multiplied_points_with_matrix(points: &Vec<Point3>, matrix: &Matrix4x4) -> Vec<Point3> {
-    points.iter().map(|point| {
-        let pos_matrix = point.to_matrix4x1();
-        let new_pos_matrix = matrix.multiply(pos_matrix).to_vec3();
-        Point3::from_array(new_pos_matrix)
-    }).collect()
-        
+    points
+        .iter()
+        .map(|point| {
+            let pos_matrix = point.to_matrix4x1();
+            let new_pos_matrix = matrix.multiply(pos_matrix).to_vec3();
+            Point3::from_array(new_pos_matrix)
+        })
+        .collect()
+}
+
+impl Camera {
+    pub fn world_to_screen_space_matrix(&self) -> Matrix4x4 {
+        let test_point = Point3 {
+            x: 0.0,
+            y: 0.0,
+            z: 10.0,
+        };
+        self.persp_proj_mat()
+            .combine(translation_matrix_subtract_point(&test_point))
+            .combine(rotation_matrix_x(-self.rotation_around_x))
+            .combine(rotation_matrix_y(-self.rotation_around_y))
+    }
+    // from https://youtu.be/U0_ONQQ5ZNM?t=784 but adapted for right hand coordinate system with -z forwards and +y up
+    /// fov in degrees
+    fn persp_proj_mat(&self) -> Matrix4x4 {
+        let h = self.horizontal_fov.to_radians();
+        let v = self.vertical_fov.to_radians();
+        let n = self.near;
+        let f = self.far;
+        [
+            [1. / (h / 2.).tan(), 0., 0., 0.],
+            [0., -1. / (v / 2.).tan(), 0., 0.],
+            [0., 0., -f / (f - n), -f * n / (f - n)],
+            [0., 0., -1., 0.],
+        ]
+    }
 }
