@@ -1,7 +1,7 @@
 use super::events::*;
 use super::pipeline::terminal_output::{draw_char_buffer, image_buffer_to_char_buffer, add_debug_line_to_char_buffer};
 use super::render::{render_mesh, Camera};
-use crate::general::positions_3d::{Mesh, BoundingBox};
+use crate::general::positions_3d::{Mesh};
 use crate::general::positions_3d::{Point as Point3};
 use crossterm::{
     cursor,
@@ -193,13 +193,6 @@ fn get_vertical_fov(diagonal_fov: f32, aspect_ratio: f32) -> f32 {
         .to_degrees()
 }
 
-/// min_fov is min(horizontal_fov, vertical_fov), unit should be radians
-
-/// horizontal_fov in radians
-fn get_view_point_distance(horizontal_fov: f32, bounding_radius: f32, rel_margin: f32) -> f32 {
-    (bounding_radius * rel_margin) / (horizontal_fov / 2.0).tan()
-}
-
 #[derive(Clone)]
 pub struct Buffer<T: Copy> {
     pub values: Vec<T>,
@@ -216,11 +209,32 @@ impl<T: Copy> Buffer<T> {
         }
     }
 
-    pub fn get(&self, x: usize, y: usize) -> T {
-        self.values[self.width * y + x]
+    pub fn get(&self, x: usize, y: usize) -> Option<T> {
+        match self.get_index(x, y) {
+            None => None,
+            Some(index) => {
+                return Some(self.values[index]);
+            },
+        }
     }
 
-    pub fn set(&mut self, x: usize, y: usize, value: T) {
-        self.values[self.width * y + x] = value;
+    pub fn set(&mut self, x: usize, y: usize, value: T) -> Result<(), String> {
+        match self.get_index(x, y) {
+            None => Err("x and y point to a value outside of the buffer".to_string()),
+            Some(index) => {
+                self.values[index] = value;
+                return Ok(());
+            },
+        }
+    }
+
+    /// Returns None if x and y point to a value outside of the buffer
+    fn get_index(&self, x: usize, y: usize) -> Option<usize> {
+        let index = self.width * y + x;
+        if index >= self.height * self.width {
+            return None;
+        } else {
+            return Some(index);
+        }
     }
 }

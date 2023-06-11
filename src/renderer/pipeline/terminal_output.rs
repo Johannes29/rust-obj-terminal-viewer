@@ -44,12 +44,12 @@ fn char_buffer_to_output_string(char_buffer: &mut Vec<Vec<u8>>) {
 pub fn image_buffer_to_char_buffer(image_buffer: &Buffer<f32>, char_buffer: &mut Buffer<u8>, chars: &Vec<u8>) {
     for y in 0..(image_buffer.height) {
         for x in 0..(image_buffer.width) {
-            let value = image_buffer.get(x, y);
+            let value = image_buffer.get(x, y).expect("x and y loops to be correct");
             let char_index = ((value * (chars.len() as f32) - 1.0)
                 .ceil() as usize)
                 .clamp(0, chars.len() - 1);
 
-            char_buffer.set(x, y, chars[char_index]);
+            char_buffer.set(x, y, chars[char_index]).unwrap();
         }
     }
 }
@@ -60,6 +60,6 @@ pub fn add_debug_line_to_char_buffer(char_buffer: &mut Buffer<u8>, line: &str) {
 
     let y = char_buffer.height - 1;
     for x in 0..(char_buffer.width) {
-        char_buffer.set(x, y, chars[x]);
+        char_buffer.set(x, y, chars[x]).unwrap();
     }
 }

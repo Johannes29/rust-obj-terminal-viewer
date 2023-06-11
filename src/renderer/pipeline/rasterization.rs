@@ -41,13 +41,18 @@ pub fn render_triangle(
             let frag_depth = triangle_points[0].z
                 + u * (triangle_points[1].z - triangle_points[0].z)
                 + v * (triangle_points[2].z - triangle_points[0].z);
-            if frag_depth <= depth_buffer.get(x, y) {
-                depth_buffer.set(x, y, frag_depth);
+            
+            let Some(depth_buffer_value) = depth_buffer.get(x, y) else {
+                // Pixel is outside of the rendered surface
+                continue
+            };
+            if frag_depth <= depth_buffer_value {
+                depth_buffer.set(x, y, frag_depth).unwrap();
                 // TODO triangle should be screen space (-1 to 1), is currently (-width*0.5 to width*0.5)
                 if let Some(light_intensity) = light_intensity {
-                    pixel_buffer.set(x, y, light_intensity);
+                    pixel_buffer.set(x, y, light_intensity).unwrap();
                 } else {
-                    pixel_buffer.set(x, y, fragment_shader(ps_triangle));
+                    pixel_buffer.set(x, y, fragment_shader(ps_triangle)).unwrap();
                 }
             }
         }

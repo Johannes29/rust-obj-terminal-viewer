@@ -123,21 +123,6 @@ pub fn screen_to_pixel_coordinates(screen_width: usize, screen_height: usize) ->
     ]
 }
 
-#[cfg(test)]
-mod rotation_matrix_tests {
-    use super::{rotation_matrix_y, MatrixTrait};
-    use std::f32::consts::PI;
-
-    // TODO does not work because floating point errors
-    // #[test]
-    fn test_rotation_matrix_y() {
-        let rotation_matrix = rotation_matrix_y(PI / 2.0);
-        let point = [[0.5], [2.0], [-3.0], [1.0]];
-        let rotated_point = rotation_matrix.multiply(point);
-        assert_eq!(rotated_point, [[-3.0], [2.0], [-0.5], [1.0]])
-    }
-}
-
 // TODO not fitting for this file (transformations)
 pub fn triangle_intersects_screen_space(triangle: &Triangle3) -> bool {
     let mut points_inside_screen_space = 0;
