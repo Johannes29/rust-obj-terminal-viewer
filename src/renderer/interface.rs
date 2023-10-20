@@ -1,8 +1,10 @@
 use super::events::*;
-use super::pipeline::terminal_output::{draw_char_buffer, image_buffer_to_char_buffer, add_debug_line_to_char_buffer};
+use super::pipeline::terminal_output::{
+    add_debug_line_to_char_buffer, draw_char_buffer, image_buffer_to_char_buffer,
+};
 use super::render::{render_mesh, Camera};
-use crate::general::positions_3d::{Mesh};
-use crate::general::positions_3d::{Point as Point3};
+use crate::general::positions_3d::Mesh;
+use crate::general::positions_3d::Point as Point3;
 use crossterm::{
     cursor,
     event::Event,
@@ -214,7 +216,7 @@ impl<T: Copy> Buffer<T> {
             None => None,
             Some(index) => {
                 return Some(self.values[index]);
-            },
+            }
         }
     }
 
@@ -224,7 +226,7 @@ impl<T: Copy> Buffer<T> {
             Some(index) => {
                 self.values[index] = value;
                 return Ok(());
-            },
+            }
         }
     }
 

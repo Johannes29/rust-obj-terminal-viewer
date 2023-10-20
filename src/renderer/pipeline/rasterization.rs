@@ -1,10 +1,10 @@
 use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2};
-use crate::general::positions_3d::{Triangle as Triangle3};
+use crate::general::positions_3d::Triangle as Triangle3;
 use crate::renderer::interface::Buffer;
 use crate::renderer::pipeline::fragment_shader::fragment_shader;
 
 pub fn render_triangle(
-    ps_triangle: &Triangle3, // pixel space triangle 
+    ps_triangle: &Triangle3, // pixel space triangle
     // TODO ^ function should take screen space triangle (normalized screen coordinates) instead
     // Then you can check screen space intersection and render with the same triangle
     pixel_buffer: &mut Buffer<f32>,
@@ -41,7 +41,7 @@ pub fn render_triangle(
             let frag_depth = triangle_points[0].z
                 + u * (triangle_points[1].z - triangle_points[0].z)
                 + v * (triangle_points[2].z - triangle_points[0].z);
-            
+
             let Some(depth_buffer_value) = depth_buffer.get(x, y) else {
                 // Pixel is outside of the rendered surface
                 continue
@@ -52,7 +52,9 @@ pub fn render_triangle(
                 if let Some(light_intensity) = light_intensity {
                     pixel_buffer.set(x, y, light_intensity).unwrap();
                 } else {
-                    pixel_buffer.set(x, y, fragment_shader(ps_triangle)).unwrap();
+                    pixel_buffer
+                        .set(x, y, fragment_shader(ps_triangle))
+                        .unwrap();
                 }
             }
         }

@@ -1,14 +1,14 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton};
 
+use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
 use rust_obj_terminal_viewer::renderer::interface::{Renderer, ShouldExit};
 use rust_obj_terminal_viewer::renderer::obj_parser::ObjParser;
-use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
 use rust_obj_terminal_viewer::renderer::render::Camera;
 
-use rust_obj_terminal_viewer::general::positions_3d::Point;
 use crossterm::event::Event;
 use crossterm::event::MouseEventKind;
 use crossterm::terminal;
+use rust_obj_terminal_viewer::general::positions_3d::Point;
 
 use clap::Parser;
 

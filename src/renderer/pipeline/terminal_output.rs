@@ -1,5 +1,5 @@
 use crossterm::{cursor, QueueableCommand};
-use std::io::{Write, stdout};
+use std::io::{stdout, Write};
 
 use crate::renderer::interface::Buffer;
 
@@ -20,8 +20,9 @@ pub fn draw_char_buffer(char_buffer: &Buffer<u8>, prev_char_buffer: &Buffer<u8>)
 
     for (new_char, row_i, char_i) in chars_to_change {
         // let char_number = new_char.to_digit(10).unwrap() as u8;
-
-        stdout.queue(cursor::MoveTo(char_i as u16 + 1, row_i as u16)).unwrap();
+        stdout
+            .queue(cursor::MoveTo(char_i as u16 + 1, row_i as u16))
+            .unwrap();
         stdout.write(&[0x08, new_char]).unwrap();
     }
 
@@ -33,7 +34,7 @@ pub fn draw_char_buffer(char_buffer: &Buffer<u8>, prev_char_buffer: &Buffer<u8>)
 #[allow(dead_code)]
 fn char_buffer_to_output_string(char_buffer: &mut Vec<Vec<u8>>) {
     let mut output_string = String::new();
-    
+
     for row in char_buffer {
         for char in row {
             output_string.push((*char).into());
@@ -41,13 +42,16 @@ fn char_buffer_to_output_string(char_buffer: &mut Vec<Vec<u8>>) {
     }
 }
 
-pub fn image_buffer_to_char_buffer(image_buffer: &Buffer<f32>, char_buffer: &mut Buffer<u8>, chars: &Vec<u8>) {
+pub fn image_buffer_to_char_buffer(
+    image_buffer: &Buffer<f32>,
+    char_buffer: &mut Buffer<u8>,
+    chars: &Vec<u8>,
+) {
     for y in 0..(image_buffer.height) {
         for x in 0..(image_buffer.width) {
             let value = image_buffer.get(x, y).expect("x and y loops to be correct");
-            let char_index = ((value * (chars.len() as f32) - 1.0)
-                .ceil() as usize)
-                .clamp(0, chars.len() - 1);
+            let char_index =
+                ((value * (chars.len() as f32) - 1.0).ceil() as usize).clamp(0, chars.len() - 1);
 
             char_buffer.set(x, y, chars[char_index]).unwrap();
         }

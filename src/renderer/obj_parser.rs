@@ -1,4 +1,4 @@
-use crate::general::positions_3d::{Mesh, Point as Point3, Triangle as Triangle3, IndicesTriangle};
+use crate::general::positions_3d::{IndicesTriangle, Mesh, Point as Point3, Triangle as Triangle3};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};

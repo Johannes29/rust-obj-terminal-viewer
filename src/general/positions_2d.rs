@@ -29,7 +29,7 @@ impl Point {
     pub fn relative_to(&self, point: &Point) -> Self {
         Point {
             x: self.x - point.x,
-            y: self.y - point.y
+            y: self.y - point.y,
         }
     }
 }
@@ -44,15 +44,16 @@ impl Mul for Point {
         }
     }
 }
-impl Triangle {    
+impl Triangle {
     pub fn points(&self) -> [&Point; 3] {
         [&self.p1, &self.p2, &self.p3]
     }
 
     pub fn has_area(&self) -> bool {
-        !(self.p1 == self.p2 || self.p2 == self.p3 || self.p3 == self.p1
+        !(self.p1 == self.p2
+            || self.p2 == self.p3
+            || self.p3 == self.p1
             || (self.p1.x == self.p2.x && self.p2.x == self.p3.x)
             || (self.p1.y == self.p2.y && self.p2.y == self.p3.y))
-
     }
 }

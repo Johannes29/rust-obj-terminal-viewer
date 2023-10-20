@@ -34,13 +34,13 @@ pub fn render_mesh(
         let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
         if dot_product(&triangle.normal, &camera.position.normalized()) < 0.0 {
-            continue
+            continue;
         }
 
         render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
 
         // --- uncomment to generate debug images ---
-        
+
         // let height = image_buffer.height as u32;
         // let width = image_buffer.width as u32;
         // let mut img = GrayImage::new(width, height);
