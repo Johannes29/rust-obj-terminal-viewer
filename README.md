@@ -1,5 +1,5 @@
 ## Running
-Run `cargo run`
+Run `cargo run -- objects/hourglass.obj`
 
 ## Performance testing
 To generate and open a flamegraph:
