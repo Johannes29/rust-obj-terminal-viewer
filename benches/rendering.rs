@@ -16,7 +16,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         70.0,
         " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
     );
-    let mesh = ObjParser::parse_file(&PathBuf::from("objects/Tree1.obj")).unwrap();
+    let mesh = ObjParser::parse_file(&PathBuf::from("objects/hourglass.obj")).unwrap();
     renderer.set_mesh(mesh);
     group.bench_function("rendering", |b| b.iter(|| {
         renderer.render_frame();
