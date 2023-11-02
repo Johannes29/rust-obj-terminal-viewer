@@ -1,3 +1,9 @@
+## Make project presentable
+- Come up with a real name (not rust-obj-terminal-viewer)
+- Add image of program in action to README.md
+
+- Remove commit history?
+
 ## TODOs
  - Automatically decide view_point and rotation_origin based on object size and max/min coordinates
     - Also decide near and far fields from bounding_radius
