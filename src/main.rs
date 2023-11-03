@@ -34,6 +34,7 @@ fn main() {
 
     let mut camera_input_helper = CameraInputHelper::new(terminal_size.0, terminal_size.1);
     let mut frame_loop = |renderer: &mut Renderer, events| {
+        camera_input_helper.update_terminal_dimensions(terminal::size().unwrap());
         camera_input_helper.process_input_events(renderer, events)
     };
 
