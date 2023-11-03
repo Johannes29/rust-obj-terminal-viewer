@@ -4,12 +4,13 @@ use super::{
 };
 use crate::general::positions_3d::Point as Point3;
 use crossterm::{
-    event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEventKind},
+    event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind},
     terminal,
 };
 
 /// Moves the renderer's camera according to input events.
-/// Hold left mouse button and drag to spin the camera.  
+/// Hold left mouse button (or the middle mouse button) and drag to spin the camera.
+/// You can also press the c key and then move the mouse to spin the camera.
 pub struct CameraInputHelper {
     drag_key_is_down: bool,
     mouse_column: u16,
@@ -34,54 +35,60 @@ impl CameraInputHelper {
     ) -> ShouldExit {
         for event in events {
             if let Event::Mouse(mouse_event) = event {
-                (self.mouse_column, self.mouse_row) = (mouse_event.column, mouse_event.row);
-                match mouse_event.kind {
-                    MouseEventKind::Drag(MouseButton::Middle)
-                    | MouseEventKind::Drag(MouseButton::Left) => {
-                        if mouse_event.modifiers == KeyModifiers::NONE {
-                            self.drag_rotation.handle_drag(
-                                mouse_event.column,
-                                mouse_event.row,
-                                &mut renderer.camera,
-                            );
-                        }
-                    }
-                    MouseEventKind::Moved => {
-                        if self.drag_key_is_down {
-                            self.drag_rotation.handle_drag(
-                                mouse_event.column,
-                                mouse_event.row,
-                                &mut renderer.camera,
-                            );
-                        }
-                    }
-                    MouseEventKind::Down(MouseButton::Middle)
-                    | MouseEventKind::Down(MouseButton::Left) => {
-                        self.drag_rotation.handle_drag_start(
-                            mouse_event.column,
-                            mouse_event.row,
-                            terminal::size().unwrap(),
-                        )
-                    }
-                    _ => (),
-                }
+                self.process_mouse_event(mouse_event, renderer)
             }
             if let Event::Key(key_event) = event {
-                move_point(&mut renderer.camera.position, key_event);
-                if key_event.code == KeyCode::Char('c') {
-                    self.drag_key_is_down = !self.drag_key_is_down;
-                }
-                if self.drag_key_is_down {
-                    self.drag_rotation.handle_drag_start(
-                        self.mouse_column,
-                        self.mouse_row,
-                        terminal::size().unwrap(),
-                    )
-                }
+                self.process_key_event(key_event, renderer)
             }
         }
 
         ShouldExit::No
+    }
+
+    fn process_mouse_event(&mut self, mouse_event: MouseEvent, renderer: &mut Renderer) {
+        (self.mouse_column, self.mouse_row) = (mouse_event.column, mouse_event.row);
+        match mouse_event.kind {
+            MouseEventKind::Drag(MouseButton::Middle) | MouseEventKind::Drag(MouseButton::Left) => {
+                if mouse_event.modifiers == KeyModifiers::NONE {
+                    self.drag_rotation.handle_drag(
+                        mouse_event.column,
+                        mouse_event.row,
+                        &mut renderer.camera,
+                    );
+                }
+            }
+            MouseEventKind::Moved => {
+                if self.drag_key_is_down {
+                    self.drag_rotation.handle_drag(
+                        mouse_event.column,
+                        mouse_event.row,
+                        &mut renderer.camera,
+                    );
+                }
+            }
+            MouseEventKind::Down(MouseButton::Middle) | MouseEventKind::Down(MouseButton::Left) => {
+                self.drag_rotation.handle_drag_start(
+                    mouse_event.column,
+                    mouse_event.row,
+                    terminal::size().unwrap(),
+                )
+            }
+            _ => (),
+        }
+    }
+
+    fn process_key_event(&mut self, key_event: KeyEvent, renderer: &mut Renderer) {
+        move_point(&mut renderer.camera.position, key_event);
+        if key_event.code == KeyCode::Char('c') {
+            self.drag_key_is_down = !self.drag_key_is_down;
+        }
+        if self.drag_key_is_down {
+            self.drag_rotation.handle_drag_start(
+                self.mouse_column,
+                self.mouse_row,
+                terminal::size().unwrap(),
+            )
+        }
     }
 }
 
@@ -152,7 +159,7 @@ impl CellPosition {
     }
 }
 
-/// drag refers to when you move the mouse with a special modifier pressed, here the middle mouse button
+/// drag refers to when you move the mouse with a special modifier pressed
 #[derive(Debug)]
 struct DragRotation {
     drag_start_pos: CellPosition,
