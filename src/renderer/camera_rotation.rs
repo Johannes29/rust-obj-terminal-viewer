@@ -255,3 +255,40 @@ impl DragRotation {
         }
     }
 }
+
+#[cfg(test)]
+mod test_camera_input_helper {
+    use crossterm::event::{Event, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
+    use float_eq::assert_float_eq;
+
+    use crate::renderer::{camera_rotation::CameraInputHelper, interface::Renderer};
+
+    #[test]
+    fn test_left_mouse_button_drag() {
+        let mut camera_input_helper = CameraInputHelper::new(100, 300);
+        let mut renderer = Renderer::new(
+            300,
+            100,
+            60.0,
+            2.0,
+            70.0,
+            " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
+        );
+        let left_button_down = Event::Mouse(MouseEvent {
+            kind: MouseEventKind::Down(MouseButton::Left),
+            column: 20,
+            row: 50,
+            modifiers: KeyModifiers::NONE,
+        });
+        camera_input_helper.process_input_events(&mut renderer, vec![left_button_down]);
+        let drag_with_left_button = Event::Mouse(MouseEvent {
+            kind: MouseEventKind::Drag(MouseButton::Left),
+            column: 220,
+            row: 50,
+            modifiers: KeyModifiers::NONE,
+        });
+        camera_input_helper.process_input_events(&mut renderer, vec![drag_with_left_button]);
+        assert_float_eq!(-4.0, renderer.camera.rotation_around_y, abs <= 0.00001)
+        // TODO test camera position as well
+    }
+}
