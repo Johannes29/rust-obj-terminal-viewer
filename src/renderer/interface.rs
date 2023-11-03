@@ -165,7 +165,7 @@ impl Renderer {
         let empty_lines_to_print = terminal_height - 1;
 
         stdout()
-            .write(&vec![b'\n'; empty_lines_to_print as usize])
+            .write_all(&vec![b'\n'; empty_lines_to_print as usize])
             .unwrap();
         // stdout().execute(terminal::Clear(terminal::ClearType::All));
     }
