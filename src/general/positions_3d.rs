@@ -337,6 +337,7 @@ impl BoundingBox {
             y: 0.,
             z: 0.,
         };
+        // Do we really need to clone here?
         BoundingBox(zero_point.clone(), zero_point)
     }
 
@@ -362,6 +363,7 @@ impl BoundingBox {
         }
     }
 
+    // TODO maybe move public functions to top of impl block?
     pub fn new(points: &Vec<Point>) -> Self {
         let mut bounding_box = BoundingBox::initialize();
         for point in points {

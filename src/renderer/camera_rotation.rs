@@ -81,6 +81,7 @@ impl CameraInputHelper {
     }
 
     fn process_key_event(&mut self, key_event: KeyEvent, renderer: &mut Renderer) {
+        // TODO does not work (camera does not move when wasd is pressed)
         move_point(&mut renderer.camera.position, key_event);
         if key_event.code == KeyCode::Char('c') {
             self.drag_key_is_down = !self.drag_key_is_down;
