@@ -17,8 +17,11 @@ criterion = "0.3"
 
 [[bench]]
 name = "obj_parsing"
+# the path is needed because the benchmark file is not in the standard criterion folder "benches"
+path = "benchmarks/obj_parsing.rs"
 harness = false
 
 [[bench]]
 name = "rendering"
+path = "benchmarks/rendering.rs"
 harness = false
