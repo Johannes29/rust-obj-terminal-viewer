@@ -1,4 +1,4 @@
-# Rust Obj Terminal Viewer (Name is not final)
+# Rust Obj Terminal Viewer
 A CLI program to view 3D models directly in the terminal. Supports .obj files.
 
 This program uses no graphics library. Perspective transformations, rasterization, etc are coded by hand. The 3D object is displayed in the terminal with ascii-characters.
