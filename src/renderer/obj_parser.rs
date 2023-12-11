@@ -211,17 +211,3 @@ pub fn all_equal<T: PartialEq>(elements: &[T]) -> Option<bool> {
     let first = elements.get(0)?;
     Some(elements.iter().all(|elem| elem == first))
 }
-
-fn evaluate<T: Clone>(a: Vec<Option<T>>) -> Option<Vec<T>> {
-    let mut new_vec: Vec<T> = Vec::new();
-    for element in a {
-        match element {
-            None => return None,
-            Some(value) => {
-                let copy: T = value.clone();
-                new_vec.push(copy);
-            }
-        }
-    }
-    Some(new_vec)
-}
