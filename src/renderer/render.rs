@@ -33,9 +33,11 @@ pub fn render_mesh(
         // assumes that both normal and light direction are unit vectors
         let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
-        if dot_product(&triangle.normal, &camera.position.normalized()) < 0.0 {
-            continue;
-        }
+        // TODO Why is the position and not the direction of the camera used?
+        // TODO Fix this backface culling logic.
+        // if dot_product(&triangle.normal, &camera.position.normalized()) < 0.0 {
+        //     continue;
+        // }
 
         render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
 
