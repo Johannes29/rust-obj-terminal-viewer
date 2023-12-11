@@ -144,7 +144,7 @@ impl ObjParser {
 
         let parsed_numbers: Vec<[Option<usize>; 3]> = argument_strings
             .iter()
-            .map(|str| parse_face_element_vertext_string(str))
+            .map(|str| parse_face_element_vertex_string(str))
             .collect();
 
         let vertices_indices: Vec<usize> = parsed_numbers
@@ -211,7 +211,7 @@ fn read_lines(file_path: &PathBuf) -> io::Result<io::Lines<io::BufReader<File>>>
 /**
  * example inputs: "3/4/5", "3", "3//4", "3//"
  */
-fn parse_face_element_vertext_string(string: &str) -> [Option<usize>; 3] {
+fn parse_face_element_vertex_string(string: &str) -> [Option<usize>; 3] {
     let substrings: Vec<&str> = string.split('/').collect();
     let mut numbers = [None, None, None];
 
