@@ -31,6 +31,7 @@ pub fn render_mesh(
             continue;
         }
         // assumes that both normal and light direction are unit vectors
+        // TODO why are we assuming this? Maybe just normalize the two vectors so that we don't have to assume anything?
         let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
 
         // TODO Why is the position and not the direction of the camera used?
