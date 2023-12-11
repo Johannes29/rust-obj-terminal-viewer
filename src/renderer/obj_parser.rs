@@ -157,25 +157,7 @@ impl ObjParser {
             .map(|vertex_index| &self.mesh.points[*vertex_index])
             .collect();
 
-        let vertext_normal_indices_option: Vec<Option<usize>> =
-            parsed_numbers.iter().map(|indices| indices[2]).collect();
-
-        let face_normal: Point3 = match evaluate(vertext_normal_indices_option) {
-            Some(indices) => {
-                let vertex_normals: Vec<&Point3> = indices
-                    .iter()
-                    .map(|index| &self.normals[index - 1])
-                    .collect();
-
-                if all_equal(&vertex_normals).unwrap() {
-                    let cloned_normal: Point3 = vertex_normals[0].clone();
-                    cloned_normal
-                } else {
-                    return Err("face normals are different".into());
-                }
-            }
-            None => Triangle3::get_normal_ref(&vertices[0..3]),
-        };
+        let face_normal = Triangle3::get_normal_ref(&vertices[0..3]);
 
         // TODO support negative indices
         let mut triangle = IndicesTriangle {
