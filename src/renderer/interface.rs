@@ -2,7 +2,8 @@ use super::events::*;
 use super::pipeline::terminal_output::{
     add_debug_line_to_char_buffer, draw_char_buffer, image_buffer_to_char_buffer,
 };
-use super::render::{render_mesh, Camera};
+use super::pipeline::transformation::Camera;
+use super::render::render_mesh;
 use crate::general::positions_3d::Mesh;
 use crate::general::positions_3d::Point as Point3;
 use crossterm::{

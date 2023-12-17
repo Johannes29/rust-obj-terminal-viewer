@@ -1,6 +1,6 @@
 use super::{
     interface::{Renderer, ShouldExit},
-    render::Camera,
+    pipeline::transformation::Camera,
 };
 use crate::general::positions_3d::Point as Point3;
 use crossterm::{

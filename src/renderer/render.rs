@@ -1,6 +1,7 @@
 use super::interface::Buffer;
 use super::pipeline::rasterization::render_triangle;
 use super::pipeline::transformation::get_multiplied_points_with_matrix;
+use super::pipeline::transformation::Camera;
 use super::pipeline::transformation::{screen_to_pixel_coordinates, MatrixTrait};
 use crate::general::positions_3d::{dot_product, Mesh, Point as Point3, Triangle as Triangle3};
 
@@ -59,15 +60,4 @@ pub fn render_mesh(
         // depth_img.save(format!("debug_images/frame_{}_depth.png", triangle_index)).unwrap();
         // triangle_index += 1;
     }
-}
-
-#[derive(Debug)]
-pub struct Camera {
-    pub horizontal_fov: f32,
-    pub vertical_fov: f32,
-    pub position: Point3,
-    pub rotation_around_x: f32,
-    pub rotation_around_y: f32,
-    pub near: f32,
-    pub far: f32,
 }
