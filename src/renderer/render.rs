@@ -36,9 +36,9 @@ pub fn render_mesh(
 
         // TODO Why is the position and not the direction of the camera used?
         // TODO Fix this backface culling logic.
-        // if dot_product(&triangle.normal, &camera.position.normalized()) < 0.0 {
-        //     continue;
-        // }
+        if dot_product(&triangle.normal, &camera.position.normalized()) < 0.0 {
+            continue;
+        }
 
         render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
 
