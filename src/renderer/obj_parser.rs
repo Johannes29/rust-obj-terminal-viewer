@@ -1,4 +1,4 @@
-use crate::general::positions_3d::{IndicesTriangle, Mesh, Point as Point3, Triangle as Triangle3};
+use crate::general::positions_3d::{IndicesTriangle, Mesh, Point as Point3, Triangle as Triangle3, dot_product};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
@@ -157,7 +157,15 @@ impl ObjParser {
             .map(|vertex_index| &self.mesh.points[*vertex_index])
             .collect();
 
-        let face_normal = Triangle3::get_normal_ref(&vertices[0..3]);
+        let vertex_normals: Vec<&Point3> = parsed_numbers
+            .iter()
+            // TODO should not expect, vertex normal is optional in the .obj spec
+            .map(|indices| indices[2].expect("vertex normal index in face declaration") - 1)
+            .map(|normal_index| &self.normals[normal_index])
+            .collect();
+
+        let mut face_normal = Triangle3::get_normal_ref(&vertices[0..3]);
+        fix_face_normal_direction(&mut face_normal, &vertex_normals);
 
         // TODO support negative indices
         let mut triangle = IndicesTriangle {
@@ -182,6 +190,17 @@ impl ObjParser {
         }
 
         Ok(())
+    }
+}
+
+/// Flips the face normal if needed so that it points in roughly the same direction as the vertex normals
+fn fix_face_normal_direction(face_normal: &mut Point3, vertex_normals: &[&Point3]) {
+    let dot_products: Vec<f32> = vertex_normals.iter()
+        .map(|vertex_normal| dot_product(face_normal, vertex_normal))
+        .collect();
+    let average_dot_product: f32 = dot_products.iter().sum::<f32>() / (dot_products.len() as f32);
+    if average_dot_product < 0.0 {
+        *face_normal = face_normal.inverted();
     }
 }
 
