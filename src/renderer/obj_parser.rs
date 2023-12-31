@@ -194,7 +194,10 @@ impl ObjParser {
 }
 
 /// Flips the face normal if needed so that it points in roughly the same direction as the vertex normals
-fn fix_face_normal_direction(face_normal: &mut Point3, vertex_normals: &[&Point3]) {
+fn fix_face_normal_direction(face_normal: &mut Point3, vertex_normals: &[&Point3]) -> Result<(), String> {
+    if vertex_normals.is_empty() {
+        return Result::Err("No vertex normals provided".to_owned());
+    }
     let dot_products: Vec<f32> = vertex_normals.iter()
         .map(|vertex_normal| dot_product(&face_normal.normalized(), &vertex_normal.normalized()))
         .collect();
@@ -202,6 +205,7 @@ fn fix_face_normal_direction(face_normal: &mut Point3, vertex_normals: &[&Point3
     if average_dot_product < 0.0 {
         *face_normal = face_normal.inverted();
     }
+    Result::Ok(())
 }
 
 fn read_lines(file_path: &PathBuf) -> io::Result<io::Lines<io::BufReader<File>>> {
