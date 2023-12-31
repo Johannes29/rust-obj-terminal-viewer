@@ -159,13 +159,15 @@ impl ObjParser {
 
         let vertex_normals: Vec<&Point3> = parsed_numbers
             .iter()
-            // TODO should not expect, vertex normal is optional in the .obj spec
-            .map(|indices| indices[2].expect("vertex normal index in face declaration") - 1)
+            .filter_map(|indices| indices[2])
             .map(|normal_index| &self.normals[normal_index])
             .collect();
 
         let mut face_normal = Triangle3::get_normal_ref(&vertices[0..3]);
-        fix_face_normal_direction(&mut face_normal, &vertex_normals);
+        if !vertex_normals.is_empty() {
+            fix_face_normal_direction(&mut face_normal, &vertex_normals).unwrap();
+        }
+        
 
         // TODO support negative indices
         let mut triangle = IndicesTriangle {
