@@ -196,7 +196,7 @@ impl ObjParser {
 /// Flips the face normal if needed so that it points in roughly the same direction as the vertex normals
 fn fix_face_normal_direction(face_normal: &mut Point3, vertex_normals: &[&Point3]) {
     let dot_products: Vec<f32> = vertex_normals.iter()
-        .map(|vertex_normal| dot_product(face_normal, vertex_normal))
+        .map(|vertex_normal| dot_product(&face_normal.normalized(), &vertex_normal.normalized()))
         .collect();
     let average_dot_product: f32 = dot_products.iter().sum::<f32>() / (dot_products.len() as f32);
     if average_dot_product < 0.0 {
