@@ -274,6 +274,20 @@ impl<'a> Triangle<'a> {
         cross_product(a, b).normalized()
     }
 
+    /// Uses the vertex normals to choose between the two valid normals for the tree vertices
+    pub fn get_normal_with_vertex_normals(vertices: &[&Point; 3], vertex_normals: &[&Point; 3]) -> Point {
+        let normal = Self::get_normal(vertices);
+        let dot_products: Vec<f32> = vertex_normals.iter()
+            .map(|vertex_normal| dot_product(&normal, &vertex_normal.normalized()))
+            .collect();
+        let average_dot_product: f32 = dot_products.iter().sum::<f32>() / (dot_products.len() as f32);
+        if average_dot_product < 0.0 {
+            normal.inverted()
+        } else {
+            normal
+        }
+    }
+
     pub fn get_min_max_x_y(&self) -> [f32; 4] {
         let points = self.points();
         let mut min_x = f32::MAX;
