@@ -1,4 +1,4 @@
-use crate::general::positions_3d::{IndicesTriangle, Mesh, Point as Point3, Triangle as Triangle3, dot_product};
+use crate::general::positions_3d::{IndicesTriangle, Mesh, Point as Point3, Triangle as Triangle3};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead};
@@ -163,29 +163,31 @@ impl ObjParser {
             .map(|normal_index| &self.normals[normal_index])
             .collect();
 
-        let mut face_normal = Triangle3::get_normal_ref(&vertices[0..3]);
-        if !vertex_normals.is_empty() {
-            fix_face_normal_direction(&mut face_normal, &vertex_normals).unwrap();
-        }
-        
+        let triangle_vertices = &vertices[0..3].try_into().expect("face declaration should have at least three vertices");
+        let triangle_vertex_normals = &vertex_normals[0..3].try_into().unwrap();
+        let triangle_normal = Triangle3::get_normal_with_vertex_normals(triangle_vertices, triangle_vertex_normals);
 
         // TODO support negative indices
         let mut triangle = IndicesTriangle {
             p1: vertices_indices[0],
             p2: vertices_indices[1],
             p3: vertices_indices[2],
-            normal: face_normal.clone(),
+            normal: triangle_normal,
         };
         triangle.make_clockwise(&self.mesh.points);
         self.mesh.indices_triangles.push(triangle);
 
         // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
         if vertices.len() == 4 {
+            let triangle_vertices = [vertices[2], vertices[3], vertices[0]];
+            let triangle_vertex_normals = [vertex_normals[2], vertex_normals[3], vertex_normals[0]];
+            let triangle_normal = Triangle3::get_normal_with_vertex_normals(&triangle_vertices, &triangle_vertex_normals);
+
             let mut triangle = IndicesTriangle {
                 p1: vertices_indices[2],
                 p2: vertices_indices[3],
                 p3: vertices_indices[0],
-                normal: face_normal,
+                normal: triangle_normal,
             };
             triangle.make_clockwise(&self.mesh.points);
             self.mesh.indices_triangles.push(triangle);
@@ -193,21 +195,6 @@ impl ObjParser {
 
         Ok(())
     }
-}
-
-/// Flips the face normal if needed so that it points in roughly the same direction as the vertex normals
-fn fix_face_normal_direction(face_normal: &mut Point3, vertex_normals: &[&Point3]) -> Result<(), String> {
-    if vertex_normals.is_empty() {
-        return Result::Err("No vertex normals provided".to_owned());
-    }
-    let dot_products: Vec<f32> = vertex_normals.iter()
-        .map(|vertex_normal| dot_product(&face_normal.normalized(), &vertex_normal.normalized()))
-        .collect();
-    let average_dot_product: f32 = dot_products.iter().sum::<f32>() / (dot_products.len() as f32);
-    if average_dot_product < 0.0 {
-        *face_normal = face_normal.inverted();
-    }
-    Result::Ok(())
 }
 
 fn read_lines(file_path: &PathBuf) -> io::Result<io::Lines<io::BufReader<File>>> {
