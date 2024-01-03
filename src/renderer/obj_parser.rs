@@ -159,7 +159,7 @@ impl ObjParser {
 
         let vertex_normals: Vec<&Point3> = parsed_numbers
             .iter()
-            .filter_map(|indices| indices[2])
+            .map(|indices| indices[2].expect("vertex normals should be present in face declarations") - 1)
             .map(|normal_index| &self.normals[normal_index])
             .collect();
 
