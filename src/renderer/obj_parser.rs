@@ -136,18 +136,31 @@ impl ObjParser {
     }
 
     fn handle_f(&mut self, argument_strings: &[&str]) -> Result<(), String> {
-        if argument_strings.len() != 3 && argument_strings.len() != 4 {
+        if argument_strings.len() > 4 {
             return Err(String::from(
-                "invalid number of verts per face (should be 3 or 4)",
+                "faces with more than 4 vertices are not supported",
             ));
         }
 
-        let parsed_numbers: Vec<[Option<usize>; 3]> = argument_strings
+        let first_three_vertex_strings = &argument_strings[0..3].try_into()
+            .or(Result::Err("face declaration must have at least three vertices"))?;
+        self.handle_triangle_face(first_three_vertex_strings);
+
+        if argument_strings.len() == 4 {
+            let vertex_strings_2 = [argument_strings[2], argument_strings[3], argument_strings[0]];
+            self.handle_triangle_face(&vertex_strings_2);
+        }
+
+        Ok(())
+    }
+
+    fn handle_triangle_face(&mut self, vertex_strings: &[&str; 3]) {
+        let parsed_vertex_numbers: Vec<[Option<usize>; 3]> = vertex_strings
             .iter()
             .map(|str| parse_face_element_vertext_string(str))
             .collect();
 
-        let vertices_indices: Vec<usize> = parsed_numbers
+        let vertices_indices: Vec<usize> = parsed_vertex_numbers
             .iter()
             .map(|indices| indices[0].expect("vertex index in face declaration") - 1)
             .collect();
@@ -157,7 +170,7 @@ impl ObjParser {
             .map(|vertex_index| &self.mesh.points[*vertex_index])
             .collect();
 
-        let vertex_normals: Vec<&Point3> = parsed_numbers
+        let vertex_normals: Vec<&Point3> = parsed_vertex_numbers
             .iter()
             .map(|indices| indices[2].expect("vertex normals should be present in face declarations") - 1)
             .map(|normal_index| &self.normals[normal_index])
@@ -176,24 +189,6 @@ impl ObjParser {
         };
         triangle.make_clockwise(&self.mesh.points);
         self.mesh.indices_triangles.push(triangle);
-
-        // source for order of verts: https://community.khronos.org/t/i-need-to-convert-quad-data-to-triangle-data/13269
-        if vertices.len() == 4 {
-            let triangle_vertices = [vertices[2], vertices[3], vertices[0]];
-            let triangle_vertex_normals = [vertex_normals[2], vertex_normals[3], vertex_normals[0]];
-            let triangle_normal = Triangle3::get_normal_with_vertex_normals(&triangle_vertices, &triangle_vertex_normals);
-
-            let mut triangle = IndicesTriangle {
-                p1: vertices_indices[2],
-                p2: vertices_indices[3],
-                p3: vertices_indices[0],
-                normal: triangle_normal,
-            };
-            triangle.make_clockwise(&self.mesh.points);
-            self.mesh.indices_triangles.push(triangle);
-        }
-
-        Ok(())
     }
 }
 
