@@ -408,9 +408,9 @@ pub fn dot_product(a: &Point, b: &Point) -> f32 {
 
 pub fn cross_product(a: Point, b: Point) -> Point {
     Point {
-        x: (a.y * b.z - b.y * a.z),
-        y: (a.x * b.z - b.x * a.z),
-        z: (a.x * b.y - b.x * a.y),
+        x: (a.y * b.z - a.z * b.y),
+        y: (a.z * b.x - a.x * b.z),
+        z: (a.x * b.y - a.y * b.x),
     }
 }
 
@@ -425,4 +425,34 @@ pub fn distance(p1: &Point, p2: &Point) -> f32 {
 
 pub fn distance_from_origo(point: &Point) -> f32 {
     (point.x.powi(2) + point.y.powi(2) + point.z.powi(2)).sqrt()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::general::positions_3d::{Point as Point3, cross_product};
+
+    #[test]
+    fn test_cross_product() {
+        let a = Point3::from_array([3.0, 0.0, 0.0]);
+        let b = Point3::from_array([0.0, 3.0, 0.0]);
+        let cross_product = cross_product(a, b);
+        assert_eq!(cross_product, Point3::from_array([0.0, 0.0, 9.0]));
+    }
+
+    #[test]
+    fn test_cross_product_2() {
+        let a = Point3::from_array([1.0, 0.0, 0.0]);
+        let b = Point3::from_array([0.0, 0.0, 1.0]);
+        let cross_product = cross_product(a, b);
+        assert_eq!(cross_product, Point3::from_array([0.0, -1.0, 0.0]));
+    }
+
+    #[test]
+    fn test_cross_product_should_be_anticommutative() {
+        let a = Point3::from_array([0.3, 5.2, 4.5]);
+        let b = Point3::from_array([7.4, 0.8, 6.2]);
+        let cross_product_1 = cross_product(a.clone(), b.clone());
+        let cross_product_2 = cross_product(b, a).inverted();
+        assert_eq!(cross_product_1, cross_product_2);
+    }
 }
