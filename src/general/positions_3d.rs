@@ -248,29 +248,35 @@ impl<'a> Triangle<'a> {
         }
     }
 
-    /*
-
-    /// Assumes clockwise winding order
-    pub fn get_normal(points: [Point; 3]) -> Point {
-        let a = points[2].relative_to(&points[0]);
-        let b = points[1].relative_to(&points[0]);
+    /// Computes and returns the normal of a triangle defined by three points.
+    /// 
+    /// The normal will point towards the viewer if counterclockwise winding
+    /// order is used in a right-hand coordinate system,
+    /// or if clockwise winding order is used in a left-hand coordinate system.
+    /// 
+    /// # Example
+    /// ```
+    /// use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
+    /// use rust_obj_terminal_viewer::general::positions_3d::Triangle as Triangle3;
+    /// 
+    /// let vertices = [
+    ///     &Point3::from_array([0.0, 0.0, 0.0]),
+    ///     &Point3::from_array([1.0, 0.0, 0.0]),
+    ///     &Point3::from_array([0.0, 1.0, 0.0]),
+    /// ];
+    /// let normal = Triangle3::get_normal(&vertices);
+    /// assert_eq!(normal, Point3::from_array([0.0, 0.0, 1.0]));
+    /// ```
+    pub fn get_normal(points: &[&Point; 3]) -> Point {
+        let a = points[1].relative_to(points[0]);
+        let b = points[2].relative_to(points[0]);
         cross_product(a, b).normalized()
     }
-    */
 
     // TODO merge this and the above function
     pub fn get_normal_ref(points: &[&Point]) -> Point {
         let a = points[2].relative_to(points[0]);
         let b = points[1].relative_to(points[0]);
-        cross_product(a, b).normalized()
-    }
-
-    // TODO should be able to merge these functions somehow
-
-    pub fn get_normal(points: &[&Point]) -> Point {
-        assert!(points.len() >= 3);
-        let a = points[2].relative_to(&points[0]);
-        let b = points[1].relative_to(&points[0]);
         cross_product(a, b).normalized()
     }
 
