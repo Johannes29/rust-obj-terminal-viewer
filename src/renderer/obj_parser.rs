@@ -144,17 +144,17 @@ impl ObjParser {
 
         let first_three_vertex_strings = &argument_strings[0..3].try_into()
             .or(Result::Err("face declaration must have at least three vertices"))?;
-        self.handle_triangle_face(first_three_vertex_strings);
+        self.handle_triangle_face(first_three_vertex_strings)?;
 
         if argument_strings.len() == 4 {
             let vertex_strings_2 = [argument_strings[2], argument_strings[3], argument_strings[0]];
-            self.handle_triangle_face(&vertex_strings_2);
+            self.handle_triangle_face(&vertex_strings_2)?;
         }
 
         Ok(())
     }
 
-    fn handle_triangle_face(&mut self, vertex_strings: &[&str; 3]) {
+    fn handle_triangle_face(&mut self, vertex_strings: &[&str; 3]) -> Result<(), String> {
         let parsed_vertex_numbers: Vec<[Option<usize>; 3]> = vertex_strings
             .iter()
             .map(|str| parse_face_element_vertext_string(str))
@@ -172,13 +172,27 @@ impl ObjParser {
 
         let vertex_normals: Vec<&Point3> = parsed_vertex_numbers
             .iter()
-            .map(|indices| indices[2].expect("vertex normals should be present in face declarations") - 1)
+            .filter_map(|indices| indices[2])
+            .map(|one_based_index| one_based_index - 1)
             .map(|normal_index| &self.normals[normal_index])
             .collect();
 
-        let triangle_vertices = &vertices[0..3].try_into().expect("face declaration should have at least three vertices");
-        let triangle_vertex_normals = &vertex_normals[0..3].try_into().unwrap();
-        let triangle_normal = Triangle3::get_normal_with_vertex_normals(triangle_vertices, triangle_vertex_normals);
+        if vertex_normals.len() > 0 && vertex_normals.len() < 3 {
+            return Err("Invalid face declaration: some vertices have vertex normals, some do not".to_owned())
+        }
+        
+        let no_vertex_normals = vertex_normals.len() == 0;
+        let triangle_vertices: &[&Point3; 3] = &vertices.try_into().unwrap();
+        let triangle_vertex_normals = &vertex_normals.try_into().unwrap();
+        let triangle_normal = if no_vertex_normals {
+            // If no vertex normals are provided, assume that the winding order follows the .obj standard,
+            // i.e. counterclockwise should point towards viewer in right-handed coordinate system
+            Triangle3::get_normal_ref(triangle_vertices)
+        } else {
+            // If vertex normals are provided, use them and don't assume winding order
+            // This is done since some programs don't use the correct winding order when exporting .obj files
+            Triangle3::get_normal_with_vertex_normals(triangle_vertices, triangle_vertex_normals)
+        };
 
         // TODO support negative indices
         let mut triangle = IndicesTriangle {
@@ -189,6 +203,7 @@ impl ObjParser {
         };
         triangle.make_clockwise(&self.mesh.points);
         self.mesh.indices_triangles.push(triangle);
+        Ok(())
     }
 }
 
