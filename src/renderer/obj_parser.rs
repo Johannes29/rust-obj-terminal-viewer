@@ -181,17 +181,17 @@ impl ObjParser {
             return Err("Invalid face declaration: some vertices have vertex normals, some do not".to_owned())
         }
         
-        let no_vertex_normals = vertex_normals.len() == 0;
         let triangle_vertices: &[&Point3; 3] = &vertices.try_into().unwrap();
-        let triangle_vertex_normals = &vertex_normals.try_into().unwrap();
-        let triangle_normal = if no_vertex_normals {
-            // If no vertex normals are provided, assume that the winding order follows the .obj standard,
-            // i.e. counterclockwise should point towards viewer in right-handed coordinate system
-            Triangle3::get_normal_ref(triangle_vertices)
-        } else {
+        let optional_vertex_normals: Option<[&Point3; 3]> = vertex_normals.try_into().ok();
+        let triangle_normal = match optional_vertex_normals {
             // If vertex normals are provided, use them and don't assume winding order
             // This is done since some programs don't use the correct winding order when exporting .obj files
-            Triangle3::get_normal_with_vertex_normals(triangle_vertices, triangle_vertex_normals)
+            Some(vertex_normals) => {
+                Triangle3::get_normal_with_vertex_normals(triangle_vertices, &vertex_normals)
+            },
+            // If no vertex normals are provided, assume that the winding order follows the .obj standard,
+            // i.e. counterclockwise should point towards viewer in right-handed coordinate system
+            None => Triangle3::get_normal(triangle_vertices),
         };
 
         // TODO support negative indices
