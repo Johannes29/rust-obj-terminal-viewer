@@ -277,7 +277,7 @@ impl<'a> Triangle<'a> {
     pub fn get_normal_with_vertex_normals(vertices: &[&Point; 3], vertex_normals: &[&Point; 3]) -> Point {
         let computed_normal = Self::get_normal(vertices);
         let average_vertex_normal = vertex_normals.iter()
-            .fold(Point::new(), |acc, normal| acc.add(&normal))
+            .fold(Point::new(), |acc, normal| acc.add(&normal.normalized()))
             .map(|component| component / 3.0);
 
         if dot_product(&computed_normal, &average_vertex_normal) < 0.0 {
