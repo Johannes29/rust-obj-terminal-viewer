@@ -273,13 +273,6 @@ impl<'a> Triangle<'a> {
         cross_product(a, b).normalized()
     }
 
-    // TODO merge this and the above function
-    pub fn get_normal_ref(points: &[&Point]) -> Point {
-        let a = points[2].relative_to(points[0]);
-        let b = points[1].relative_to(points[0]);
-        cross_product(a, b).normalized()
-    }
-
     /// Uses the vertex normals to choose between the two valid normals for the tree vertices
     pub fn get_normal_with_vertex_normals(vertices: &[&Point; 3], vertex_normals: &[&Point; 3]) -> Point {
         let normal = Self::get_normal(vertices);
