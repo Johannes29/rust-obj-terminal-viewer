@@ -273,7 +273,31 @@ impl<'a> Triangle<'a> {
         cross_product(a, b).normalized()
     }
 
-    /// Uses the vertex normals to choose between the two valid normals for the tree vertices
+    /// Uses the vertex normals to choose between the two valid normals for the tree vertices.
+    /// The order of the vertices does not matter.
+    /// # Example
+    /// ```
+    /// use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
+    /// use rust_obj_terminal_viewer::general::positions_3d::Triangle as Triangle3;
+    /// 
+    /// let vertices = [
+    ///     &Point3::from_array([-2.0, 0.0, 0.0]),
+    ///     &Point3::from_array([2.0, 0.0, 0.0]),
+    ///     &Point3::from_array([0.0, 0.0, -3.0]),
+    /// ];
+    /// let vertex_normals = [
+    ///     &Point3::from_array([-0.2, 1.0, 0.2]).normalized(),
+    ///     &Point3::from_array([0.2, 1.0, 0.2]).normalized(),
+    ///     &Point3::from_array([0.0, 1.0, -0.2]).normalized(),
+    /// ];
+    /// let expected_normal = Point3::from_array([0.0, 1.0, 0.0]);
+    /// let returned_normal = Triangle3::get_normal_with_vertex_normals(&vertices, &vertex_normals);
+    /// assert_eq!(returned_normal, expected_normal);
+    /// 
+    /// let vertices_flipped_order = [vertices[2], vertices[1], vertices[0]];
+    /// let returned_normal_2 = Triangle3::get_normal_with_vertex_normals(&vertices_flipped_order, &vertex_normals);
+    /// assert_eq!(returned_normal_2, expected_normal);
+    /// ```
     pub fn get_normal_with_vertex_normals(vertices: &[&Point; 3], vertex_normals: &[&Point; 3]) -> Point {
         let computed_normal = Self::get_normal(vertices);
         let average_vertex_normal = vertex_normals.iter()
