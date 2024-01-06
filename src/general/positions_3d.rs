@@ -275,15 +275,15 @@ impl<'a> Triangle<'a> {
 
     /// Uses the vertex normals to choose between the two valid normals for the tree vertices
     pub fn get_normal_with_vertex_normals(vertices: &[&Point; 3], vertex_normals: &[&Point; 3]) -> Point {
-        let normal = Self::get_normal(vertices);
-        let dot_products: Vec<f32> = vertex_normals.iter()
-            .map(|vertex_normal| dot_product(&normal, &vertex_normal.normalized()))
-            .collect();
-        let average_dot_product: f32 = dot_products.iter().sum::<f32>() / (dot_products.len() as f32);
-        if average_dot_product < 0.0 {
-            normal.inverted()
+        let computed_normal = Self::get_normal(vertices);
+        let average_vertex_normal = vertex_normals.iter()
+            .fold(Point::new(), |acc, normal| acc.add(&normal))
+            .map(|component| component / 3.0);
+
+        if dot_product(&computed_normal, &average_vertex_normal) < 0.0 {
+            computed_normal.inverted()
         } else {
-            normal
+            computed_normal
         }
     }
 
