@@ -248,30 +248,67 @@ impl<'a> Triangle<'a> {
         }
     }
 
-    /*
-
-    /// Assumes clockwise winding order
-    pub fn get_normal(points: [Point; 3]) -> Point {
-        let a = points[2].relative_to(&points[0]);
-        let b = points[1].relative_to(&points[0]);
+    /// Computes and returns the normal of a triangle defined by three points.
+    /// 
+    /// The normal will point towards the viewer if counterclockwise winding
+    /// order is used in a right-hand coordinate system,
+    /// or if clockwise winding order is used in a left-hand coordinate system.
+    /// 
+    /// # Example
+    /// ```
+    /// use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
+    /// use rust_obj_terminal_viewer::general::positions_3d::Triangle as Triangle3;
+    /// 
+    /// let vertices = [
+    ///     &Point3::from_array([0.0, 0.0, 0.0]),
+    ///     &Point3::from_array([1.0, 0.0, 0.0]),
+    ///     &Point3::from_array([0.0, 1.0, 0.0]),
+    /// ];
+    /// let normal = Triangle3::get_normal(&vertices);
+    /// assert_eq!(normal, Point3::from_array([0.0, 0.0, 1.0]));
+    /// ```
+    pub fn get_normal(points: &[&Point; 3]) -> Point {
+        let a = points[1].relative_to(points[0]);
+        let b = points[2].relative_to(points[0]);
         cross_product(a, b).normalized()
     }
-    */
 
-    // TODO merge this and the above function
-    pub fn get_normal_ref(points: &[&Point]) -> Point {
-        let a = points[2].relative_to(points[0]);
-        let b = points[1].relative_to(points[0]);
-        cross_product(a, b).normalized()
-    }
+    /// Uses the vertex normals to choose between the two valid normals for the tree vertices.
+    /// The order of the vertices does not matter.
+    /// # Example
+    /// ```
+    /// use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
+    /// use rust_obj_terminal_viewer::general::positions_3d::Triangle as Triangle3;
+    /// 
+    /// let vertices = [
+    ///     &Point3::from_array([-2.0, 0.0, 0.0]),
+    ///     &Point3::from_array([2.0, 0.0, 0.0]),
+    ///     &Point3::from_array([0.0, 0.0, -3.0]),
+    /// ];
+    /// let vertex_normals = [
+    ///     &Point3::from_array([-0.2, 1.0, 0.2]).normalized(),
+    ///     &Point3::from_array([0.2, 1.0, 0.2]).normalized(),
+    ///     &Point3::from_array([0.0, 1.0, -0.2]).normalized(),
+    /// ];
+    /// let expected_normal = Point3::from_array([0.0, 1.0, 0.0]);
+    /// let returned_normal = Triangle3::get_normal_with_vertex_normals(&vertices, &vertex_normals);
+    /// assert_eq!(returned_normal, expected_normal);
+    /// 
+    /// let vertices_flipped_order = [vertices[2], vertices[1], vertices[0]];
+    /// let returned_normal_2 = Triangle3::get_normal_with_vertex_normals(&vertices_flipped_order, &vertex_normals);
+    /// assert_eq!(returned_normal_2, expected_normal);
+    /// ```
+    pub fn get_normal_with_vertex_normals(vertices: &[&Point; 3], vertex_normals: &[&Point; 3]) -> Point {
+        let computed_normal = Self::get_normal(vertices);
+        let average_vertex_normal = vertex_normals.iter()
+            .fold(Point::new(), |acc, normal| acc.add(&normal.normalized()))
+            .map(|component| component / 3.0);
 
-    // TODO should be able to merge these functions somehow
-
-    pub fn get_normal(points: &[&Point]) -> Point {
-        assert!(points.len() >= 3);
-        let a = points[2].relative_to(&points[0]);
-        let b = points[1].relative_to(&points[0]);
-        cross_product(a, b).normalized()
+        if dot_product(&computed_normal, &average_vertex_normal) < 0.0 {
+            computed_normal.inverted()
+        } else {
+            computed_normal
+        }
     }
 
     pub fn get_min_max_x_y(&self) -> [f32; 4] {
@@ -388,9 +425,9 @@ pub fn dot_product(a: &Point, b: &Point) -> f32 {
 
 pub fn cross_product(a: Point, b: Point) -> Point {
     Point {
-        x: (a.y * b.z - b.y * a.z),
-        y: (a.x * b.z - b.x * a.z),
-        z: (a.x * b.y - b.x * a.y),
+        x: (a.y * b.z - a.z * b.y),
+        y: (a.z * b.x - a.x * b.z),
+        z: (a.x * b.y - a.y * b.x),
     }
 }
 
@@ -405,4 +442,34 @@ pub fn distance(p1: &Point, p2: &Point) -> f32 {
 
 pub fn distance_from_origo(point: &Point) -> f32 {
     (point.x.powi(2) + point.y.powi(2) + point.z.powi(2)).sqrt()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::general::positions_3d::{Point as Point3, cross_product};
+
+    #[test]
+    fn test_cross_product() {
+        let a = Point3::from_array([3.0, 0.0, 0.0]);
+        let b = Point3::from_array([0.0, 3.0, 0.0]);
+        let cross_product = cross_product(a, b);
+        assert_eq!(cross_product, Point3::from_array([0.0, 0.0, 9.0]));
+    }
+
+    #[test]
+    fn test_cross_product_2() {
+        let a = Point3::from_array([1.0, 0.0, 0.0]);
+        let b = Point3::from_array([0.0, 0.0, 1.0]);
+        let cross_product = cross_product(a, b);
+        assert_eq!(cross_product, Point3::from_array([0.0, -1.0, 0.0]));
+    }
+
+    #[test]
+    fn test_cross_product_should_be_anticommutative() {
+        let a = Point3::from_array([0.3, 5.2, 4.5]);
+        let b = Point3::from_array([7.4, 0.8, 6.2]);
+        let cross_product_1 = cross_product(a.clone(), b.clone());
+        let cross_product_2 = cross_product(b, a).inverted();
+        assert_eq!(cross_product_1, cross_product_2);
+    }
 }
