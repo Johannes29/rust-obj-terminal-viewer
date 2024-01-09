@@ -1,7 +1,7 @@
 use super::interface::Buffer;
 use super::pipeline::rasterization::render_triangle;
 use super::pipeline::transformation::get_multiplied_points_with_matrix;
-use super::pipeline::transformation::Camera;
+use super::interface::Camera;
 use super::pipeline::transformation::{screen_to_pixel_coordinates, MatrixTrait};
 use crate::general::positions_3d::{dot_product, Mesh, Point as Point3, Triangle as Triangle3};
 
