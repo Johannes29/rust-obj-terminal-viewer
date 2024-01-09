@@ -3,9 +3,8 @@ use super::{
     render::Camera,
 };
 use crate::general::positions_3d::Point as Point3;
-use crossterm::{
-    event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind},
-    terminal,
+use crossterm::event::{
+    Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
 
 /// Moves the renderer's camera according to input events.
