@@ -426,7 +426,7 @@ pub fn dot_product(a: &Point, b: &Point) -> f32 {
 pub fn cross_product(a: Point, b: Point) -> Point {
     Point {
         x: (a.y * b.z - a.z * b.y),
-        y: (a.z * b.x - a.x * b.z),
+        y: (a.y * b.x - a.x * b.z),
         z: (a.x * b.y - a.y * b.x),
     }
 }
