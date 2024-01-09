@@ -1,6 +1,5 @@
 use crate::general::positions_3d::Point as Point3;
 use crate::general::positions_3d::Triangle as Triangle3;
-use crate::renderer::render::Camera;
 
 type Matrix4x1 = [[f32; 1]; 4];
 type Matrix4x4 = [[f32; 4]; 4];
@@ -175,6 +174,17 @@ pub fn get_multiplied_points_with_matrix(points: &Vec<Point3>, matrix: &Matrix4x
             Point3::from_array(new_pos_matrix)
         })
         .collect()
+}
+
+#[derive(Debug)]
+pub struct Camera {
+    pub horizontal_fov: f32,
+    pub vertical_fov: f32,
+    pub position: Point3,
+    pub rotation_around_x: f32,
+    pub rotation_around_y: f32,
+    pub near: f32,
+    pub far: f32,
 }
 
 impl Camera {

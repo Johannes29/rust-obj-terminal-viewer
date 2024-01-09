@@ -1,7 +1,4 @@
-use super::{
-    interface::{Renderer, ShouldExit},
-    render::Camera,
-};
+use super::interface::{Camera, Renderer, ShouldExit};
 use crate::general::positions_3d::Point as Point3;
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
