@@ -2,7 +2,6 @@ use super::events::*;
 use super::pipeline::terminal_output::{
     add_debug_line_to_char_buffer, draw_char_buffer, image_buffer_to_char_buffer,
 };
-use super::pipeline::transformation::Camera;
 use super::render::render_mesh;
 use crate::general::positions_3d::Mesh;
 use crate::general::positions_3d::Point as Point3;
@@ -17,6 +16,8 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+
+pub use super::pipeline::transformation::Camera;
 
 // TODO should have separate camera struct, with both fov and view_point
 pub struct Renderer {
