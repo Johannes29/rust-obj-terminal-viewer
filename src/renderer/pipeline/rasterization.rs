@@ -1,3 +1,5 @@
+use std::cmp::min;
+
 use crate::general::positions_2d::{Point as Point2, Triangle as Triangle2};
 use crate::general::positions_3d::Triangle as Triangle3;
 use crate::renderer::interface::Buffer;
@@ -20,10 +22,10 @@ pub fn render_triangle(
 
     // Using + 2 instead of .roof() + 1 because it's faster
     let [min_x, max_x, min_y, max_y] = ps_triangle.get_min_max_x_y();
-    let start_x = min_x as usize;
-    let stop_x = max_x as usize + 2;
-    let start_y = min_y as usize;
-    let stop_y = max_y as usize + 2;
+    let start_x = min(min_x as usize, pixel_buffer.width);
+    let stop_x =  min(max_x as usize + 2, pixel_buffer.width);
+    let start_y = min(min_y as usize, pixel_buffer.height);
+    let stop_y =  min(max_y as usize + 2, pixel_buffer.height);
 
     // fill in the correct pixels
     for y in start_y..stop_y {

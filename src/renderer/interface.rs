@@ -232,6 +232,9 @@ impl<T: Copy> Buffer<T> {
 
     /// Returns None if x and y point to a value outside of the buffer
     fn get_index(&self, x: usize, y: usize) -> Option<usize> {
+        if x >= self.width || y >= self.height {
+            return None;
+        }
         let index = self.width * y + x;
         if index >= self.height * self.width {
             return None;
