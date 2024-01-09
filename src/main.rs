@@ -9,7 +9,9 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-fn this_will_generate_a_warning(){}
+fn this_will_generate_a_warning(){
+    abc
+}
 
 // +x is to the right, +y is up, +z is forwards
 fn main() {
