@@ -31,6 +31,7 @@ pub struct Renderer {
     pub prev_char_buffer: Buffer<u8>,
     image_buffer: Buffer<f32>,
     depth_buffer: Buffer<f32>,
+    pub info_text: Option<String>,
     pub info_line: String,
     pub light_direction: Point3,
     pub near: f32,
@@ -79,6 +80,7 @@ impl Renderer {
             prev_char_buffer: empty_char_buffer.clone(),
             image_buffer: Buffer::new(width as usize, height as usize, 0.0),
             depth_buffer: Buffer::new(width as usize, height as usize, f32::MAX),
+            info_text: None,
             info_line: "".to_string(),
             // TODO make parameter of Renderer::new()
             light_direction: Point3 {
@@ -152,7 +154,12 @@ impl Renderer {
     }
 
     fn update_info_line(&mut self, frame_time: &Duration) {
-        self.info_line = format!("frame time: {} ms", frame_time.as_micros() as f32 / 1000.0);
+        let frame_time = format!("frame time: {} ms", frame_time.as_micros() as f32 / 1000.0);
+        let info_line = match &self.info_text {
+            Some(text) => format!("{text} | {frame_time}"),
+            None => frame_time,
+        };
+        self.info_line = info_line;
     }
 
     fn after_rendering_stopped() {
