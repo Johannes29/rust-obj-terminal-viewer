@@ -29,18 +29,6 @@ pub fn draw_char_buffer(char_buffer: &Buffer<u8>, prev_char_buffer: &Buffer<u8>)
     stdout.flush().unwrap();
 }
 
-// TODO compare performance between replacing only the changed characters and printing out everything again
-#[allow(dead_code)]
-fn char_buffer_to_output_string(char_buffer: &mut Vec<Vec<u8>>) {
-    let mut output_string = String::new();
-
-    for row in char_buffer {
-        for char in row {
-            output_string.push((*char).into());
-        }
-    }
-}
-
 pub fn image_buffer_to_char_buffer(
     image_buffer: &Buffer<f32>,
     char_buffer: &mut Buffer<u8>,

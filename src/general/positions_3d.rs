@@ -327,7 +327,6 @@ pub fn cross_product(a: Point, b: Point) -> Point {
     }
 }
 
-#[allow(unused)]
 pub fn distance(p1: &Point, p2: &Point) -> f32 {
     let dx = p1.x - p2.x;
     let dy = p1.y - p2.y;
