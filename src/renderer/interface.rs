@@ -38,7 +38,6 @@ pub struct Renderer {
     pub far: f32,
 }
 
-#[allow(dead_code)]
 pub enum ShouldExit {
     Yes,
     No,
