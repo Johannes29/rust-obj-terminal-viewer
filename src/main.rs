@@ -1,8 +1,8 @@
 use clap::Parser;
 use crossterm::terminal;
+use rust_obj_terminal_viewer::renderer::camera_rotation::CameraInputHelper;
 use rust_obj_terminal_viewer::renderer::interface::Renderer;
 use rust_obj_terminal_viewer::renderer::obj_parser::ObjParser;
-use rust_obj_terminal_viewer::renderer::camera_rotation::CameraInputHelper;
 
 #[derive(Parser)]
 struct Cli {

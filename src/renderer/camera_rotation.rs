@@ -25,7 +25,8 @@ impl CameraInputHelper {
     }
 
     pub fn update_terminal_dimensions(&mut self, new_dimensions: (u16, u16)) {
-        self.drag_rotation.update_terminal_dimensions(new_dimensions);
+        self.drag_rotation
+            .update_terminal_dimensions(new_dimensions);
     }
 
     pub fn process_input_events(
@@ -67,10 +68,8 @@ impl CameraInputHelper {
                 }
             }
             MouseEventKind::Down(MouseButton::Middle) | MouseEventKind::Down(MouseButton::Left) => {
-                self.drag_rotation.handle_drag_start(
-                    mouse_event.column,
-                    mouse_event.row,
-                )
+                self.drag_rotation
+                    .handle_drag_start(mouse_event.column, mouse_event.row)
             }
             _ => (),
         }
@@ -83,10 +82,8 @@ impl CameraInputHelper {
             self.drag_key_is_down = !self.drag_key_is_down;
         }
         if self.drag_key_is_down {
-            self.drag_rotation.handle_drag_start(
-                self.mouse_column,
-                self.mouse_row,
-            )
+            self.drag_rotation
+                .handle_drag_start(self.mouse_column, self.mouse_row)
         }
     }
 }
@@ -211,11 +208,7 @@ impl DragRotation {
     }
 
     // terminal_dimensions: (columns, rows)
-    fn handle_drag_start(
-        &mut self,
-        current_column: u16,
-        current_row: u16,
-    ) {
+    fn handle_drag_start(&mut self, current_column: u16, current_row: u16) {
         self.rotation_before_drag = self.get_rotation();
         self.drag_start_pos = CellPosition {
             column: current_column,
