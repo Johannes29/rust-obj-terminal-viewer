@@ -19,7 +19,6 @@ pub fn draw_char_buffer(char_buffer: &Buffer<u8>, prev_char_buffer: &Buffer<u8>)
     stdout.queue(cursor::SavePosition).unwrap();
 
     for (new_char, row_i, char_i) in chars_to_change {
-        // let char_number = new_char.to_digit(10).unwrap() as u8;
         stdout
             .queue(cursor::MoveTo(char_i as u16 + 1, row_i as u16))
             .unwrap();
