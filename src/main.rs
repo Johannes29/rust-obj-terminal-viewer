@@ -31,6 +31,7 @@ fn main() {
         }
     };
     renderer.set_mesh(mesh);
+    renderer.info_text = Some("press q to exit".to_owned());
 
     let mut camera_input_helper = CameraInputHelper::new(terminal_size.0, terminal_size.1);
     let mut frame_loop = |renderer: &mut Renderer, events| {

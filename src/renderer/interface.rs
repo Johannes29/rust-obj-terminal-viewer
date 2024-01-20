@@ -1,6 +1,6 @@
 use super::events::*;
 use super::pipeline::terminal_output::{
-    add_debug_line_to_char_buffer, draw_char_buffer, image_buffer_to_char_buffer,
+    add_info_line_to_char_buffer, draw_char_buffer, image_buffer_to_char_buffer,
 };
 use super::render::render_mesh;
 use crate::general::positions_3d::Mesh;
@@ -31,7 +31,8 @@ pub struct Renderer {
     pub prev_char_buffer: Buffer<u8>,
     image_buffer: Buffer<f32>,
     depth_buffer: Buffer<f32>,
-    pub debug_line: String,
+    pub info_text: Option<String>,
+    pub info_line: String,
     pub light_direction: Point3,
     pub near: f32,
     pub far: f32,
@@ -79,7 +80,8 @@ impl Renderer {
             prev_char_buffer: empty_char_buffer.clone(),
             image_buffer: Buffer::new(width as usize, height as usize, 0.0),
             depth_buffer: Buffer::new(width as usize, height as usize, f32::MAX),
-            debug_line: "".to_string(),
+            info_text: None,
+            info_line: "".to_string(),
             // TODO make parameter of Renderer::new()
             light_direction: Point3 {
                 x: -0.3,
@@ -115,7 +117,7 @@ impl Renderer {
             &self.light_direction,
         );
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
-        add_debug_line_to_char_buffer(&mut self.char_buffer, &self.debug_line);
+        add_info_line_to_char_buffer(&mut self.char_buffer, &self.info_line);
         draw_char_buffer(&self.char_buffer, &self.prev_char_buffer);
 
         self.prev_char_buffer = self.char_buffer.clone();
@@ -141,7 +143,7 @@ impl Renderer {
 
             let end_time = Instant::now();
             let compute_and_draw_time = end_time - start_time;
-            self.update_debug_line(&compute_and_draw_time);
+            self.update_info_line(&compute_and_draw_time);
 
             match self.frame_time.checked_sub(compute_and_draw_time) {
                 Some(duration) => thread::sleep(duration),
@@ -151,8 +153,13 @@ impl Renderer {
         Renderer::after_rendering_stopped();
     }
 
-    fn update_debug_line(&mut self, frame_time: &Duration) {
-        self.debug_line = format!("frame time: {} ms", frame_time.as_micros() as f32 / 1000.0);
+    fn update_info_line(&mut self, frame_time: &Duration) {
+        let frame_time = format!("frame time: {} ms", frame_time.as_micros() as f32 / 1000.0);
+        let info_line = match &self.info_text {
+            Some(text) => format!("{text} | {frame_time}"),
+            None => frame_time,
+        };
+        self.info_line = info_line;
     }
 
     fn after_rendering_stopped() {

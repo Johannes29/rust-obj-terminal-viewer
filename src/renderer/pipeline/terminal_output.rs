@@ -57,7 +57,7 @@ pub fn image_buffer_to_char_buffer(
     }
 }
 
-pub fn add_debug_line_to_char_buffer(char_buffer: &mut Buffer<u8>, line: &str) {
+pub fn add_info_line_to_char_buffer(char_buffer: &mut Buffer<u8>, line: &str) {
     let mut chars: Vec<u8> = line.as_bytes().to_vec();
     chars.resize(char_buffer.width, b' ');
 
