@@ -141,16 +141,16 @@ impl<'a> Triangle<'a> {
     }
 
     /// Computes and returns the normal of a triangle defined by three points.
-    /// 
+    ///
     /// The normal will point towards the viewer if counterclockwise winding
     /// order is used in a right-hand coordinate system,
     /// or if clockwise winding order is used in a left-hand coordinate system.
-    /// 
+    ///
     /// # Example
     /// ```
     /// use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
     /// use rust_obj_terminal_viewer::general::positions_3d::Triangle as Triangle3;
-    /// 
+    ///
     /// let vertices = [
     ///     &Point3::from_array([0.0, 0.0, 0.0]),
     ///     &Point3::from_array([1.0, 0.0, 0.0]),
@@ -171,7 +171,7 @@ impl<'a> Triangle<'a> {
     /// ```
     /// use rust_obj_terminal_viewer::general::positions_3d::Point as Point3;
     /// use rust_obj_terminal_viewer::general::positions_3d::Triangle as Triangle3;
-    /// 
+    ///
     /// let vertices = [
     ///     &Point3::from_array([-2.0, 0.0, 0.0]),
     ///     &Point3::from_array([2.0, 0.0, 0.0]),
@@ -185,14 +185,18 @@ impl<'a> Triangle<'a> {
     /// let expected_normal = Point3::from_array([0.0, 1.0, 0.0]);
     /// let returned_normal = Triangle3::get_normal_with_vertex_normals(&vertices, &vertex_normals);
     /// assert_eq!(returned_normal, expected_normal);
-    /// 
+    ///
     /// let vertices_flipped_order = [vertices[2], vertices[1], vertices[0]];
     /// let returned_normal_2 = Triangle3::get_normal_with_vertex_normals(&vertices_flipped_order, &vertex_normals);
     /// assert_eq!(returned_normal_2, expected_normal);
     /// ```
-    pub fn get_normal_with_vertex_normals(vertices: &[&Point; 3], vertex_normals: &[&Point; 3]) -> Point {
+    pub fn get_normal_with_vertex_normals(
+        vertices: &[&Point; 3],
+        vertex_normals: &[&Point; 3],
+    ) -> Point {
         let computed_normal = Self::get_normal(vertices);
-        let average_vertex_normal = vertex_normals.iter()
+        let average_vertex_normal = vertex_normals
+            .iter()
             .fold(Point::new(), |acc, normal| acc.add(&normal.normalized()))
             .map(|component| component / 3.0);
 
@@ -338,7 +342,7 @@ pub fn distance_from_origo(point: &Point) -> f32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::general::positions_3d::{Point as Point3, cross_product};
+    use crate::general::positions_3d::{cross_product, Point as Point3};
 
     #[test]
     fn test_cross_product() {

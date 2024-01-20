@@ -21,9 +21,9 @@ pub fn render_triangle(
     // Using + 2 instead of .roof() + 1 because it's faster
     let [min_x, max_x, min_y, max_y] = ps_triangle.get_min_max_x_y();
     let start_x = min(min_x as usize, pixel_buffer.width);
-    let stop_x =  min(max_x as usize + 2, pixel_buffer.width);
+    let stop_x = min(max_x as usize + 2, pixel_buffer.width);
     let start_y = min(min_y as usize, pixel_buffer.height);
-    let stop_y =  min(max_y as usize + 2, pixel_buffer.height);
+    let stop_y = min(max_y as usize + 2, pixel_buffer.height);
 
     // fill in the correct pixels
     for y in start_y..stop_y {
@@ -44,7 +44,7 @@ pub fn render_triangle(
 
             let Some(depth_buffer_value) = depth_buffer.get(x, y) else {
                 // Pixel is outside of the rendered surface
-                continue
+                continue;
             };
             if frag_depth <= depth_buffer_value {
                 depth_buffer.set(x, y, frag_depth).unwrap();

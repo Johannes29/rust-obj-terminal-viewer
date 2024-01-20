@@ -142,12 +142,17 @@ impl ObjParser {
             ));
         }
 
-        let first_three_vertex_strings = &argument_strings[0..3].try_into()
-            .or(Result::Err("face declaration must have at least three vertices"))?;
+        let first_three_vertex_strings = &argument_strings[0..3].try_into().or(Result::Err(
+            "face declaration must have at least three vertices",
+        ))?;
         self.handle_triangle_face(first_three_vertex_strings)?;
 
         if argument_strings.len() == 4 {
-            let vertex_strings_2 = [argument_strings[2], argument_strings[3], argument_strings[0]];
+            let vertex_strings_2 = [
+                argument_strings[2],
+                argument_strings[3],
+                argument_strings[0],
+            ];
             self.handle_triangle_face(&vertex_strings_2)?;
         }
 
@@ -178,9 +183,12 @@ impl ObjParser {
             .collect();
 
         if vertex_normals.len() > 0 && vertex_normals.len() < 3 {
-            return Err("Invalid face declaration: some vertices have vertex normals, some do not".to_owned())
+            return Err(
+                "Invalid face declaration: some vertices have vertex normals, some do not"
+                    .to_owned(),
+            );
         }
-        
+
         let triangle_vertices: &[&Point3; 3] = &vertices.try_into().unwrap();
         let optional_vertex_normals: Option<[&Point3; 3]> = vertex_normals.try_into().ok();
         let triangle_normal = match optional_vertex_normals {
@@ -188,7 +196,7 @@ impl ObjParser {
             // This is done since some programs don't use the correct winding order when exporting .obj files
             Some(vertex_normals) => {
                 Triangle3::get_normal_with_vertex_normals(triangle_vertices, &vertex_normals)
-            },
+            }
             // If no vertex normals are provided, assume that the winding order follows the .obj standard,
             // i.e. counterclockwise should point towards viewer in right-handed coordinate system
             None => Triangle3::get_normal(triangle_vertices),

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use rust_obj_terminal_viewer::renderer::{obj_parser::ObjParser, interface::Renderer};
+use rust_obj_terminal_viewer::renderer::{interface::Renderer, obj_parser::ObjParser};
 
 // to use: run `cargo bench --bench rendering` in terminal
 pub fn criterion_benchmark(c: &mut Criterion) {
@@ -18,9 +18,11 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     );
     let mesh = ObjParser::parse_file(&PathBuf::from("objects/hourglass.obj")).unwrap();
     renderer.set_mesh(mesh);
-    group.bench_function("rendering", |b| b.iter(|| {
-        renderer.render_frame();
-    }));
+    group.bench_function("rendering", |b| {
+        b.iter(|| {
+            renderer.render_frame();
+        })
+    });
     group.finish();
 }
 
