@@ -18,8 +18,6 @@ pub fn render_triangle(
         return;
     }
 
-    // let bc_calculator = BarycentricCoordinates::new(&triangle2);
-
     // Using + 2 instead of .roof() + 1 because it's faster
     let [min_x, max_x, min_y, max_y] = ps_triangle.get_min_max_x_y();
     let start_x = min(min_x as usize, pixel_buffer.width);
