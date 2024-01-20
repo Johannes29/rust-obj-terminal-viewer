@@ -15,7 +15,7 @@ pub fn render_triangle(
 ) {
     let triangle2 = ps_triangle.to_2d();
     if !triangle2.has_area() {
-        // return;
+        return;
     }
 
     // let bc_calculator = BarycentricCoordinates::new(&triangle2);
