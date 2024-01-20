@@ -15,10 +15,8 @@ pub fn render_triangle(
 ) {
     let triangle2 = ps_triangle.to_2d();
     if !triangle2.has_area() {
-        // return;
+        return;
     }
-
-    // let bc_calculator = BarycentricCoordinates::new(&triangle2);
 
     // Using + 2 instead of .roof() + 1 because it's faster
     let [min_x, max_x, min_y, max_y] = ps_triangle.get_min_max_x_y();

@@ -113,36 +113,6 @@ impl Point {
         let closure = |component: f32| -component;
         self.map(closure)
     }
-
-    // Rounds one point to the other points decimal count,
-    // then compares them
-
-    // pub fn rounded_points_are_equal(point1: Point, point2: Point) -> bool {
-    //     fn get_decimal_count(number: f32) -> usize {
-    //         number.to_string().split(".").next().unwrap().len()
-    //     }
-    //     fn rounded_string(number: f32, decimals: usize) -> String {
-    //         let string = number.to_string();
-    //         let dec_sep_index = string.find('.').unwrap();
-    //         let inc_last_digit = string[dec_sep_index + decimals as usize + 1].parse()
-    //         let decimal_string = number.to_string().split(".").next().unwrap();
-
-    //         todo!()
-    //     }
-    //     fn rounded_f32_are_equal(number1: f32, number2: f32) -> bool {
-    //         let rounding_decimals = min(
-    //             get_decimal_count(number1),
-    //             get_decimal_count(number2),
-    //         );
-
-    //         todo!()
-    //     }
-
-    //     for i in 0..3 {
-    //     }
-
-    //     todo!()
-    // }
 }
 
 impl<'a> Triangle<'a> {
@@ -161,84 +131,6 @@ impl<'a> Triangle<'a> {
     pub fn points(&self) -> [&Point; 3] {
         [&self.p1, &self.p2, &self.p3]
     }
-
-    /*
-
-    // TODO the following 4 methods are inconsistent
-
-    /// the last element in the array should be the normal
-    #[allow(unused)]
-    pub fn from_arr_n(array: [Point; 4]) -> Self {
-        Triangle {
-            p1: array[0],
-            p2: array[1],
-            p3: array[2],
-            normal: array[3].clone(),
-        }
-    }
-
-    pub fn from_arr(array: [Point; 3]) -> Self {
-        Triangle {
-            p1: array[0].clone(),
-            p2: array[1].clone(),
-            p3: array[2].clone(),
-            normal: Triangle::get_normal(array),
-        }
-    }
-
-    /**
-     * Calculates normal based on the triangle vert positions in the array argument
-     */
-    #[allow(unused)]
-    pub fn from_vec(array: Vec<Point>) -> Option<Self> {
-        if array.len() < 3 {
-            return None;
-        }
-        Some(Triangle {
-            p1: array[0].clone(),
-            p2: array[1].clone(),
-            p3: array[2].clone(),
-            normal: Triangle::get_normal([array[0].clone(), array[1].clone(), array[2].clone()]),
-        })
-    }
-
-    /**
-     * Specify normal of triangle with a separate argument
-     */
-    pub fn from_vec_n(array: Vec<Point>, normal: Point) -> Option<Self> {
-        if array.len() < 3 {
-            return None;
-        }
-        Some(Triangle {
-            p1: array[0].clone(),
-            p2: array[1].clone(),
-            p3: array[2].clone(),
-            normal,
-        })
-    }
-
-
-    pub fn combine_with_point<F>(&self, point: &Point, function: F) -> Self
-    where
-        F: Fn(&Point, &Point) -> Point,
-    {
-        let points = self.points().map(|self_point| function(self_point, point));
-        Triangle::from_arr(points)
-    }
-
-    pub fn add_point(&self, point: &Point) -> Self {
-        let closure = |triangle_point: &Point, other_point: &Point| triangle_point.add(other_point);
-        self.combine_with_point(point, closure)
-    }
-
-    pub fn multiply_with_point(&self, point: &Point) -> Self {
-        let closure = |triangle_point: &Point, other_point: &Point| {
-            triangle_point.combine(other_point, |a, b| a * b)
-        };
-        self.combine_with_point(point, closure)
-    }
-
-    */
 
     pub fn to_2d(&self) -> Triangle2 {
         Triangle2 {

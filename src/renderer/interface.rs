@@ -163,13 +163,11 @@ impl Renderer {
 
     fn clear_terminal() {
         let terminal_height = terminal::size().unwrap().1;
-        // let cursor_pos_y = cursor::position().unwrap().1;
         let empty_lines_to_print = terminal_height - 1;
 
         stdout()
             .write_all(&vec![b'\n'; empty_lines_to_print as usize])
             .unwrap();
-        // stdout().execute(terminal::Clear(terminal::ClearType::All));
     }
 
     fn clear_image_buffer(&mut self) {
