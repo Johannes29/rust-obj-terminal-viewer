@@ -28,6 +28,8 @@ pub struct IndicesTriangle {
     pub normal: Point,
 }
 
+fn unused() {}
+
 pub struct BoundingBox(Point, Point);
 
 #[derive(Debug)]
