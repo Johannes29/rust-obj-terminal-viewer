@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build
+    - name: Build and verify no warnings or errors
+      run: cargo rustc --bin rust-obj-terminal-viewer -- -D warnings
+      run: cargo rustc --lib -- -D warnings
     - name: Run tests
       run: cargo test
