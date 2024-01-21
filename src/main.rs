@@ -11,7 +11,7 @@ struct Cli {
 
 // +x is to the right, +y is up, +z is forwards
 fn main() {
-    let args = Cli::parse();
+    let args = Cli::parse();;
     let obj_path = args.path;
     let terminal_size = terminal::size().unwrap();
     let mut renderer = Renderer::new(
