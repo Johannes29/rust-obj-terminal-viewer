@@ -1,0 +1,2 @@
+[alias]
+rhg = "run -- objects/hourglass.obj"
