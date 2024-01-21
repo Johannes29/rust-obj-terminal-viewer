@@ -20,3 +20,5 @@ jobs:
       run: cargo rustc --lib -- -D warnings
     - name: Run tests
       run: cargo test
+    - name: Check code formatting
+      run: cargo fmt --check
