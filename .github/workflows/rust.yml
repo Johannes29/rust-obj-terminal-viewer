@@ -16,8 +16,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build and verify no warnings or errors
-      run: cargo rustc --bin rust-obj-terminal-viewer -- -D warnings
-      run: cargo rustc --lib -- -D warnings
+      run: |
+        cargo rustc --lib -- -D warnings
+        cargo rustc --bin rust-obj-terminal-viewer -- -D warnings
     - name: Run tests
       run: cargo test
     - name: Check code formatting
