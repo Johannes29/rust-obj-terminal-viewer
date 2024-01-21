@@ -6,7 +6,9 @@ This program uses no graphics library. Perspective transformations, rasterizatio
 ## Development
 
 ### Running
-Run `cargo run -- PATH_TO_OBJ_FILE_HERE`
+Run `cargo run -- PATH_TO_OBJ_FILE_HERE`. Replace `PATH_TO_OBJ_FILE_HERE` with a path to a `.obj` file that you wish to view within the program.
+
+Alternatively, run `cargo rhg` to open the program with `hourglass.obj`.
 
 ### Performance testing
 In this repository there are multiple benchmarks for performance testing. To run a benchmark, run `cargo bench --bench BENCHMARK_NAME_HERE`.
