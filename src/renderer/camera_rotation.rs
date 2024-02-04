@@ -187,7 +187,7 @@ impl DragRotation {
 
     /// Uses the right hand coordinate system.
     fn apply_to_camera(&self, camera: &mut Camera, distance: f32) {
-        // Assumes that camera is pointing towards +Z when rotation is 0.
+        // Assumes that camera is pointing towards -Z when rotation is 0.
         let (rotation_around_x, rotation_around_y) = self.get_rotation_xy();
         let x = rotation_around_y.sin() * rotation_around_x.cos() * distance;
         let y = rotation_around_x.sin() * distance;

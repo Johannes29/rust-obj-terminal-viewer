@@ -9,7 +9,7 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-// +x is to the right, +y is up, +z is forwards
+// +x is to the right, +y is up, -z is forwards
 fn main() {
     let args = Cli::parse();
     let obj_path = args.path;
