@@ -85,7 +85,7 @@ impl Renderer {
             light_direction: Point3 {
                 x: -0.3,
                 y: -0.5,
-                z: 0.5,
+                z: -0.5,
             }
             .normalized(),
             near: 6.0,
