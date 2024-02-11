@@ -34,6 +34,7 @@ pub struct Renderer {
     pub info_text: Option<String>,
     pub info_line: String,
     pub light_direction: Point3,
+    pub ambient_light: f32,
     pub near: f32,
     pub far: f32,
 }
@@ -85,9 +86,10 @@ impl Renderer {
             light_direction: Point3 {
                 x: -0.3,
                 y: -0.5,
-                z: 0.5,
+                z: -0.5,
             }
             .normalized(),
+            ambient_light: 0.05,
             near: 6.0,
             far: 10.0,
         }
@@ -114,6 +116,7 @@ impl Renderer {
             &mut self.depth_buffer,
             &self.camera,
             &self.light_direction,
+            self.ambient_light,
         );
         image_buffer_to_char_buffer(&self.image_buffer, &mut self.char_buffer, &self.chars);
         add_info_line_to_char_buffer(&mut self.char_buffer, &self.info_line);

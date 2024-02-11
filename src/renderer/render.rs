@@ -11,6 +11,7 @@ pub fn render_mesh(
     depth_buffer: &mut Buffer<f32>,
     camera: &Camera,
     light_direction: &Point3,
+    ambient_light: f32,
 ) {
     let world_to_screen = camera.world_to_screen_space_matrix();
     let screen_to_pixel = screen_to_pixel_coordinates(image_buffer.width, image_buffer.height);
@@ -32,13 +33,20 @@ pub fn render_mesh(
             continue;
         }
         // assumes that both normal and light direction are unit vectors
-        let light_intensity = dot_product(&triangle.normal, &light_direction.inverted());
+        let light_intensity = dot_product(&triangle.normal, &light_direction.inverted()).max(0.0);
+        let surface_brightness =
+            (light_intensity * (1.0 - ambient_light) + ambient_light).clamp(0.0, 1.0);
 
         if dot_product(&triangle.normal, &camera.position.normalized()) < 0.0 {
             continue;
         }
 
-        render_triangle(&triangle, image_buffer, depth_buffer, Some(light_intensity));
+        render_triangle(
+            &triangle,
+            image_buffer,
+            depth_buffer,
+            Some(surface_brightness),
+        );
 
         // --- uncomment to generate debug images ---
 
