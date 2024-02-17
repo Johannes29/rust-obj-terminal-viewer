@@ -1,5 +1,5 @@
 {
     "rust-analyzer.runnables.extraArgs": [
-        "objects/Tree1.obj"
+        "objects/trees.obj"
     ]
 }
