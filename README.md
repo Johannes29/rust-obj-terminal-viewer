@@ -17,6 +17,7 @@ In this repository there are multiple benchmarks for performance testing. To run
 ![An example of what the generated flamegraph can look like](flamegraph_example.png)
 To generate and open a flamegraph:
 - Open a terminal window as administrator
+- Make sure that flamegraph is installed. You can test this by running `cargo flamegraph --version`. To install flamegraph, follow [these instructions](https://github.com/flamegraph-rs/flamegraph?tab=readme-ov-file#installation). 
 - Change working directory to the root of this repository
 - Run 
 `cargo flamegraph --output flamegraphs/graph-1.svg -- objects/hourglass.obj && start flamegraphs/graph-1.svg`
