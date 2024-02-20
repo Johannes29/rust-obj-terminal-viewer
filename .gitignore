@@ -1,3 +1,4 @@
 /target
 /debug_images
-/flamegraphs
+flamegraph.svg
+perf.data*
