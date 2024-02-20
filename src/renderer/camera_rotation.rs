@@ -24,11 +24,6 @@ impl CameraInputHelper {
         }
     }
 
-    pub fn update_terminal_dimensions(&mut self, new_dimensions: (u16, u16)) {
-        self.drag_rotation
-            .update_terminal_dimensions(new_dimensions);
-    }
-
     pub fn process_input_events(
         &mut self,
         renderer: &mut Renderer,
@@ -42,6 +37,9 @@ impl CameraInputHelper {
                 Event::Key(key_event) => {
                     self.process_key_event(key_event, renderer)
                 },
+                Event::Resize(columns, rows) => {
+                    self.drag_rotation.update_terminal_dimensions((columns, rows))
+                }
                 _ => (),
             }
         }
