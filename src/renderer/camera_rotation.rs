@@ -31,15 +31,11 @@ impl CameraInputHelper {
     ) -> ShouldExit {
         for event in events {
             match event {
-                Event::Mouse(mouse_event) => {
-                    self.process_mouse_event(mouse_event, renderer)
-                },
-                Event::Key(key_event) => {
-                    self.process_key_event(key_event, renderer)
-                },
-                Event::Resize(columns, rows) => {
-                    self.drag_rotation.update_terminal_dimensions((columns, rows))
-                }
+                Event::Mouse(mouse_event) => self.process_mouse_event(mouse_event, renderer),
+                Event::Key(key_event) => self.process_key_event(key_event, renderer),
+                Event::Resize(columns, rows) => self
+                    .drag_rotation
+                    .update_terminal_dimensions((columns, rows)),
                 _ => (),
             }
         }
