@@ -1,6 +1,6 @@
 # Blender v3.0.0 OBJ File: ''
 # www.blender.org
-mtllib Office Chair.mtl
+mtllib office_chair.mtl
 o BezierCurve.001_BezierCurve.000
 v 0.208186 0.921910 -0.765103
 v 0.212202 0.933819 -0.765327
