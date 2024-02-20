@@ -15,7 +15,7 @@ In this repository there are multiple benchmarks for performance testing. To run
 
 ### Performance profiling
 ![An example of what the generated flamegraph can look like](flamegraph_example.png)
-To generate and open a flamegraph:
+To generate a flamegraph:
 - Make sure that flamegraph is installed. You can test this by running `cargo flamegraph --version`. To install flamegraph, follow [these instructions](https://github.com/flamegraph-rs/flamegraph?tab=readme-ov-file#installation). 
 - If on windows, make sure that you have opened your terminal as administrator.
 - Change working directory to the root of this repository
