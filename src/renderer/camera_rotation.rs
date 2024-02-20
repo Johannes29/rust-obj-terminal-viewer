@@ -35,11 +35,14 @@ impl CameraInputHelper {
         events: Vec<Event>,
     ) -> ShouldExit {
         for event in events {
-            if let Event::Mouse(mouse_event) = event {
-                self.process_mouse_event(mouse_event, renderer)
-            }
-            if let Event::Key(key_event) = event {
-                self.process_key_event(key_event, renderer)
+            match event {
+                Event::Mouse(mouse_event) => {
+                    self.process_mouse_event(mouse_event, renderer)
+                },
+                Event::Key(key_event) => {
+                    self.process_key_event(key_event, renderer)
+                },
+                _ => (),
             }
         }
 
