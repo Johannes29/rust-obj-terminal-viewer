@@ -171,7 +171,6 @@ impl DragRotation {
         (rotation.around_x, rotation.around_y)
     }
 
-    // terminal_dimensions: (columns, rows)
     fn handle_drag_start(&mut self, current_column: u16, current_row: u16) {
         self.rotation_before_drag = self.get_rotation();
         self.drag_start_pos = CellPosition {
