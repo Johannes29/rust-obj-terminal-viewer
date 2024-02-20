@@ -20,11 +20,13 @@ To run a benchmark, run `cargo bench --bench BENCHMARK_NAME_HERE`.
 ### Performance profiling
 ![An example of what the generated flamegraph can look like](flamegraph_example.png)
 To generate a flamegraph:
-- Make sure that flamegraph is installed. You can test this by running `cargo flamegraph --version`. To install flamegraph, follow [these instructions](https://github.com/flamegraph-rs/flamegraph?tab=readme-ov-file#installation). 
+- Make sure that flamegraph is installed. You can test this by
+  running `cargo flamegraph --version`. To install flamegraph, follow
+  [these instructions](https://github.com/flamegraph-rs/flamegraph?tab=readme-ov-file#installation). 
 - If on windows, make sure that you have opened your terminal as administrator.
 - Change working directory to the root of this repository
-- Run 
-`cargo flamegraph -- PATH_TO_OBJ`, where `PATH_TO_OBJ` is a path to the `.obj` file you want to render, for example `objects/hourglass.obj`
+- Run `cargo flamegraph -- PATH_TO_OBJ`, where `PATH_TO_OBJ` is a path to
+  the `.obj` file you want to render, for example `objects/hourglass.obj`
 - Wait a few seconds and then press `q`
 
 The generated flamegraph should now be in the root of this repository, named `flamegraph.svg`.
