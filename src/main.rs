@@ -1,7 +1,7 @@
 use clap::Parser;
 use crossterm::terminal;
 use rust_obj_terminal_viewer::renderer::camera_rotation::CameraInputHelper;
-use rust_obj_terminal_viewer::renderer::interface::Renderer;
+use rust_obj_terminal_viewer::renderer::interface::{Renderer, ShouldExit};
 use rust_obj_terminal_viewer::renderer::obj_parser::ObjParser;
 
 #[derive(Parser)]
@@ -35,7 +35,10 @@ fn main() {
 
     let mut camera_input_helper = CameraInputHelper::new(terminal_size.0, terminal_size.1);
     let mut frame_loop = |renderer: &mut Renderer, events| {
-        camera_input_helper.process_input_events(renderer, events)
+        camera_input_helper.process_input_events(events);
+        camera_input_helper.apply_to_camera(&mut renderer.camera);
+
+        ShouldExit::No
     };
 
     renderer.start_rendering(&mut frame_loop);
