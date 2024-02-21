@@ -177,6 +177,7 @@ impl DragRotation {
             column: current_column,
             row: current_row,
         };
+        self.update_drag_rotation(0, 0);
     }
 
     fn update_terminal_dimensions(&mut self, new_dimensions: (u16, u16)) {
