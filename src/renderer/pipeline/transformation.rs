@@ -194,14 +194,14 @@ impl Camera {
             y: 0.0,
             z: 10.0,
         };
-        self.persp_proj_mat()
+        self.perspective_projection_matrix()
             .combine(translation_matrix_subtract_point(&test_point))
             .combine(rotation_matrix_x(-self.rotation_around_x))
             .combine(rotation_matrix_y(-self.rotation_around_y))
     }
     // from https://youtu.be/U0_ONQQ5ZNM?t=784 but adapted for right hand coordinate system with -z forwards and +y up
     /// fov in degrees
-    fn persp_proj_mat(&self) -> Matrix4x4 {
+    fn perspective_projection_matrix(&self) -> Matrix4x4 {
         let h = self.horizontal_fov.to_radians();
         let v = self.vertical_fov.to_radians();
         let n = self.near;
