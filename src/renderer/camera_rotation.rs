@@ -149,6 +149,23 @@ impl DragRotation {
         }
     }
 
+    fn handle_drag_start(&mut self, current_column: u16, current_row: u16) {
+        self.rotation_before_drag = self.get_rotation();
+        self.drag_start_pos = CellPosition {
+            column: current_column,
+            row: current_row,
+        };
+    }
+
+    fn handle_drag(&mut self, current_column: u16, current_row: u16) {
+        let current_pos = CellPosition {
+            column: current_column,
+            row: current_row,
+        };
+        let (relative_x, relative_y) = current_pos.relative_xy_to(&self.drag_start_pos);
+        self.update_drag_rotation(relative_x, relative_y);
+    }
+
     /// Uses the right hand coordinate system.
     fn apply_to_camera(&self, camera: &mut Camera, distance: f32) {
         // Assumes that camera is pointing towards -Z when rotation is 0.
@@ -162,6 +179,11 @@ impl DragRotation {
         camera.rotation_around_y = rotation_y;
     }
 
+    fn update_terminal_dimensions(&mut self, new_dimensions: (u16, u16)) {
+        self.terminal_height = new_dimensions.1;
+        self.terminal_width = new_dimensions.0;
+    }
+
     fn get_rotation(&self) -> Rotation {
         Rotation::sum(&self.rotation_before_drag, &self.drag_rotation)
     }
@@ -169,28 +191,6 @@ impl DragRotation {
     fn get_rotation_xy(&self) -> (f32, f32) {
         let rotation = self.get_rotation();
         (rotation.around_x, rotation.around_y)
-    }
-
-    fn handle_drag_start(&mut self, current_column: u16, current_row: u16) {
-        self.rotation_before_drag = self.get_rotation();
-        self.drag_start_pos = CellPosition {
-            column: current_column,
-            row: current_row,
-        };
-    }
-
-    fn update_terminal_dimensions(&mut self, new_dimensions: (u16, u16)) {
-        self.terminal_height = new_dimensions.1;
-        self.terminal_width = new_dimensions.0;
-    }
-
-    fn handle_drag(&mut self, current_column: u16, current_row: u16) {
-        let current_pos = CellPosition {
-            column: current_column,
-            row: current_row,
-        };
-        let (relative_x, relative_y) = current_pos.relative_xy_to(&self.drag_start_pos);
-        self.update_drag_rotation(relative_x, relative_y);
     }
 
     fn update_drag_rotation(&mut self, relative_x: i16, relative_y: i16) {
