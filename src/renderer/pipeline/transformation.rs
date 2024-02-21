@@ -189,15 +189,10 @@ pub struct Camera {
 
 impl Camera {
     pub fn world_to_screen_space_matrix(&self) -> Matrix4x4 {
-        let test_point = Point3 {
-            x: 0.0,
-            y: 0.0,
-            z: 10.0,
-        };
         self.persp_proj_mat()
-            .combine(translation_matrix_subtract_point(&test_point))
             .combine(rotation_matrix_x(-self.rotation_around_x))
             .combine(rotation_matrix_y(-self.rotation_around_y))
+            .combine(translation_matrix_subtract_point(&self.position))
     }
     // from https://youtu.be/U0_ONQQ5ZNM?t=784 but adapted for right hand coordinate system with -z forwards and +y up
     /// fov in degrees
