@@ -12,15 +12,17 @@ pub struct CameraInputHelper {
     mouse_column: u16,
     mouse_row: u16,
     drag_rotation: DragRotation,
+    camera_distance: f32,
 }
 
 impl CameraInputHelper {
-    pub fn new(terminal_height: u16, terminal_width: u16) -> Self {
+    pub fn new(terminal_height: u16, terminal_width: u16, camera_distance: f32) -> Self {
         CameraInputHelper {
             drag_key_is_down: false,
             mouse_column: 0,
             mouse_row: 0,
             drag_rotation: DragRotation::new(terminal_height, terminal_width, 2.0, 0.5),
+            camera_distance,
         }
     }
 
@@ -41,7 +43,8 @@ impl CameraInputHelper {
 
     pub fn apply_to_camera(&self, camera: &mut Camera) {
         // TODO 10.0 should not be hardcoded
-        self.drag_rotation.apply_to_camera(camera, 10.0);
+        self.drag_rotation
+            .apply_to_camera(camera, self.camera_distance);
     }
 
     fn process_mouse_event(&mut self, mouse_event: MouseEvent) {
