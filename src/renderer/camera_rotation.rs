@@ -155,6 +155,7 @@ impl DragRotation {
             column: current_column,
             row: current_row,
         };
+        self.update_drag_rotation(0, 0);
     }
 
     fn handle_drag(&mut self, current_column: u16, current_row: u16) {
