@@ -4,7 +4,7 @@ use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
 
-/// Rotates a camera around a point based on input events.
+/// Rotates a camera around a point (0,0,0) based on input events.
 /// Hold left mouse button (or the middle mouse button) and drag to spin the camera.
 /// You can also press the c key and then move the mouse to spin the camera.
 pub struct CameraInputHelper {
