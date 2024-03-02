@@ -42,7 +42,6 @@ impl CameraInputHelper {
     }
 
     pub fn apply_to_camera(&self, camera: &mut Camera) {
-        // TODO 10.0 should not be hardcoded
         self.drag_rotation
             .apply_to_camera(camera, self.camera_distance);
     }
