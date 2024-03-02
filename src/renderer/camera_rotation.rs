@@ -1,4 +1,4 @@
-use super::interface::{Camera, ShouldExit};
+use super::interface::Camera;
 use crate::general::positions_3d::Point as Point3;
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
@@ -26,7 +26,7 @@ impl CameraInputHelper {
         }
     }
 
-    pub fn process_input_events(&mut self, events: Vec<Event>) -> ShouldExit {
+    pub fn process_input_events(&mut self, events: Vec<Event>) {
         for event in events {
             match event {
                 Event::Mouse(mouse_event) => self.process_mouse_event(mouse_event),
@@ -37,8 +37,6 @@ impl CameraInputHelper {
                 _ => (),
             }
         }
-
-        ShouldExit::No
     }
 
     pub fn apply_to_camera(&self, camera: &mut Camera) {
