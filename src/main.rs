@@ -33,10 +33,10 @@ fn main() {
     renderer.set_mesh(mesh);
     renderer.info_text = Some("press q to exit".to_owned());
 
-    let mut camera_input_helper = CameraInputHelper::new(terminal_size.0, terminal_size.1);
+    let mut camera_input_helper = CameraInputHelper::new(terminal_size.0, terminal_size.1, 10.0);
     let mut frame_loop = |renderer: &mut Renderer, events| {
-        camera_input_helper.update_terminal_dimensions(terminal::size().unwrap());
-        camera_input_helper.process_input_events(renderer, events)
+        camera_input_helper.process_input_events(events);
+        camera_input_helper.apply_to_camera(&mut renderer.camera);
     };
 
     renderer.start_rendering(&mut frame_loop);

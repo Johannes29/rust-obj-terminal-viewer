@@ -39,11 +39,6 @@ pub struct Renderer {
     pub far: f32,
 }
 
-pub enum ShouldExit {
-    Yes,
-    No,
-}
-
 // TODO #anti_aliasing: add parameter for antialiasing sampling (aa: u8), example values: 1 (normal), 2, 4, 8, ...
 // TODO take a config struct?
 impl Renderer {
@@ -127,7 +122,7 @@ impl Renderer {
 
     pub fn start_rendering<F>(&mut self, mut call_every_frame: F)
     where
-        F: FnMut(&mut Self, Vec<Event>) -> ShouldExit,
+        F: FnMut(&mut Self, Vec<Event>),
     {
         self.prepare_for_rendering();
         loop {
@@ -137,10 +132,7 @@ impl Renderer {
             if events.iter().any(|event| should_exit(event)) {
                 break;
             }
-            let should_exit = call_every_frame(self, events);
-            if let ShouldExit::Yes = should_exit {
-                break;
-            }
+            call_every_frame(self, events);
             self.render_frame();
 
             let end_time = Instant::now();
