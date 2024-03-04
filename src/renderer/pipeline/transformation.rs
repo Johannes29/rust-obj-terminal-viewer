@@ -208,4 +208,10 @@ impl Camera {
             [0., 0., -1., 0.],
         ]
     }
+
+    pub fn distance_to_fit_sphere(&self, sphere_radius: f32) -> f32 {
+        let angle = self.horizontal_fov.min(self.vertical_fov) / 2.0;
+        let distance = sphere_radius / angle.to_radians().sin();
+        distance
+    }
 }
