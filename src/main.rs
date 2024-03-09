@@ -1,5 +1,6 @@
 use clap::Parser;
 use crossterm::terminal;
+use rust_obj_terminal_viewer::general::positions_3d::{BoundingBox, Point as Point3};
 use rust_obj_terminal_viewer::renderer::camera_rotation::CameraInputHelper;
 use rust_obj_terminal_viewer::renderer::interface::Renderer;
 use rust_obj_terminal_viewer::renderer::obj_parser::ObjParser;
@@ -33,7 +34,11 @@ fn main() {
     renderer.set_mesh(mesh);
     renderer.info_text = Some("press q to exit".to_owned());
 
-    let mut camera_input_helper = CameraInputHelper::new(terminal_size.0, terminal_size.1, 10.0);
+    let radius =
+        BoundingBox::new(&renderer.mesh.points).get_longest_distance_from_point(&Point3::new());
+    let camera_distance = renderer.camera.distance_to_fit_sphere(radius);
+    let mut camera_input_helper =
+        CameraInputHelper::new(terminal_size.0, terminal_size.1, camera_distance);
     let mut frame_loop = |renderer: &mut Renderer, events| {
         camera_input_helper.process_input_events(events);
         camera_input_helper.apply_to_camera(&mut renderer.camera);
