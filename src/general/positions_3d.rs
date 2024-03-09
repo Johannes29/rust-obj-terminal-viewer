@@ -314,6 +314,7 @@ impl BoundingBox {
         distance(&self.0, &self.1) / 2.0
     }
 
+    #[rustfmt::skip]
     pub fn get_corner_points(&self) -> [Point; 8] {
         [
             Point { x: self.0.x, y: self.0.y, z: self.0.z},
