@@ -4,6 +4,8 @@ use super::pipeline::rasterization::render_triangle;
 use super::pipeline::transformation::get_multiplied_points_with_matrix;
 use super::pipeline::transformation::{screen_to_pixel_coordinates, MatrixTrait};
 use crate::general::positions_3d::{dot_product, Mesh, Point as Point3, Triangle as Triangle3};
+#[cfg(feature = "debug-images")]
+use image::{GrayImage, Luma};
 
 pub fn render_mesh(
     mesh: &Mesh,
@@ -22,8 +24,9 @@ pub fn render_mesh(
     let pixel_space_points =
         get_multiplied_points_with_matrix(&mesh.points, &transformation_matrix);
 
-    // use image::{GrayImage, Luma};
-    // let mut triangle_index = 0;
+    #[cfg(feature = "debug-images")]
+    let mut triangle_index = 0;
+
     for incides_triangle in &mesh.indices_triangles {
         let triangle = Triangle3::from_indices(incides_triangle, &pixel_space_points).unwrap();
         // Skips triangles behind the camera
@@ -48,24 +51,36 @@ pub fn render_mesh(
             Some(surface_brightness),
         );
 
-        // --- uncomment to generate debug images ---
-
-        // let height = image_buffer.height as u32;
-        // let width = image_buffer.width as u32;
-        // let mut img = GrayImage::new(width, height);
-        // for x in 0..width {
-        //     for y in 0..height {
-        //         img.put_pixel(x, y, Luma([(image_buffer.get(x as usize, y as usize).unwrap() * 255.0) as u8]));
-        //     }
-        // }
-        // img.save(format!("debug_images/frame_{}.png", triangle_index)).unwrap();
-        // let mut depth_img = GrayImage::new(width, height);
-        // for x in 0..width {
-        //     for y in 0..height {
-        //         depth_img.put_pixel(x, y, Luma([(image_buffer.get(x as usize, y as usize).unwrap() * 20.0) as u8]));
-        //     }
-        // }
-        // depth_img.save(format!("debug_images/frame_{}_depth.png", triangle_index)).unwrap();
-        // triangle_index += 1;
+        #[cfg(feature = "debug-images")]
+        {
+            let height = image_buffer.height as u32;
+            let width = image_buffer.width as u32;
+            let mut img = GrayImage::new(width, height);
+            for x in 0..width {
+                for y in 0..height {
+                    img.put_pixel(
+                        x,
+                        y,
+                        Luma([(image_buffer.get(x as usize, y as usize).unwrap() * 255.0) as u8]),
+                    );
+                }
+            }
+            img.save(format!("debug_images/frame_{}.png", triangle_index))
+                .unwrap();
+            let mut depth_img = GrayImage::new(width, height);
+            for x in 0..width {
+                for y in 0..height {
+                    depth_img.put_pixel(
+                        x,
+                        y,
+                        Luma([(image_buffer.get(x as usize, y as usize).unwrap() * 20.0) as u8]),
+                    );
+                }
+            }
+            depth_img
+                .save(format!("debug_images/frame_{}_depth.png", triangle_index))
+                .unwrap();
+            triangle_index += 1;
+        }
     }
 }

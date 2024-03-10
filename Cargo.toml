@@ -6,7 +6,10 @@ edition = "2021"
 [dependencies]
 crossterm = "0.25.0"
 clap = { version = "4.0", features = ["derive"] }
-image = "0.24.4"
+image = { version = "0.24.4", optional = true }
+
+[features]
+debug-images = ["dep:image"]
 
 # needed to generate flamegraphs with `cargo flamegraph`
 [profile.release]
