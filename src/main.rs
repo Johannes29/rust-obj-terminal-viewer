@@ -41,7 +41,7 @@ fn main() {
         CameraInputHelper::new(terminal_size.0, terminal_size.1, camera_distance);
     renderer.camera.far = camera_distance + radius;
     renderer.camera.near = camera_distance - radius;
-    
+
     let mut frame_loop = |renderer: &mut Renderer, events| {
         camera_input_helper.process_input_events(events);
         camera_input_helper.apply_to_camera(&mut renderer.camera);
