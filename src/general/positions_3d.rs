@@ -313,6 +313,28 @@ impl BoundingBox {
     pub fn get_bounding_radius(&self) -> f32 {
         distance(&self.0, &self.1) / 2.0
     }
+
+    #[rustfmt::skip]
+    pub fn get_corner_points(&self) -> [Point; 8] {
+        [
+            Point { x: self.0.x, y: self.0.y, z: self.0.z},
+            Point { x: self.0.x, y: self.0.y, z: self.1.z},
+            Point { x: self.0.x, y: self.1.y, z: self.0.z},
+            Point { x: self.0.x, y: self.1.y, z: self.1.z},
+            Point { x: self.1.x, y: self.0.y, z: self.0.z},
+            Point { x: self.1.x, y: self.0.y, z: self.1.z},
+            Point { x: self.1.x, y: self.1.y, z: self.0.z},
+            Point { x: self.1.x, y: self.1.y, z: self.1.z},
+        ]
+    }
+
+    pub fn get_longest_distance_from_point(&self, point: &Point) -> f32 {
+        self.get_corner_points()
+            .iter()
+            .map(|corner| distance(corner, point))
+            .reduce(f32::max)
+            .unwrap()
+    }
 }
 
 pub fn dot_product(a: &Point, b: &Point) -> f32 {
@@ -341,7 +363,8 @@ pub fn distance_from_origo(point: &Point) -> f32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::general::positions_3d::{cross_product, Point as Point3};
+    use super::BoundingBox;
+    use crate::general::positions_3d::{cross_product, distance, Point as Point3};
 
     #[test]
     fn test_cross_product() {
@@ -366,5 +389,27 @@ mod tests {
         let cross_product_1 = cross_product(a.clone(), b.clone());
         let cross_product_2 = cross_product(b, a).inverted();
         assert_eq!(cross_product_1, cross_product_2);
+    }
+
+    #[test]
+    fn test_get_longest_distance_from_point() {
+        let furthest_point = Point3 {
+            x: 2.0,
+            y: 3.0,
+            z: 4.0,
+        };
+        let bounding_box = BoundingBox(
+            furthest_point.clone(),
+            Point3 {
+                x: 1.0,
+                y: 1.0,
+                z: 1.0,
+            },
+        );
+        let origin = Point3::new();
+        assert_eq!(
+            bounding_box.get_longest_distance_from_point(&origin),
+            distance(&origin, &furthest_point),
+        );
     }
 }

@@ -208,4 +208,25 @@ impl Camera {
             [0., 0., -1., 0.],
         ]
     }
+
+    pub fn distance_to_fit_sphere(&self, sphere_radius: f32) -> f32 {
+        let angle = self.horizontal_fov.min(self.vertical_fov) / 2.0;
+        let distance = sphere_radius / angle.to_radians().sin();
+        distance
+    }
+}
+
+#[test]
+fn test_distance_to_fit_sphere() {
+    let camera = Camera {
+        horizontal_fov: 100.0,
+        vertical_fov: 60.0,
+        position: Point3::new(),
+        rotation_around_x: 0.0,
+        rotation_around_y: 0.0,
+        near: 0.1,
+        far: 100.0,
+    };
+    let optimal_camera_distance = camera.distance_to_fit_sphere(10.0);
+    assert_eq!(optimal_camera_distance, 20.0)
 }
