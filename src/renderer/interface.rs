@@ -42,14 +42,8 @@ pub struct Renderer {
 // TODO #anti_aliasing: add parameter for antialiasing sampling (aa: u8), example values: 1 (normal), 2, 4, 8, ...
 // TODO take a config struct?
 impl Renderer {
-    pub fn new(
-        width: u16,
-        height: u16,
-        fps: f32,
-        char_asp_ratio: f32,
-        fov: f32,
-        brightness_string: &str,
-    ) -> Self {
+    pub fn new(fps: f32, char_asp_ratio: f32, fov: f32, brightness_string: &str) -> Self {
+        let (width, height) = terminal::size().unwrap();
         let aspect_ratio = height as f32 * char_asp_ratio / width as f32;
         let empty_char_buffer = Buffer::new(width as usize, height as usize, b' ');
 

@@ -14,10 +14,7 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
     let obj_path = args.path;
-    let terminal_size = terminal::size().unwrap();
     let mut renderer = Renderer::new(
-        terminal_size.0,
-        terminal_size.1,
         60.0,
         2.0,
         70.0,
@@ -37,6 +34,7 @@ fn main() {
     let radius =
         BoundingBox::new(&renderer.mesh.points).get_longest_distance_from_point(&Point3::new());
     let camera_distance = renderer.camera.distance_to_fit_sphere(radius);
+    let terminal_size = terminal::size().unwrap();
     let mut camera_input_helper =
         CameraInputHelper::new(terminal_size.0, terminal_size.1, camera_distance);
     renderer.camera.far = camera_distance + radius;
