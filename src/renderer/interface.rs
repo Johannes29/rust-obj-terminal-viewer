@@ -119,13 +119,19 @@ impl Renderer {
         F: FnMut(&mut Self, Vec<Event>),
     {
         self.prepare_for_rendering();
-        loop {
+        'main_loop: loop {
             let start_time = Instant::now();
 
             let events = get_events_from_queue();
-            if events.iter().any(|event| should_exit(event)) {
-                break;
+            for event in events.iter() {
+                if should_exit(event) {
+                    break 'main_loop;
+                }
+                if let Event::Resize(new_width, new_height) = event {
+                    self.handle_resize(*new_width, *new_height);
+                }
             }
+
             call_every_frame(self, events);
             self.render_frame();
 
@@ -148,6 +154,10 @@ impl Renderer {
             None => frame_time,
         };
         self.info_line = info_line;
+    }
+
+    fn handle_resize(&mut self, new_width: u16, new_height: u16) {
+
     }
 
     fn after_rendering_stopped() {
@@ -191,13 +201,13 @@ fn get_vertical_fov(diagonal_fov: f32, aspect_ratio: f32) -> f32 {
 }
 
 #[derive(Clone)]
-pub struct Buffer<T: Copy> {
+pub struct Buffer<T: Copy + Default> {
     pub values: Vec<T>,
     pub height: usize,
     pub width: usize,
 }
 
-impl<T: Copy> Buffer<T> {
+impl<T: Copy + Default> Buffer<T> {
     pub fn new(width: usize, height: usize, fill_value: T) -> Self {
         Buffer {
             values: vec![fill_value; width * height],
@@ -223,6 +233,16 @@ impl<T: Copy> Buffer<T> {
                 return Ok(());
             }
         }
+    }
+
+    /// Fills new cells with default value, removes values from right and bottom
+    /// 
+    /// Example
+    /// ```
+    /// 
+    /// ```
+    pub fn resize(new_width: usize, new_height: usize) {
+        
     }
 
     /// Returns None if x and y point to a value outside of the buffer
