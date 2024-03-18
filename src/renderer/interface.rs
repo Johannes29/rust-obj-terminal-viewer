@@ -11,6 +11,7 @@ use crossterm::{
     event::{DisableMouseCapture, EnableMouseCapture},
     terminal, ExecutableCommand,
 };
+use std::cmp::Ordering;
 use std::{
     io::{stdout, Write},
     thread,
@@ -45,7 +46,7 @@ impl Renderer {
     pub fn new(fps: f32, char_asp_ratio: f32, fov: f32, brightness_string: &str) -> Self {
         let (width, height) = terminal::size().unwrap();
         let aspect_ratio = height as f32 * char_asp_ratio / width as f32;
-        let empty_char_buffer = Buffer::new(width as usize, height as usize, b' ');
+        let empty_char_buffer = Buffer::new(width as usize, height as usize, Some(b' '));
 
         let camera = Camera {
             horizontal_fov: get_horizontal_fov(fov, aspect_ratio),
@@ -67,8 +68,8 @@ impl Renderer {
             frame_time: Duration::from_secs_f32(1.0 / fps),
             char_buffer: empty_char_buffer.clone(),
             prev_char_buffer: empty_char_buffer.clone(),
-            image_buffer: Buffer::new(width as usize, height as usize, 0.0),
-            depth_buffer: Buffer::new(width as usize, height as usize, f32::MAX),
+            image_buffer: Buffer::new(width as usize, height as usize, Some(0.0)),
+            depth_buffer: Buffer::new(width as usize, height as usize, Some(f32::MAX)),
             info_text: None,
             info_line: "".to_string(),
             // TODO make parameter of Renderer::new()
@@ -156,9 +157,7 @@ impl Renderer {
         self.info_line = info_line;
     }
 
-    fn handle_resize(&mut self, new_width: u16, new_height: u16) {
-
-    }
+    fn handle_resize(&mut self, new_width: u16, new_height: u16) {}
 
     fn after_rendering_stopped() {
         stdout().execute(cursor::Show).unwrap();
@@ -176,11 +175,11 @@ impl Renderer {
     }
 
     fn clear_image_buffer(&mut self) {
-        self.image_buffer = Buffer::new(self.width as usize, self.height as usize, 0.0);
+        self.image_buffer = Buffer::new(self.width as usize, self.height as usize, Some(0.0));
     }
 
     fn clear_depth_buffer(&mut self) {
-        self.depth_buffer = Buffer::new(self.width as usize, self.height as usize, f32::MAX);
+        self.depth_buffer = Buffer::new(self.width as usize, self.height as usize, Some(f32::MAX));
     }
 }
 
@@ -208,9 +207,9 @@ pub struct Buffer<T: Copy + Default> {
 }
 
 impl<T: Copy + Default> Buffer<T> {
-    pub fn new(width: usize, height: usize, fill_value: T) -> Self {
+    pub fn new(width: usize, height: usize, fill_value: Option<T>) -> Self {
         Buffer {
-            values: vec![fill_value; width * height],
+            values: vec![fill_value.unwrap_or_default(); width * height],
             width,
             height,
         }
@@ -236,13 +235,59 @@ impl<T: Copy + Default> Buffer<T> {
     }
 
     /// Fills new cells with default value, removes values from right and bottom
-    /// 
+    ///
     /// Example
     /// ```
-    /// 
+    /// use rust_obj_terminal_viewer::renderer::interface::Buffer;
+    ///
+    /// let mut buffer = Buffer::<f32>::new(3, 3, None);
+    /// buffer.set(0, 0, 1.0);
+    /// buffer.set(1, 1, 1.0);
+    /// buffer.set(2, 2, 1.0);
+    ///
+    /// buffer.resize(4, 2);
+    /// assert_eq!(buffer.values.len(), 8);
+    /// assert_eq!(buffer.get(0, 0), Some(1.0));
+    /// assert_eq!(buffer.get(3, 0), Some(0.0));
+    /// assert_eq!(buffer.get(0, 2), None);
     /// ```
-    pub fn resize(new_width: usize, new_height: usize) {
-        
+    pub fn resize(&mut self, new_width: usize, new_height: usize) {
+        self.resize_height(new_height);
+        self.resize_width(new_width);
+        self.height = new_height;
+        self.width = new_width;
+    }
+
+    fn resize_width(&mut self, new_width: usize) {
+        if new_width == self.width {
+            return;
+        }
+
+        let mut diff_indices = Vec::new();
+        let bigger_width = self.width.max(new_width);
+        let smaller_width = self.width.min(new_width);
+        for y in 0..(self.height) {
+            for x in smaller_width..bigger_width {
+                let i = x + y * self.height;
+                diff_indices.push(i);
+            }
+        }
+
+        if new_width > self.width {
+            for i in diff_indices {
+                self.values.insert(i, T::default());
+            }
+            return;
+        }
+
+        diff_indices.reverse();
+        for i in diff_indices {
+            self.values.remove(i);
+        }
+    }
+
+    fn resize_height(&mut self, new_height: usize) {
+        self.values.resize(new_height * self.width, T::default());
     }
 
     /// Returns None if x and y point to a value outside of the buffer
