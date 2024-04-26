@@ -5,7 +5,16 @@ use rust_obj_terminal_viewer::renderer::camera_rotation::CameraInputHelper;
 use rust_obj_terminal_viewer::renderer::interface::Renderer;
 use rust_obj_terminal_viewer::renderer::obj_parser::ObjParser;
 
+const SHORT_ABOUT_TEXT: &str =
+    "A CLI program to view 3D models directly in the terminal. Supports .obj files.";
+
 #[derive(Parser)]
+#[command(
+    about = SHORT_ABOUT_TEXT,
+    long_about = format!("{SHORT_ABOUT_TEXT}\n\n\
+    To rotate the object, move the mouse with the left mouse button pressed. \
+    To close the program, press `q`.")
+)]
 struct Cli {
     path: std::path::PathBuf,
 }
