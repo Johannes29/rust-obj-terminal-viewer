@@ -5,7 +5,14 @@ This program uses no graphics library.
 Perspective transformations, rasterization, etc are coded by hand.
 The 3D object is displayed in the terminal with ascii-characters.
 
+## Getting started
+- Clone this repository.
+- Make sure Rust is installed. If not, [install it](https://www.rust-lang.org/tools/install).
+- `cd` into the cloned repository.
+
 ## Development
+
+Make sure to follow [Getting started](#getting-started) first.
 
 ### Running
 Run `cargo run -- PATH_TO_OBJ_FILE_HERE`. Replace `PATH_TO_OBJ_FILE_HERE` with
