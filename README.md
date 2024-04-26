@@ -10,6 +10,22 @@ The 3D object is displayed in the terminal with ascii-characters.
 - Make sure Rust is installed. If not, [install it](https://www.rust-lang.org/tools/install).
 - `cd` into the cloned repository.
 
+## How to use
+
+### Installing the program
+Make sure to follow [Getting started](#getting-started) first.
+
+Open a terminal and run `cargo install --path ./`.
+
+### Using the program
+Open a terminal and run `rust-obj-terminal-viewer FILE_PATH_HERE`,
+but replace `FILE_PATH_HERE` with the path to the file you want to view.
+
+The object should now be displayed in the terminal.
+
+To rotate the object, move the mouse with the left mouse button pressed.
+To close the program, press `q`.
+
 ## Development
 
 Make sure to follow [Getting started](#getting-started) first.
