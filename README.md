@@ -24,6 +24,7 @@ Open a terminal and run `cargo install --path ./`.
 
 Open a terminal and run `rust-obj-terminal-viewer FILE_PATH_HERE`,
 but replace `FILE_PATH_HERE` with the path to the file you want to view.
+Sample files can be found in [the objects folder](/objects/).
 
 The object should now be displayed in the terminal.
 
@@ -39,6 +40,7 @@ Make sure to follow [Getting started](#getting-started) first.
 Run `cargo run -- PATH_TO_OBJ_FILE_HERE`. Replace `PATH_TO_OBJ_FILE_HERE` with
 a path to a `.obj` file that you wish to view within the program.
 
+Sample files can be found in [the objects folder](/objects/).
 Alternatively, run `cargo rhg` to open the program with `hourglass.obj`.
 
 ### Performance testing
