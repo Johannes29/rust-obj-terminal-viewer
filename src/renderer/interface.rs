@@ -12,7 +12,7 @@ use crossterm::{
     terminal, ExecutableCommand,
 };
 use std::{
-    io::{stdout, Write},
+    io::stdout,
     thread,
     time::{Duration, Instant},
 };
@@ -97,7 +97,7 @@ impl Renderer {
     fn prepare_for_rendering(&self) {
         stdout().execute(cursor::Hide).unwrap();
         terminal::enable_raw_mode().unwrap();
-        Renderer::clear_terminal();
+        stdout().execute(terminal::EnterAlternateScreen).unwrap();
         stdout().execute(cursor::MoveTo(0, self.height)).unwrap();
         stdout().execute(EnableMouseCapture).unwrap();
     }
@@ -159,16 +159,8 @@ impl Renderer {
     fn after_rendering_stopped() {
         stdout().execute(cursor::Show).unwrap();
         terminal::disable_raw_mode().unwrap();
+        stdout().execute(terminal::LeaveAlternateScreen).unwrap();
         stdout().execute(DisableMouseCapture).unwrap();
-    }
-
-    fn clear_terminal() {
-        let terminal_height = terminal::size().unwrap().1;
-        let empty_lines_to_print = terminal_height - 1;
-
-        stdout()
-            .write_all(&vec![b'\n'; empty_lines_to_print as usize])
-            .unwrap();
     }
 
     fn clear_image_buffer(&mut self) {
