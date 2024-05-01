@@ -47,6 +47,12 @@ Alternatively, run `cargo rhg` to open the program with `hourglass.obj`.
 
 Run `cargo test` to run the tests.
 
+### Code formatting
+
+[rustfmt](https://github.com/rust-lang/rustfmt) is used for code formatting.
+Run `rustup component add rustfmt` to install it.
+Run `cargo fmt` to format all code.
+
 ### Performance testing
 
 To run a benchmark, run `cargo bench --bench BENCHMARK_NAME_HERE`,
