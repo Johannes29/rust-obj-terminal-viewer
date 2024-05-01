@@ -66,3 +66,13 @@ To generate a flamegraph:
 - Wait a few seconds and then press `q`
 
 The generated flamegraph should now be in the root of this repository, named `flamegraph.svg`.
+
+## Known issues and workarounds
+
+- The program might look weird if you change the size of the terminal window while the program is runnning.
+
+  Workaround: Restart the program.
+
+- The cursor will remain hidden if the program crashes.
+
+  Workaround: Restart the terminal.
