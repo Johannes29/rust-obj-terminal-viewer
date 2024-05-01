@@ -45,8 +45,11 @@ Alternatively, run `cargo rhg` to open the program with `hourglass.obj`.
 
 ### Performance testing
 
-In this repository there are multiple benchmarks for performance testing.
-To run a benchmark, run `cargo bench --bench BENCHMARK_NAME_HERE`.
+To run a benchmark, run `cargo bench --bench BENCHMARK_NAME_HERE`,
+but replace `BENCHMARK_NAME_HERE` with the name of a benchmark.
+The benchmarks are defined in [the benchmarks folder](/benchmarks/).
+Each file in the folder represents a benchmark.
+The benchmark name is the name of the file without the `.rs` file extension.
 
 ### Performance profiling
 
