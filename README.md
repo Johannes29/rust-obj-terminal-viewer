@@ -43,6 +43,10 @@ a path to a `.obj` file that you wish to view within the program.
 Sample files can be found in [the objects folder](/objects/).
 Alternatively, run `cargo rhg` to open the program with `hourglass.obj`.
 
+### Tests
+
+Run `cargo test` to run the tests.
+
 ### Performance testing
 
 To run a benchmark, run `cargo bench --bench BENCHMARK_NAME_HERE`,
