@@ -11,8 +11,8 @@ The 3D object is displayed in the terminal with ascii-characters.
 ## Getting started
 
 - Clone this repository.
-- Make sure Rust is installed. If not, [install it](https://www.rust-lang.org/tools/install).
 - `cd` into the cloned repository.
+- Make sure Rust is installed. If not, [install it](https://www.rust-lang.org/tools/install).
 
 ## How to use
 
