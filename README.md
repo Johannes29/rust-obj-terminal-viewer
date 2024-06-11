@@ -5,7 +5,7 @@
 A CLI program to view 3D models directly in the terminal. Supports .obj files.
 
 This program uses no graphics library.
-Perspective transformations, rasterization, etc are coded by hand.
+Perspective transformations, rasterization, and similar have been coded from scratch.
 The 3D object is displayed in the terminal with ascii-characters.
 
 I made this project to learn more about Rust and 3d rendering.
@@ -18,9 +18,9 @@ I made this project to learn more about Rust and 3d rendering.
 
 ## How to use
 
-### Installing the program
-
 Make sure to follow [Getting started](#getting-started) first.
+
+### Installing the program
 
 Open a terminal and run `cargo install --path ./`.
 
@@ -31,7 +31,6 @@ but replace `FILE_PATH_HERE` with the path to the file you want to view.
 Sample files can be found in [the objects folder](/objects/).
 
 The object should now be displayed in the terminal.
-
 To rotate the object, move the mouse with the left mouse button pressed.
 To close the program, press `q`.
 
