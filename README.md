@@ -8,6 +8,8 @@ This program uses no graphics library.
 Perspective transformations, rasterization, etc are coded by hand.
 The 3D object is displayed in the terminal with ascii-characters.
 
+I made this project to learn more about Rust and 3d rendering.
+
 ## Getting started
 
 - Clone this repository.
